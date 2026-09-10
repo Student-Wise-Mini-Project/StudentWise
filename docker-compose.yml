@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:16
+    container_name: studentwise-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: studentwise
+      POSTGRES_PASSWORD: studentwise
+      POSTGRES_DB: studentwise
+    ports:
+      # Host port 5434: 5432 is taken by a native Postgres service and 5433 by a WSL relay.
+      - "5434:5432"
+    volumes:
+      - studentwise_pgdata:/var/lib/postgresql/data
+      # Creates the separate database used by pytest. Runs once, on first boot.
+      - ./docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U studentwise -d studentwise"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  studentwise_pgdata:

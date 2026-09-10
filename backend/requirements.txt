@@ -1,0 +1,22 @@
+# Web
+fastapi>=0.115
+uvicorn[standard]>=0.32
+python-multipart>=0.0.12       # OAuth2PasswordRequestForm on /auth/login
+
+# Database
+sqlalchemy>=2.0
+psycopg[binary]>=3.2           # no cp314 wheels yet -> we run Python 3.12
+alembic>=1.14
+
+# Config & validation
+pydantic>=2.9
+pydantic-settings>=2.6
+
+# Auth
+pyjwt>=2.10
+pwdlib[argon2]>=0.2
+
+# Dev / test
+pytest>=8.3
+httpx2>=2.12                   # starlette TestClient backend (httpx is deprecated for this)
+ruff>=0.8
