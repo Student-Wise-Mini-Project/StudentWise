@@ -14,6 +14,7 @@ from app.api import (
     groups,
     notifications,
     settlements,
+    split_rules,
     users,
 )
 from app.config import settings
@@ -58,6 +59,7 @@ app.include_router(settlements.group_router, prefix="/api")
 app.include_router(settlements.router, prefix="/api")
 app.include_router(comments.expense_router, prefix="/api")
 app.include_router(comments.router, prefix="/api")
+app.include_router(split_rules.router, prefix="/api")
 app.include_router(balances.router, prefix="/api")
 app.include_router(analytics.router, prefix="/api")
 app.include_router(activity.router, prefix="/api")

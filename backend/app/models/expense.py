@@ -23,6 +23,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db import Base
 from app.models.enums import ExpenseCategory, ExpenseSource, SplitType, enum_column
 from app.models.group import Group
+from app.models.split_rule import SplitRule
 from app.models.user import User
 
 
@@ -62,6 +63,13 @@ class Expense(Base):
     receipt_image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     ai_metadata: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
 
+    #: The standing rule that decided this split, if one did. ON DELETE SET
+    #: NULL: deleting a rule must not move money that has already changed hands,
+    #: it just stops the expense saying which rule produced it.
+    split_rule_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("split_rules.id", ondelete="SET NULL"), nullable=True
+    )
+
     created_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
     # clock_timestamp(), not now(): now() is the *transaction's* start time, so
     # every row written in one transaction shares it exactly and anything
@@ -77,6 +85,7 @@ class Expense(Base):
     splits: Mapped[list["ExpenseSplit"]] = relationship(
         back_populates="expense", cascade="all, delete-orphan", lazy="selectin"
     )
+    split_rule: Mapped["SplitRule | None"] = relationship(lazy="joined")
     payer: Mapped[User] = relationship(foreign_keys=[payer_id], lazy="joined")
     group: Mapped[Group] = relationship(lazy="joined")
 
