@@ -49,6 +49,14 @@ you get half-written expenses with no splits.
 5. **Hard delete, not soft delete.** Deleting an expense deletes it; splits cascade.
 6. **Every schema change gets an Alembic migration** in the same commit as the model.
 7. **Every new endpoint gets a test** in `tests/api/`.
+8. **List endpoints return `Page[T]`, never a bare array.**
+   `{items, total, limit, offset, has_more}` — `total` counts what matches the
+   filters, ignoring limit/offset. Build the page and the count from the *same*
+   filter helper; a total that disagrees with its page is worse than no total.
+9. **`created_at` uses `clock_timestamp()`, not `now()`.** `now()` is the
+   transaction's start time, so several rows written in one transaction share it
+   exactly and anything ordered by it falls into an arbitrary order. Order by a
+   second column too, so a pager cannot repeat or skip a row.
 
 ## Commands
 
@@ -64,7 +72,10 @@ alembic revision --autogenerate -m "add expenses"   # new migration
 
 ## Git
 
-- `main` is protected. Branch per milestone: `feat/expenses-crud`.
+- `main` is protected **by convention, not by GitHub** — rulesets need a paid
+  plan on a private repo. See `.github/branch-protection.md`; the rule is
+  written and ready to apply. Never push to `main` directly.
+- Branch per milestone: `feat/expenses-crud`.
 - PR → one teammate approves → squash-merge.
 - CI runs `ruff check` + `pytest`.
 
@@ -89,3 +100,14 @@ decisions were made and why, what's next, anything that surprised us.
   learn that items exist.
 - Splitting arithmetic lives in `domain/splitting.py` and uses the largest-remainder
   method so `100/3` gives `33.34 / 33.33 / 33.33`, never `99.99`.
+- **Notifications fan out on write.** `notification_service.record_*` is called
+  *by another service, inside its transaction*, and never commits — an expense
+  and the notifications about it land together or not at all. Everything else in
+  that module owns its own transaction.
+- **Notification wording is never stored.** A row keeps `kind` plus a `payload`
+  of plain facts; `render()` turns that into words at read time, so the app can
+  be shown in Hebrew without a migration.
+- **Uploaded bytes decide what a file is, not its `Content-Type`.** Receipt
+  storage keys are generated from the expense UUID and re-checked against a
+  pattern before they become a path — nothing a user typed reaches the
+  filesystem. See `core/storage.py`.

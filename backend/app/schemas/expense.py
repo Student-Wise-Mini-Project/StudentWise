@@ -5,7 +5,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from app.models.enums import ExpenseCategory, ExpenseSource, SplitType
 from app.schemas.user import UserOut
@@ -64,9 +64,22 @@ class ExpenseOut(BaseModel):
     split_type: SplitType
     source: ExpenseSource
     notes: str | None = None
-    receipt_image_url: str | None = None
     ai_metadata: dict[str, Any] | None = None
     created_by: uuid.UUID
     created_at: datetime
     updated_at: datetime
     splits: list[ExpenseSplitOut] = []
+
+    #: The storage key, which is nobody's business outside the server: it says
+    #: where the file lives, and that changes when storage does.
+    receipt_image_url: str | None = Field(default=None, exclude=True)
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def receipt_url(self) -> str | None:
+        """Where to fetch the receipt, or null if there isn't one.
+
+        A real endpoint rather than a static path: receipts are only visible to
+        members of the group, so they cannot be served straight off disk.
+        """
+        return f"/api/expenses/{self.id}/receipt" if self.receipt_image_url else None

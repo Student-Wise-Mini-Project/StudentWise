@@ -27,3 +27,4 @@ Thumbs.db
 # Local data
 *.sqlite3
 uploads/
+backend/var/

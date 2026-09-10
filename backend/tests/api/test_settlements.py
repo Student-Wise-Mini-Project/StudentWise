@@ -54,10 +54,9 @@ def test_recording_a_repayment(client, flat):
 
 def test_settlements_are_listed_for_the_group(client, flat):
     created = post_settlement(client, flat).json()
-    listed = client.get(
-        f"/api/groups/{flat['group_id']}/settlements", headers=flat["headers"]
-    ).json()
-    assert [s["id"] for s in listed] == [created["id"]]
+    page = client.get(f"/api/groups/{flat['group_id']}/settlements", headers=flat["headers"]).json()
+    assert [s["id"] for s in page["items"]] == [created["id"]]
+    assert page["total"] == 1
 
 
 def test_paying_yourself_is_rejected(client, flat):

@@ -15,6 +15,7 @@ from decimal import Decimal
 from sqlalchemy import delete
 
 from app.db import SessionLocal
+from app.models.comment import ExpenseComment
 from app.models.enums import (
     ExpenseCategory,
     ExpenseSource,
@@ -24,9 +25,16 @@ from app.models.enums import (
 )
 from app.models.expense import Expense, ExpenseSplit
 from app.models.group import Group, GroupMember
+from app.models.notification import Notification
 from app.models.settlement import Settlement
 from app.models.user import User
-from app.services import auth_service, expense_service, group_service, settlement_service
+from app.services import (
+    auth_service,
+    comment_service,
+    expense_service,
+    group_service,
+    settlement_service,
+)
 from app.services.expense_service import ParticipantSpec
 
 PASSWORD = "password123"
@@ -34,7 +42,16 @@ PASSWORD = "password123"
 
 def wipe(db) -> None:
     """Order matters: children before parents."""
-    for model in (ExpenseSplit, Expense, Settlement, GroupMember, Group, User):
+    for model in (
+        Notification,
+        ExpenseComment,
+        ExpenseSplit,
+        Expense,
+        Settlement,
+        GroupMember,
+        Group,
+        User,
+    ):
         db.execute(delete(model))
     db.commit()
 
@@ -96,7 +113,7 @@ def main() -> None:
             category=ExpenseCategory.OTHER,
         )
         # Only two of the three flatmates drink the oat milk.
-        expense_service.create_expense(
+        oat_milk = expense_service.create_expense(
             db,
             flat,
             creator=gal,
@@ -188,6 +205,19 @@ def main() -> None:
                     category=ExpenseCategory.UTILITIES,
                 )
 
+        # A thread on the one expense that does not include everybody -- which is
+        # exactly the kind that gets argued about.
+        comment_service.create_comment(
+            db, oat_milk, flat, author=noa, body="Why am I not on this one?"
+        )
+        comment_service.create_comment(
+            db,
+            oat_milk,
+            flat,
+            author=gal,
+            body="You do not drink it -- say the word and I will add you.",
+        )
+
         settlement_service.create_settlement(
             db,
             flat,
@@ -205,6 +235,7 @@ def main() -> None:
         print("  users   : gal@studentwise.dev, maya@studentwise.dev, noa@studentwise.dev")
         print(f"  password: {PASSWORD}")
         print("  18 expenses (incl. 6 months of electricity and water), 1 settlement")
+        print("  2 comments, plus the notifications every one of those actions raised")
     finally:
         db.close()
 

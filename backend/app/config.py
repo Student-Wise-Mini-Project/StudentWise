@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     # already validated and run in a read-only transaction without it.
     readonly_database_url: str | None = None
 
+    # Receipt images. Local disk in dev; swap `LocalReceiptStore` for an object
+    # store later without touching anything that reads a receipt.
+    receipt_storage_dir: str = "var/receipts"
+    receipt_max_bytes: int = 5 * 1024 * 1024  # 5 MB -- a phone photo, not a scan
+
     # Vite dev server and CRA dev server, for the frontend teammate.
     cors_origins: list[str] = [
         "http://localhost:5173",

@@ -1,6 +1,7 @@
 """Shared FastAPI dependencies."""
 
 import uuid
+from dataclasses import dataclass
 from typing import Annotated
 
 from fastapi import Depends
@@ -11,10 +12,12 @@ from sqlalchemy.orm import Session
 from app.core.errors import ForbiddenError, NotFoundError, UnauthorizedError
 from app.core.security import decode_access_token
 from app.db import get_db, get_readonly_connection
+from app.models.comment import ExpenseComment
 from app.models.expense import Expense
 from app.models.group import GroupMember
 from app.models.settlement import Settlement
 from app.models.user import User
+from app.repositories.comment_repository import CommentRepository
 from app.repositories.expense_repository import ExpenseRepository
 from app.repositories.group_repository import GroupRepository
 from app.repositories.settlement_repository import SettlementRepository
@@ -99,3 +102,39 @@ def get_settlement_for_member(
 
 
 SettlementForMember = Annotated[Settlement, Depends(get_settlement_for_member)]
+
+
+@dataclass(frozen=True)
+class CommentContext:
+    """A comment plus the two things every rule about it needs.
+
+    `/comments/{id}` has no group in the path, so membership cannot be resolved
+    by the usual dependency -- it is walked from the comment through its
+    expense instead.
+    """
+
+    comment: ExpenseComment
+    expense: Expense
+    membership: GroupMember
+
+
+def get_comment_context(
+    comment_id: uuid.UUID,
+    db: DbSession,
+    current_user: CurrentUser,
+) -> CommentContext:
+    comment = CommentRepository(db).get(comment_id)
+    if comment is None:
+        raise NotFoundError("Comment not found")
+
+    expense = ExpenseRepository(db).get(comment.expense_id)
+    if expense is None:
+        raise NotFoundError("Comment not found")
+
+    membership = GroupRepository(db).get_membership(expense.group_id, current_user.id)
+    if membership is None or not membership.is_active:
+        raise ForbiddenError("You are not a member of this group")
+    return CommentContext(comment=comment, expense=expense, membership=membership)
+
+
+CommentForMember = Annotated[CommentContext, Depends(get_comment_context)]

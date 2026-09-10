@@ -2,7 +2,7 @@
 
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.settlement import Settlement
@@ -21,11 +21,15 @@ class SettlementRepository:
         stmt = (
             select(Settlement)
             .where(Settlement.group_id == group_id)
-            .order_by(Settlement.settled_at.desc())
+            .order_by(Settlement.settled_at.desc(), Settlement.id.desc())
             .limit(limit)
             .offset(offset)
         )
         return list(self.db.scalars(stmt).unique())
+
+    def count_by_group(self, group_id: uuid.UUID) -> int:
+        stmt = select(func.count()).select_from(Settlement).where(Settlement.group_id == group_id)
+        return self.db.scalar(stmt) or 0
 
     def add(self, settlement: Settlement) -> Settlement:
         self.db.add(settlement)

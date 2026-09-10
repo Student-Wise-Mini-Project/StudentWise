@@ -64,6 +64,20 @@ class SettlementMethod(StrEnum):
     PAYBOX = "PAYBOX"
 
 
+class NotificationKind(StrEnum):
+    """Why someone is being told something.
+
+    The kind plus `Notification.payload` is the whole notification; the wording
+    is rendered at read time rather than stored, so the same row can be shown in
+    English or Hebrew without a migration.
+    """
+
+    EXPENSE_ADDED = "EXPENSE_ADDED"
+    COMMENT_ADDED = "COMMENT_ADDED"
+    SETTLEMENT_RECORDED = "SETTLEMENT_RECORDED"
+    PAYMENT_REMINDER = "PAYMENT_REMINDER"
+
+
 def enum_column(enum_cls: type[StrEnum]) -> SAEnum:
     """VARCHAR + CHECK constraint, with Python-side enum safety preserved."""
     return SAEnum(

@@ -40,8 +40,12 @@ class Settlement(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     created_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
+    # clock_timestamp(), not now(): now() is the *transaction's* start time, so
+    # every row written in one transaction shares it exactly and anything
+    # ordered by created_at falls back to an arbitrary order. That is not
+    # hypothetical -- one receipt becomes several expenses in one transaction.
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
+        DateTime(timezone=True), server_default=func.clock_timestamp(), nullable=False
     )
 
     from_user: Mapped[User] = relationship(foreign_keys=[from_user_id], lazy="joined")

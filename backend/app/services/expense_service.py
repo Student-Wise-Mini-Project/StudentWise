@@ -12,6 +12,7 @@ from decimal import Decimal
 from sqlalchemy.orm import Session
 
 from app.core.errors import BadRequestError, NotFoundError
+from app.core.storage import content_type_for, get_receipt_store
 from app.domain.splitting import ParticipantInput, compute_splits
 from app.models.enums import ExpenseCategory, ExpenseSource, SplitType
 from app.models.expense import Expense, ExpenseSplit
@@ -19,6 +20,7 @@ from app.models.group import Group, GroupMember
 from app.models.user import User
 from app.repositories.expense_repository import ExpenseRepository
 from app.repositories.group_repository import GroupRepository
+from app.services import notification_service
 
 
 @dataclass(frozen=True)
@@ -95,16 +97,21 @@ def list_expenses(
     payer_id: uuid.UUID | None = None,
     date_from: date | None = None,
     date_to: date | None = None,
-) -> list[Expense]:
-    return ExpenseRepository(db).list_by_group(
-        group.id,
-        limit=limit,
-        offset=offset,
-        category=category,
-        payer_id=payer_id,
-        date_from=date_from,
-        date_to=date_to,
-    )
+) -> tuple[list[Expense], int]:
+    """One page of expenses, plus how many match the filters in total.
+
+    The total is what lets a client draw a pager; it deliberately ignores limit
+    and offset but honours every filter.
+    """
+    repo = ExpenseRepository(db)
+    filters = {
+        "category": category,
+        "payer_id": payer_id,
+        "date_from": date_from,
+        "date_to": date_to,
+    }
+    items = repo.list_by_group(group.id, limit=limit, offset=offset, **filters)
+    return items, repo.count_by_group(group.id, **filters)
 
 
 def create_expense(
@@ -145,6 +152,9 @@ def create_expense(
         splits=splits,
     )
     ExpenseRepository(db).add(expense)
+    # Same transaction as the expense: nobody should be told about an expense
+    # that failed to save, and no expense should land silently.
+    notification_service.record_expense_added(db, expense, group, actor=creator)
     db.commit()
     db.refresh(expense)
     return expense
@@ -218,6 +228,58 @@ def update_expense(
 
 
 def delete_expense(db: Session, expense: Expense) -> None:
-    """Hard delete. The splits go with it via ON DELETE CASCADE."""
+    """Hard delete. Splits, comments and notifications go with it via
+    ON DELETE CASCADE; the receipt image has to be removed by hand, because the
+    database knows nothing about the file."""
+    key = expense.receipt_image_url
     ExpenseRepository(db).delete(expense)
     db.commit()
+    if key:
+        get_receipt_store().delete(key)
+
+
+# --- receipts ---------------------------------------------------------------
+
+
+def attach_receipt(db: Session, expense: Expense, *, data: bytes) -> Expense:
+    """Store a receipt image against an expense.
+
+    Uploading a second one replaces the first: an expense has one receipt, and
+    keeping the old file would leave a picture of someone's shopping on disk
+    that nothing points at.
+    """
+    store = get_receipt_store()
+    previous = expense.receipt_image_url
+
+    key = store.save(expense_id=expense.id, data=data)
+    expense.receipt_image_url = key
+    db.commit()
+    db.refresh(expense)
+
+    if previous and previous != key:
+        # Different extension, so `save` wrote a new file rather than
+        # overwriting the old one.
+        store.delete(previous)
+    return expense
+
+
+def read_receipt(expense: Expense) -> tuple[bytes, str]:
+    """The receipt's bytes and its content type."""
+    key = expense.receipt_image_url
+    if not key:
+        raise NotFoundError("This expense has no receipt")
+    return get_receipt_store().read(key), content_type_for(key)
+
+
+def remove_receipt(db: Session, expense: Expense) -> Expense:
+    key = expense.receipt_image_url
+    if not key:
+        raise NotFoundError("This expense has no receipt")
+
+    expense.receipt_image_url = None
+    db.commit()
+    db.refresh(expense)
+    # After the commit: a file deleted for a row that then failed to save would
+    # leave the expense pointing at nothing.
+    get_receipt_store().delete(key)
+    return expense

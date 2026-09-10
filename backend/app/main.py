@@ -4,7 +4,18 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api import analytics, auth, balances, expenses, groups, settlements, users
+from app.api import (
+    activity,
+    analytics,
+    auth,
+    balances,
+    comments,
+    expenses,
+    groups,
+    notifications,
+    settlements,
+    users,
+)
 from app.config import settings
 from app.core.errors import AppError
 
@@ -45,5 +56,10 @@ app.include_router(expenses.group_router, prefix="/api")
 app.include_router(expenses.router, prefix="/api")
 app.include_router(settlements.group_router, prefix="/api")
 app.include_router(settlements.router, prefix="/api")
+app.include_router(comments.expense_router, prefix="/api")
+app.include_router(comments.router, prefix="/api")
 app.include_router(balances.router, prefix="/api")
 app.include_router(analytics.router, prefix="/api")
+app.include_router(activity.router, prefix="/api")
+app.include_router(notifications.router, prefix="/api")
+app.include_router(notifications.group_router, prefix="/api")

@@ -13,6 +13,7 @@ from app.models.settlement import Settlement
 from app.models.user import User
 from app.repositories.group_repository import GroupRepository
 from app.repositories.settlement_repository import SettlementRepository
+from app.services import notification_service
 
 
 def _require_member(db: Session, group: Group, user_id: uuid.UUID, label: str) -> None:
@@ -31,8 +32,11 @@ def get_settlement(db: Session, settlement_id: uuid.UUID) -> Settlement:
 
 def list_settlements(
     db: Session, group: Group, *, limit: int = 50, offset: int = 0
-) -> list[Settlement]:
-    return SettlementRepository(db).list_by_group(group.id, limit=limit, offset=offset)
+) -> tuple[list[Settlement], int]:
+    """One page of repayments, plus the total number in this group."""
+    repo = SettlementRepository(db)
+    items = repo.list_by_group(group.id, limit=limit, offset=offset)
+    return items, repo.count_by_group(group.id)
 
 
 def create_settlement(
@@ -68,6 +72,7 @@ def create_settlement(
         settlement.settled_at = settled_at
 
     SettlementRepository(db).add(settlement)
+    notification_service.record_settlement(db, settlement, group, actor=creator)
     db.commit()
     db.refresh(settlement)
     return settlement
