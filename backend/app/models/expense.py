@@ -16,6 +16,7 @@ from sqlalchemy import (
     UniqueConstraint,
     Uuid,
     func,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -23,6 +24,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db import Base
 from app.models.enums import ExpenseCategory, ExpenseSource, SplitType, enum_column
 from app.models.group import Group
+from app.models.recurring_bill import RecurringBill
 from app.models.split_rule import SplitRule
 from app.models.user import User
 
@@ -36,7 +38,19 @@ class Expense(Base):
     """
 
     __tablename__ = "expenses"
-    __table_args__ = (Index("ix_expenses_group_id_expense_date", "group_id", "expense_date"),)
+    __table_args__ = (
+        Index("ix_expenses_group_id_expense_date", "group_id", "expense_date"),
+        # One expense per bill per due date, enforced rather than hoped for: two
+        # clients running the scheduler at once would otherwise post rent twice,
+        # which is the exact problem mission 4.5 exists to prevent.
+        Index(
+            "uq_expenses_recurring_bill_due",
+            "recurring_bill_id",
+            "expense_date",
+            unique=True,
+            postgresql_where=text("recurring_bill_id IS NOT NULL"),
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     group_id: Mapped[uuid.UUID] = mapped_column(
@@ -69,6 +83,11 @@ class Expense(Base):
     split_rule_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("split_rules.id", ondelete="SET NULL"), nullable=True
     )
+    #: The schedule that posted this, if a schedule did. Also SET NULL: deleting
+    #: a recurring bill must not disturb rent that has already been paid.
+    recurring_bill_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("recurring_bills.id", ondelete="SET NULL"), nullable=True
+    )
 
     created_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
     # clock_timestamp(), not now(): now() is the *transaction's* start time, so
@@ -86,6 +105,7 @@ class Expense(Base):
         back_populates="expense", cascade="all, delete-orphan", lazy="selectin"
     )
     split_rule: Mapped["SplitRule | None"] = relationship(lazy="joined")
+    recurring_bill: Mapped["RecurringBill | None"] = relationship(lazy="joined")
     payer: Mapped[User] = relationship(foreign_keys=[payer_id], lazy="joined")
     group: Mapped[Group] = relationship(lazy="joined")
 

@@ -95,6 +95,10 @@ decisions were made and why, what's next, anything that surprised us.
 
 - `expense_splits` is how "only some of the group is on this expense" works — a row
   exists only for a participant.
+- **Anything that creates an expense goes through `expense_service`.** Recurring
+  bills call `build_expense` (everything bar the commit) so several months land
+  in one transaction. Nothing reimplements splitting, notifications or the
+  budget check.
 - `Expense_Items` / `Item_Splits` arrive in Step 3 (per-item receipt splitting) and
   will **compute and write `expense_splits` rows**. Balances and analytics must never
   learn that items exist.

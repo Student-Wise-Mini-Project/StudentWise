@@ -36,6 +36,7 @@ Health check: http://localhost:8000/health
 | Run tests | `pytest` |
 | Lint + format | `ruff check --fix . ; ruff format .` |
 | Reseed demo data | `python seed.py` (from `backend/`) |
+| Post due recurring bills | `python run_due_bills.py` (from `backend/`) |
 
 ## Layout
 
@@ -68,6 +69,22 @@ same command over a range, then update `docker-compose.yml` and `.env`.
 
 **Reset the database completely** — `docker compose down -v` (the `-v` drops the
 volume), then `docker compose up -d` and `alembic upgrade head`.
+
+## Recurring bills
+
+Nothing in StudentWise runs on a scheduler — no Celery, no APScheduler. Bills
+that fall due are posted by whoever asks:
+
+- the app calls `POST /api/groups/{id}/recurring-bills/run` when it loads
+- `python run_due_bills.py` does the same for every group, for a real cron
+
+Both are safe to run as often as you like: a bill already posted for its due
+date has moved on, and a reminder already sent is not sent again. If nothing
+runs for a month, the next run posts the months it missed.
+
+```
+0 6 * * *  cd /srv/studentwise/backend && .venv/bin/python run_due_bills.py
+```
 
 ## Uploaded files
 
