@@ -178,13 +178,60 @@ trip. Above 14 it falls back to a greedy heuristic that still never exceeds
 *(people with a non-zero balance) − 1* transfers, but is no longer guaranteed
 shortest — finding the true minimum in general is NP-hard (subset-sum).
 
+## Analytics
+
+All read-only, all under `/groups/{group_id}/analytics/`. Every one accepts
+`date_from` and `date_to` (inclusive, on `expense_date`).
+
+| Path | Returns |
+|---|---|
+| `summary` | Headline numbers: total, count, average, largest expense, date range |
+| `by-category` | Spend per category, biggest first, with percentage shares |
+| `by-month` | Monthly totals for a trend chart, oldest first |
+| `by-member` | Per person: what they paid out vs what they consumed |
+
+### Scope: group vs personal
+
+`summary`, `by-category` and `by-month` accept a **`user_id`** parameter, and the
+number it returns changes meaning:
+
+- **without `user_id`** — what the *group* spent: the sum of expense totals.
+- **with `user_id`** — what that *person* consumed: the sum of their own split
+  shares, skipping expenses they were not part of.
+
+A 90.00 dinner split three ways is `90.00` of group spending but `30.00` of
+personal spending. The response echoes `scope: "group" | "user"` so the client
+can label the chart correctly. Passing a `user_id` who is not a group member is
+a 400.
+
+### Notes worth knowing
+
+- **`by-month` fills empty months with zero.** If the group spent in June and
+  September but not July or August, you get all four months back. Drawing a line
+  chart straight from raw database rows would join June to September and imply
+  spending that never happened.
+- Expenses with no category are reported under `"uncategorised"`.
+- **`by-member` is not `/balances`.** It is a spending breakdown (`paid` and
+  `consumed`) and nets nothing off against settlements. For who owes whom, use
+  `/balances`.
+- `share_percent` is to one decimal place and sums to ~100 for a non-empty group.
+
+```
+Summary        = { group_id, currency, scope, total_spent, expense_count,
+                   average_expense, largest_expense, first_expense_date, last_expense_date }
+CategoryBreakdown = { group_id, currency, scope, total,
+                      categories: [{ category, total, expense_count, share_percent }] }
+MonthlyTrend   = { group_id, currency, scope, months: [{ month: "YYYY-MM", total, expense_count }] }
+MemberBreakdown = { group_id, currency, members: [{ user, paid, consumed }] }
+```
+
 ## Not built yet (Step 3+)
 
 Do not build UI against these; they don't exist:
 
 - Receipt OCR, voice entry, Gmail scraping, per-item splitting
 - Bit / PayBox deep links
-- Analytics, charts, anomaly detection, natural-language querying
+- Anomaly detection and natural-language querying (Text-to-SQL)
 
 ## Demo data
 
