@@ -21,7 +21,12 @@ from app.models.split_rule import SplitRule
 from app.models.user import User
 from app.repositories.expense_repository import ExpenseRepository
 from app.repositories.group_repository import GroupRepository
-from app.services import idempotency_service, notification_service, split_rule_service
+from app.services import (
+    budget_service,
+    idempotency_service,
+    notification_service,
+    split_rule_service,
+)
 
 
 @dataclass(frozen=True)
@@ -218,6 +223,10 @@ def create_expense(
     # Same transaction as the expense: nobody should be told about an expense
     # that failed to save, and no expense should land silently.
     notification_service.record_expense_added(db, expense, group, actor=creator)
+    # After the expense is in the session, so the pending row counts towards the
+    # month's total; before the commit, so an alert and the expense that caused
+    # it land together.
+    budget_service.check_after_expense(db, group, expense)
     if claim is not None:
         claim.resource_id = expense.id
     db.commit()

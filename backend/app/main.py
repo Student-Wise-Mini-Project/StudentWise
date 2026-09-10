@@ -9,6 +9,7 @@ from app.api import (
     analytics,
     auth,
     balances,
+    budgets,
     comments,
     expenses,
     groups,
@@ -60,6 +61,7 @@ app.include_router(settlements.router, prefix="/api")
 app.include_router(comments.expense_router, prefix="/api")
 app.include_router(comments.router, prefix="/api")
 app.include_router(split_rules.router, prefix="/api")
+app.include_router(budgets.router, prefix="/api")
 app.include_router(balances.router, prefix="/api")
 app.include_router(analytics.router, prefix="/api")
 app.include_router(activity.router, prefix="/api")
