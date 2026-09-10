@@ -17,6 +17,16 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60 * 24 * 7  # one week
 
+    # Natural-language querying. Without a key the /ask endpoint returns 503
+    # and everything else in the app carries on working.
+    anthropic_api_key: str | None = None
+    nl_query_model: str = "claude-opus-5"
+    nl_query_row_limit: int = 200
+    nl_query_timeout_ms: int = 5000
+    # Optional dedicated read-only Postgres role. Defence in depth: the query is
+    # already validated and run in a read-only transaction without it.
+    readonly_database_url: str | None = None
+
     # Vite dev server and CRA dev server, for the frontend teammate.
     cors_origins: list[str] = [
         "http://localhost:5173",

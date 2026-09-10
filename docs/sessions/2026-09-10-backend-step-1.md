@@ -110,6 +110,41 @@ remaining problem is set partitioning, not graph traversal.
 Sanity check against the seeded flat: Maya +206.74, Gal −99.46, Noa −107.28,
 summing to 0.00, settled by 2 transfers for 3 people.
 
+## Module 3 complete: analytics, anomalies, Text-to-SQL
+
+Analytics (4 endpoints), anomaly detection (median + MAD, no AI), and
+natural-language querying.
+
+**Text-to-SQL is the one genuinely dangerous feature in this codebase.** The
+model is fed user-written expense titles, so it is treated as an untrusted
+input, not a trusted component. Four layers, and any one failing should still
+leave the system safe:
+
+1. `domain/sql_guard.py` validates the generated SQL against an allowlist using
+   a real parser (sqlglot), not regex.
+2. The query is wrapped beneath server-injected CTEs that expose only one
+   group's rows. **The model never sees or supplies the group id**, so scoping
+   holds by construction rather than by instruction.
+3. A READ ONLY transaction with a statement timeout, always rolled back.
+4. Optionally a dedicated Postgres role whose column grants omit
+   `password_hash` (README).
+
+**The guard passed all 37 of its tests on the first run, which was a warning
+sign rather than a good one.** Probing with attacks that had no tests found two
+real holes: data-modifying CTEs (`WITH x AS (INSERT ... RETURNING *) SELECT *
+FROM x` has a SELECT at its root and still writes) and the `ONLY` modifier. Both
+are regression tests now. Lesson worth keeping: for a security boundary, write
+the tests, then try to break it anyway.
+
+Proven live rather than assumed: `SELECT name, email FROM users` with no filter
+whatsoever returns only the three group members, and a `DELETE` is refused by
+Postgres itself.
+
+**Not yet verified:** the prompt has never run against the real model - there is
+no API key on the dev machine. Everything downstream of Claude is tested with a
+stub; the quality of the generated SQL is unmeasured. First job once a key
+exists.
+
 ## Next: Step 3
 
 1. Bit / PayBox deep links off `users.phone_number`, driven by the settlement plan.

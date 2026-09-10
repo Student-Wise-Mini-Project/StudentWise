@@ -5,11 +5,12 @@ from typing import Annotated
 
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy import Connection
 from sqlalchemy.orm import Session
 
 from app.core.errors import ForbiddenError, NotFoundError, UnauthorizedError
 from app.core.security import decode_access_token
-from app.db import get_db
+from app.db import get_db, get_readonly_connection
 from app.models.expense import Expense
 from app.models.group import GroupMember
 from app.models.settlement import Settlement
@@ -23,6 +24,8 @@ from app.repositories.user_repository import UserRepository
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 DbSession = Annotated[Session, Depends(get_db)]
+#: For generated SQL only. Read-only transaction, always rolled back.
+ReadOnlyConnection = Annotated[Connection, Depends(get_readonly_connection)]
 
 
 def get_current_user(

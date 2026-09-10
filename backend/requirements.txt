@@ -13,6 +13,10 @@ pydantic>=2.9
 email-validator>=2.2            # pydantic EmailStr
 pydantic-settings>=2.6
 
+# Natural-language querying
+anthropic>=1.5                  # Claude SDK
+sqlglot>=27                     # SQL parser for the generated-SQL guard
+
 # Auth
 pyjwt>=2.10
 pwdlib[argon2]>=0.2

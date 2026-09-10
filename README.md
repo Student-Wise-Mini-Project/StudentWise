@@ -62,3 +62,38 @@ same command over a range, then update `docker-compose.yml` and `.env`.
 
 **Reset the database completely** — `docker compose down -v` (the `-v` drops the
 volume), then `docker compose up -d` and `alembic upgrade head`.
+
+## Natural-language querying
+
+`POST /api/groups/{id}/analytics/ask` turns a plain-language question into SQL
+via Claude. It needs an Anthropic API key in `backend/.env`:
+
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+Without one the endpoint returns 503 and everything else works normally. Roughly
+1-1.5 agorot per question (the schema prompt is cached).
+
+### Optional hardening: a dedicated read-only role
+
+Generated SQL is already validated, group-scoped, and run in a READ ONLY
+transaction with a statement timeout. A dedicated Postgres role adds one more
+layer, including making `users.password_hash` unreadable at the database level:
+
+```sql
+CREATE ROLE studentwise_readonly LOGIN PASSWORD 'readonly';
+GRANT CONNECT ON DATABASE studentwise TO studentwise_readonly;
+GRANT USAGE ON SCHEMA public TO studentwise_readonly;
+GRANT SELECT ON groups, group_members, expenses, expense_splits, settlements
+  TO studentwise_readonly;
+-- Column list deliberately omits password_hash.
+GRANT SELECT (id, name, email, phone_number, created_at) ON users
+  TO studentwise_readonly;
+```
+
+Then point the app at it:
+
+```
+READONLY_DATABASE_URL=postgresql+psycopg://studentwise_readonly:readonly@localhost:5434/studentwise
+```

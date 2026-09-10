@@ -9,12 +9,12 @@ from collections.abc import Generator
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Connection, Engine, create_engine
 from sqlalchemy.orm import Session
 
 import app.models  # noqa: F401  -- registers every model on Base.metadata
 from app.config import settings
-from app.db import Base, get_db
+from app.db import Base, get_db, get_readonly_connection
 from app.main import app as fastapi_app
 
 
@@ -28,9 +28,19 @@ def engine() -> Generator[Engine, None, None]:
 
 
 @pytest.fixture
-def db(engine: Engine) -> Generator[Session, None, None]:
-    connection = engine.connect()
-    transaction = connection.begin()
+def connection(engine: Engine) -> Generator[Connection, None, None]:
+    """One connection per test, in a transaction that is always rolled back."""
+    conn = engine.connect()
+    transaction = conn.begin()
+    try:
+        yield conn
+    finally:
+        transaction.rollback()
+        conn.close()
+
+
+@pytest.fixture
+def db(connection: Connection) -> Generator[Session, None, None]:
     session = Session(
         bind=connection,
         expire_on_commit=False,
@@ -40,13 +50,15 @@ def db(engine: Engine) -> Generator[Session, None, None]:
         yield session
     finally:
         session.close()
-        transaction.rollback()
-        connection.close()
 
 
 @pytest.fixture
-def client(db: Session) -> Generator[TestClient, None, None]:
+def client(db: Session, connection: Connection) -> Generator[TestClient, None, None]:
     fastapi_app.dependency_overrides[get_db] = lambda: db
+    # Generated SQL runs on the test's own connection so it can see data the
+    # test has written but not committed. In production this dependency opens a
+    # separate READ ONLY transaction.
+    fastapi_app.dependency_overrides[get_readonly_connection] = lambda: connection
     with TestClient(fastapi_app) as test_client:
         yield test_client
     fastapi_app.dependency_overrides.clear()

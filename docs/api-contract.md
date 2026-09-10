@@ -280,13 +280,42 @@ built from.** Asking for just last month still compares against the full history
 No AI is involved. It is a median + median-absolute-deviation test, which stays
 meaningful on the dozen or so observations a real flatshare produces.
 
+### Ask a question (natural language)
+
+`POST /groups/{group_id}/analytics/ask` with `{"question": "..."}` (3-500 chars).
+
+```
+AskResponse = { question, sql, explanation, columns, rows, row_count, truncated }
+```
+
+Claude translates the question into a single PostgreSQL SELECT. **The SQL that
+ran comes back in the response** — show it, so an answer can be checked rather
+than trusted. `rows` are plain objects keyed by column name; money is a string
+like everywhere else, and UUIDs/dates are ISO strings.
+
+Returns **503** when the server has no `ANTHROPIC_API_KEY`, and **400** when the
+generated SQL is refused by the guard (the message says why).
+
+**How it is kept safe.** The model is treated as an untrusted input, not a
+trusted component — remember it is fed user-written expense titles:
+
+1. The SQL is parsed and checked against an allowlist (single read-only SELECT,
+   known relations only, no schema qualification, no catalog access, no
+   `password_hash`, no file/network/sleep functions, and no data-modifying CTEs).
+2. It is then wrapped beneath server-injected CTEs that expose only this group's
+   rows. **The model never sees or supplies the group id**, so a query with no
+   filter at all still cannot reach another group.
+3. It runs in a READ ONLY transaction with a statement timeout and a row cap,
+   and is always rolled back.
+
+`truncated: true` means there were more rows than the server returns.
+
 ## Not built yet (Step 3+)
 
 Do not build UI against these; they don't exist:
 
 - Receipt OCR, voice entry, Gmail scraping, per-item splitting
 - Bit / PayBox deep links
-- Natural-language querying (Text-to-SQL)
 
 ## Demo data
 

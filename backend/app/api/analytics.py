@@ -10,7 +10,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 
-from app.core.deps import DbSession, GroupMembership
+from app.core.deps import DbSession, GroupMembership, ReadOnlyConnection
 from app.domain.anomalies import AnomalyDirection
 from app.schemas.analytics import (
     AnomalyOut,
@@ -24,8 +24,9 @@ from app.schemas.analytics import (
     MonthPointOut,
     SummaryOut,
 )
+from app.schemas.nl_query import AskRequest, AskResponse
 from app.schemas.user import UserOut
-from app.services import analytics_service, anomaly_service
+from app.services import analytics_service, anomaly_service, nl_query_service
 
 router = APIRouter(prefix="/groups", tags=["analytics"])
 
@@ -170,4 +171,32 @@ def get_anomalies(
             )
             for a in found
         ],
+    )
+
+
+@router.post("/{group_id}/analytics/ask", response_model=AskResponse)
+def ask_question(
+    payload: AskRequest,
+    membership: GroupMembership,
+    readonly: ReadOnlyConnection,
+) -> AskResponse:
+    """Ask a question about this group's spending in plain language.
+
+    Claude translates the question into a single PostgreSQL SELECT, which is
+    then validated against an allowlist, wrapped so it can only see this group's
+    data, and run in a read-only transaction with a statement timeout and a row
+    cap. The SQL that ran comes back in the response so the answer can be
+    checked rather than taken on faith.
+
+    Returns 503 when the server has no Anthropic API key configured.
+    """
+    result = nl_query_service.ask(readonly, membership.group, question=payload.question)
+    return AskResponse(
+        question=result.question,
+        sql=result.sql,
+        explanation=result.explanation,
+        columns=result.columns,
+        rows=result.rows,
+        row_count=result.row_count,
+        truncated=result.truncated,
     )

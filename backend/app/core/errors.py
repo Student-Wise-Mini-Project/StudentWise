@@ -33,3 +33,9 @@ class NotFoundError(AppError):
 
 class ConflictError(AppError):
     status_code = 409
+
+
+class ServiceUnavailableError(AppError):
+    """A dependency this endpoint needs is not configured or is down."""
+
+    status_code = 503
