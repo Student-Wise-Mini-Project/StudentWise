@@ -154,7 +154,7 @@ def list_expenses(
     return items, repo.count_by_group(group.id, **filters)
 
 
-def create_expense(
+def build_expense(
     db: Session,
     group: Group,
     *,
@@ -169,23 +169,14 @@ def create_expense(
     notes: str | None = None,
     source: ExpenseSource = ExpenseSource.MANUAL,
     apply_split_rule: bool = True,
-    idempotency_key: str | None = None,
-    request_fingerprint: str | None = None,
 ) -> Expense:
-    claim = None
-    if idempotency_key and request_fingerprint:
-        outcome = idempotency_service.claim(
-            db,
-            user=creator,
-            scope=f"expenses:{group.id}",
-            key=idempotency_key,
-            request_fingerprint=request_fingerprint,
-        )
-        if isinstance(outcome, idempotency_service.Replay):
-            # The first request already did this. Same answer, no second expense.
-            return get_expense(db, outcome.resource_id)
-        claim = outcome
+    """Everything creating an expense involves, except the commit.
 
+    Split here so a recurring bill can post several months in one transaction,
+    and so anything that creates an expense on the way to doing something else
+    cannot accidentally commit half of it. `create_expense` is this plus the
+    commit; nothing else should reimplement any of it.
+    """
     rule: SplitRule | None = None
     if apply_split_rule:
         rule, participants, split_type = _apply_split_rule(
@@ -227,6 +218,56 @@ def create_expense(
     # month's total; before the commit, so an alert and the expense that caused
     # it land together.
     budget_service.check_after_expense(db, group, expense)
+    return expense
+
+
+def create_expense(
+    db: Session,
+    group: Group,
+    *,
+    creator: User,
+    payer_id: uuid.UUID,
+    title: str,
+    total_amount: Decimal,
+    expense_date: date,
+    split_type: SplitType,
+    participants: list[ParticipantSpec] | None = None,
+    category: ExpenseCategory | None = None,
+    notes: str | None = None,
+    source: ExpenseSource = ExpenseSource.MANUAL,
+    apply_split_rule: bool = True,
+    idempotency_key: str | None = None,
+    request_fingerprint: str | None = None,
+) -> Expense:
+    claim = None
+    if idempotency_key and request_fingerprint:
+        outcome = idempotency_service.claim(
+            db,
+            user=creator,
+            scope=f"expenses:{group.id}",
+            key=idempotency_key,
+            request_fingerprint=request_fingerprint,
+        )
+        if isinstance(outcome, idempotency_service.Replay):
+            # The first request already did this. Same answer, no second expense.
+            return get_expense(db, outcome.resource_id)
+        claim = outcome
+
+    expense = build_expense(
+        db,
+        group,
+        creator=creator,
+        payer_id=payer_id,
+        title=title,
+        total_amount=total_amount,
+        expense_date=expense_date,
+        split_type=split_type,
+        participants=participants,
+        category=category,
+        notes=notes,
+        source=source,
+        apply_split_rule=apply_split_rule,
+    )
     if claim is not None:
         claim.resource_id = expense.id
     db.commit()

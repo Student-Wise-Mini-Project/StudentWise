@@ -3,7 +3,7 @@
 Everything the project needs, A to Z, split into **epics** (features) and
 **missions** (a task one person can finish and merge).
 
-**Status as of 2026-09-10:** 44 endpoints · 8 tables · 437 tests · 5 migrations ·
+**Status as of 2026-09-10:** 60 endpoints · 14 tables · 646 tests · 9 migrations ·
 CI green.
 
 | Marker | Meaning |
@@ -28,21 +28,24 @@ touch the same file.
 | 0. Ways of working | 5 | 2 | 🚫 both blocked on GitHub, not on us |
 | 1. Backend foundation | 5 | 0 | ✅ complete |
 | 2. Core domain (Splitwise parity) | 13 | 0 | ✅ complete |
-| 3. Algorithms | 3 | 1 | mostly done |
-| 4. Analytics & intelligence | 3 | 3 | mostly done |
+| 3. Algorithms | 4 | 0 | ✅ complete |
+| 4. Analytics & intelligence | 5 | 1 | 🚫 only 4.4, blocked on a key |
 | 5. AI ingestion (Module 1) | 1 | 8 | started |
-| 6. Recurring & automation | 0 | 4 | ⬜ not started |
+| 6. Recurring & automation | 4 | 0 | ✅ complete |
 | 7. Payments (Bit / PayBox) | 0 | 3 | ⬜ not started |
 | 8. AI chat assistant / RAG | 0 | 4 | ⬜ not started |
 | 9. Frontend | 0 | 12 | ⬜ not started |
 | 10. Deployment | 0 | 6 | ⬜ not started |
 | 11. Academic deliverables | 1 | 4 | started |
-| **Total** | **31** | **47** | |
+| **Total** | **38** | **40** | |
 
-**The honest read:** the backend is now complete for Splitwise parity — nothing
-in Epic 2 is left. What remains is **breadth**: a frontend that does not exist
-yet, AI ingestion, and deployment. Epic 9 is the critical path to having
-something demoable, and it is not blocked by anything.
+**The honest read:** the backend is essentially done. Epics 1, 2, 3 and 6 are
+complete and Epic 4 has only its blocked mission left. Everything remaining is
+either **somebody else's** (Epic 5 AI ingestion, Epic 9 frontend) or waiting on
+a decision (Epic 10 hosting).
+
+Epic 9 is now unambiguously the critical path: 12 missions, none started, and
+nothing blocking them. There is a great deal of API and still no interface.
 
 ---
 
@@ -140,11 +143,23 @@ Decisions from 2.9–2.13 worth keeping:
 | 3.1 | Balances: `paid − owed + sent − received`, sums to zero | M | Gal | ✅ |
 | 3.2 | Min-cash-flow — **provably minimal** to 14 people | L | Gal | ✅ |
 | 3.3 | Dynamic weighting via `default_split_weight` | S | Gal | ✅ |
-| 3.4 | **Rule engine**: rent by room size, cost by nights stayed | L | Gal | ⬜ |
+| 3.4 | **Rule engine**: rent by room size, cost by nights stayed | L | Gal | ✅ |
 
-> 3.4 is the one part of your original spec's "מחשבון שקלול הוצאות דינמי" that
-> `WEIGHT` splits do not already cover: rules that apply *automatically* to
+**Epic 3 is complete.**
+
+> 3.4 was the one part of the original spec's "מחשבון שקלול הוצאות דינמי" that
+> `WEIGHT` splits did not already cover: rules that apply *automatically* to
 > future expenses rather than weights typed per expense.
+>
+> Weights, not percentages — percentages are weights that must add to 100, so
+> supporting both would be two ways of saying one thing. Square metres and
+> nights stayed are numbers people already have.
+>
+> **Whoever names participants wins.** A rule only fills the gap left by not
+> naming them, so an expense that says who is on it is never quietly re-split.
+> A rule whose members have partly left reweights the rest; one nobody is left
+> in is ignored rather than fatal, because falling back to an equal split beats
+> refusing to record rent.
 
 ---
 
@@ -156,17 +171,24 @@ Decisions from 2.9–2.13 worth keeping:
 | 4.2 | Anomaly detection (median + MAD, no AI) | M | Gal | ✅ |
 | 4.3 | Text-to-SQL with a sandboxed executor | XL | Gal | ✅ |
 | 4.4 | **Verify the Text-to-SQL prompt against the real model** | M | Gal | 🚫 |
-| 4.5 | **Duplicate-payment detection** ("did we pay this twice?") | M | Gal | ⬜ |
-| 4.6 | Budgets per category + over-budget alerts | M | Gal | ⬜ |
+| 4.5 | **Duplicate-payment detection** ("did we pay this twice?") | M | Gal | ✅ |
+| 4.6 | Budgets per category + over-budget alerts | M | Gal | ✅ |
 
 > 4.4 is blocked on an `ANTHROPIC_API_KEY`. Everything downstream of Claude is
 > tested with a stub; the **quality of the generated SQL is currently unmeasured**.
 > Build a set of ~20 real questions with expected answers and measure it — that
 > evidence is worth a lot in a viva.
 >
-> 4.5 is explicitly in your spec ("check double payment") and is *not* the same
-> as 4.2: a duplicate is two similar expenses close together, not a statistical
-> outlier.
+> 4.5 shipped as **two** things, because "did we pay this twice?" has two
+> halves. `Idempotency-Key` on expense and settlement creation stops the network
+> kind — a phone that loses a reply and retries. `analytics/duplicates` finds the
+> human kind: two people paying the same bill, one person tapping Add twice, a
+> bill recorded again under a different name. The three-day window is what keeps
+> January rent from being flagged against February rent.
+>
+> 4.6's alerts fire **once per budget per month per level**. Without that the
+> twelfth expense over the line raises a twelfth notification and everyone stops
+> reading them.
 
 ---
 
@@ -206,13 +228,30 @@ from an image that is already on the server.**
 
 | # | Mission | Size | Owner | Status |
 |---|---|---|---|---|
-| 6.1 | `recurring_bills` table + migration | S | Gal | ⬜ |
-| 6.2 | Recurring bills CRUD (monthly / bi-monthly / yearly) | M | Gal | ⬜ |
-| 6.3 | Generate the next expense when a bill falls due | M | Gal | ⬜ |
-| 6.4 | Due-date reminders | M | Gal | ⬜ |
+| 6.1 | `recurring_bills` table + migration | S | Gal | ✅ |
+| 6.2 | Recurring bills CRUD (monthly / every 2 months / quarterly / yearly) | M | Gal | ✅ |
+| 6.3 | Generate the next expense when a bill falls due | M | Gal | ✅ |
+| 6.4 | Due-date reminders | M | Gal | ✅ |
 
+**Epic 6 is complete.**
+
+> **The distinction the epic turns on:** a bill's `amount` may be null. Rent is
+> 3600 every month and posts itself; electricity is whatever the meter says, so
+> that bill reminds somebody and never invents a number. A design that only
+> handled fixed amounts would have been useless for exactly the bills people
+> argue about.
+>
+> **Nothing runs on a scheduler.** No Celery, no APScheduler — a service to keep
+> alive for the sake of a `while` loop. The work is idempotent and triggered
+> instead: the app calls `POST .../recurring-bills/run` on load, and
+> `backend/run_due_bills.py` is there for a real cron. A bill months overdue
+> posts one expense per period it missed.
+>
+> "Bi-monthly" became **`EVERY_2_MONTHS`**: half the world reads bi-monthly as
+> twice a month, and Israeli utility bills arrive every two.
+>
 > Anomaly detection already groups expenses by title, so recurring bills feed it
-> for free — no rework needed there.
+> for free — confirmed, no rework was needed.
 
 ---
 
@@ -322,6 +361,18 @@ with no interface is hard to demo whatever the API does.
   order because Postgres gives every row in a transaction the same `now()`. A
   two-line default change, and a good illustration of a bug that only appears
   when one action writes several rows.
+- **A bug that passed every test twice.** `Enum(native_enum=False)` stores a
+  VARCHAR plus a CHECK constraint. Adding a member to the Python enum changes
+  nothing about the column, so autogenerate writes no migration and
+  `alembic check` stays clean — while the database goes on rejecting the value.
+  Two enums had drifted. Nothing caught it because the test schema was built
+  with `create_all` from the models rather than by migrating. The test database
+  is now built by running the migrations, and a test compares every enum against
+  its CHECK constraint. Worth writing up as *what our tests were not testing*.
+- Min-cash-flow, exact-cent splitting and the sandbox findings above all rest on
+  measurements rather than assertions. So does the duplicate detector's
+  three-day window, which is the parameter that decides whether it is useful or
+  noise.
 
 ---
 
@@ -337,6 +388,9 @@ with no interface is hard to demo whatever the API does.
 5. 0.6 — apply for the Student Developer Pack, then run the one command in
    `.github/branch-protection.md`
 
+**The backend is no longer the constraint.** Nothing in Epics 9 or 5 is waiting
+on it; both can start the moment 0.5 is done.
+
 **Week 2 — make it demoable**
 
 6. 9.4–9.7 — groups, expenses, balances screens
@@ -345,5 +399,5 @@ with no interface is hard to demo whatever the API does.
 8. 4.4 — measure Text-to-SQL quality once a key exists
 9. 10.2 + 10.3 — get it deployed somewhere real
 
-**Deliberately deferred:** Epic 8 (RAG), 9.12 (APK), 6.4 and 2.13 (reminders),
-3.4 (rule engine). All are real features, none is on the path to a working demo.
+**Deliberately deferred:** Epic 8 (RAG) and 9.12 (APK). Both are real features;
+neither is on the path to a working demo.

@@ -34,6 +34,28 @@ Paged: `/groups/{id}/expenses`, `/groups/{id}/settlements`,
 `/expenses/{id}/comments`, `/activity`, `/groups/{id}/activity`,
 `/notifications`.
 
+### Retrying safely: `Idempotency-Key`
+
+`POST /groups/{id}/expenses` and `POST /groups/{id}/settlements` accept an
+optional **`Idempotency-Key`** header (any string up to 200 characters; a UUID
+per user action is the obvious choice).
+
+Send the same key when retrying a request whose reply never arrived, and you get
+the original resource back rather than a second one. A phone on the underground
+that sends rent, loses the reply and retries would otherwise pay rent twice.
+
+- same key, same body -> **201** with the *first* request's resource
+- same key, different body -> **409**. That is a client bug, and answering with
+  the wrong resource would hide it
+- a request that failed -> the key is released, so fixing a typo and sending
+  again under the same key works
+
+Keys are remembered per user and per endpoint, so two people picking `"1"` never
+collide and nobody reaches someone else's resource by guessing.
+
+Without the header nothing is deduplicated -- people really do buy the same
+coffee twice.
+
 | Status | Meaning |
 |---|---|
 | 400 | The request made sense but broke a rule (splits don't add up, payer isn't a member) |
@@ -111,9 +133,13 @@ ExpenseCreate = {
   split_type?: "EQUAL"|"EXACT"|"PERCENTAGE"|"WEIGHT",   // default EQUAL
   participants?: [{ user_id, share_value? }],           // omit = everyone active
   category?: ExpenseCategory,                           // omit = null
-  notes?, source?: "MANUAL"|"VOICE"|"OCR"|"GMAIL_API"
+  notes?, source?: "MANUAL"|"VOICE"|"OCR"|"GMAIL_API"|"RECURRING",
+  apply_split_rule?: boolean                            // default true
 }
 ```
+
+`source` is `RECURRING` when a schedule posted the expense rather than a person
+(see Recurring bills).
 
 ### Categories
 
@@ -207,6 +233,147 @@ Recording that someone actually paid someone back.
 `to_user_id` must differ, `amount` must be > 0, and both people must belong to
 the group — including someone who has left, since leaving does not erase a debt.
 
+## Split rules
+
+How a group has agreed to divide certain expenses, **automatically and from now
+on**. A `WEIGHT` split already lets you type weights on one expense; a rule is
+the same arithmetic agreed once.
+
+| Method | Path | Body | Notes |
+|---|---|---|---|
+| GET | `/groups/{group_id}/split-rules` | -- | Any member |
+| POST | `/groups/{group_id}/split-rules` | `{name, category?, shares}` | 201. **Owner only** |
+| PATCH | `/groups/{group_id}/split-rules/{rule_id}` | `{name?, shares?}` | Owner only |
+| DELETE | `/groups/{group_id}/split-rules/{rule_id}` | -- | 204. Owner only |
+
+```
+SplitRule = {
+  id, group_id, name, category,
+  shares: [{ user: User, weight }],
+  share_percent: { "<user id>": "38.9" },   // what the weights work out to
+  created_by, created_at
+}
+```
+
+Weights, not percentages: percentages are weights that have to add up to 100, so
+supporting both would be two ways of saying one thing. **Square metres and
+nights stayed are numbers people already have.**
+
+- *Rent by room size* -- `category: "RENT"`, weights `14 / 12 / 10`
+- *Nights stayed* -- no category, so it claims every expense on the trip
+
+A group can hold **one rule per category plus one catch-all**. A named rule beats
+the catch-all. An expense with no category can only match the catch-all --
+guessing which named rule an uncategorised expense meant would be worse than
+applying none.
+
+**Whoever names participants wins.** A rule only fills the gap left by not
+naming them, so an expense that says exactly who is on it is never quietly
+re-split. Send `apply_split_rule: false` to force a plain split for one expense.
+
+Two things that keep working when people move out:
+
+- a rule whose members have partly left drops the departed shares and reweights
+  the rest -- the remaining rooms are still the sizes they were
+- a rule nobody is left in is ignored rather than fatal
+
+Rules apply when an expense is **created**, not when it is edited: recategorising
+an expense is a correction, not an instruction to redivide money already
+recorded. Deleting a rule leaves every expense it split exactly as it was;
+`Expense.split_rule` just becomes `null`.
+
+`category` cannot be edited. Delete and recreate, so a change that alters what
+every future expense costs is a deliberate act.
+
+## Budgets
+
+| Method | Path | Body | Notes |
+|---|---|---|---|
+| GET | `/groups/{group_id}/budgets?month=YYYY-MM` | -- | Any member. Defaults to this month |
+| POST | `/groups/{group_id}/budgets` | `{category?, amount}` | 201. **Owner only** |
+| PATCH | `/groups/{group_id}/budgets/{budget_id}` | `{amount}` | Owner only |
+| DELETE | `/groups/{group_id}/budgets/{budget_id}` | -- | 204. Owner only |
+
+```
+BudgetReport = { group_id, currency, month, budgets: BudgetStatus[] }
+BudgetStatus = {
+  budget: { id, group_id, category, amount, period, created_by, created_at },
+  month, spent, remaining, share_used, level: "OK"|"WARNING"|"EXCEEDED"
+}
+```
+
+One budget per category, plus an optional ceiling on the whole group
+(`category` omitted). Spending is measured on **expense totals**, not on any one
+person's share: a budget is a limit on what leaves the household.
+
+A budget on `OTHER` also counts expenses nobody categorised, exactly as the
+analytics endpoints fold them in.
+
+`remaining` goes **negative** once the budget is blown, because "how far over are
+we" is the number people want. Spending *exactly* the limit is `EXCEEDED`, not
+`OK` -- the next coffee is over it. `WARNING` starts at 80%.
+
+**Alerts fire once per budget per month per level**, as notifications to every
+member, at the moment an expense trips them. Otherwise the twelfth expense over
+the line raises a twelfth notification and everyone stops reading them. Changing
+a budget clears its alert state, so raising one that was already blown can speak
+up again.
+
+## Recurring bills
+
+Rent, electricity, water, the internet. A bill is a **template plus a schedule**;
+when it falls due it becomes an ordinary expense with ordinary splits.
+
+| Method | Path | Body | Notes |
+|---|---|---|---|
+| GET | `/groups/{group_id}/recurring-bills` | -- | Soonest due first |
+| POST | `/groups/{group_id}/recurring-bills` | `RecurringBillCreate` | 201. Any member |
+| GET | `/groups/{group_id}/recurring-bills/{bill_id}` | -- | |
+| PATCH | `/groups/{group_id}/recurring-bills/{bill_id}` | any subset | `active: false` pauses it |
+| DELETE | `/groups/{group_id}/recurring-bills/{bill_id}` | -- | 204. Expenses already posted stay |
+| POST | `/groups/{group_id}/recurring-bills/{bill_id}/generate` | `{amount?, expense_date?}` | 201, returns the `Expense` |
+| POST | `/groups/{group_id}/recurring-bills/run` | -- | Post everything due, remind about the rest |
+
+```
+RecurringBillCreate = {
+  title, frequency: "MONTHLY"|"EVERY_2_MONTHS"|"QUARTERLY"|"YEARLY",
+  first_due_on, payer_id,
+  amount?,                              // omit when the amount varies
+  category?, split_type?, participants?, reminder_days_before?   // default 3
+}
+RecurringBill = { ...the above, plus:
+  id, group_id, payer: User, next_due_on, anchor_day, active,
+  last_generated_on, posts_itself, participants, created_by, created_at }
+RunResult = { generated: Expense[], awaiting_amount: RecurringBill[], reminded: RecurringBill[] }
+```
+
+**`amount` is the distinction the whole feature turns on.**
+
+- **Rent is 3600 every month.** The amount is known, so the bill posts itself.
+- **Electricity is whatever the meter says.** No amount, so the bill *reminds*
+  and never invents a number. Record it with `/generate` and an `amount`; without
+  one that is a 400.
+
+Leaving `participants` out means everyone active -- or whatever the group's
+standing split rule says. That is how *rent, monthly* and *rent by room size*
+combine into rent that posts itself on the right proportions.
+
+`first_due_on` cannot be in the past: a schedule nobody has seen yet should not
+conjure up months of back-dated expenses on its first run.
+
+**Nothing runs on a scheduler.** Something has to call `run`: the app on load, or
+`python run_due_bills.py` from cron. It is safe to call as often as you like --
+a bill already posted for its due date has moved on, and a reminder already sent
+is not sent again. A bill months overdue posts one expense per period it missed,
+because each of those months really did have a rent payment in it.
+
+Posting the same bill twice for one date is a **409**, enforced by a unique index
+rather than a hopeful check. Expenses are attributed to whoever **set the bill
+up**, not to whoever triggered the run.
+
+Bills due on the 31st stay on the 31st: February clamps to the 28th and March
+goes back to the 31st, rather than the bill walking backwards through the year.
+
 ## Comments
 
 A thread hanging off one expense -- where "this was only me and Dana" gets said.
@@ -276,8 +443,8 @@ Notification = {
 }
 ```
 
-`kind` is `EXPENSE_ADDED`, `COMMENT_ADDED`, `SETTLEMENT_RECORDED` or
-`PAYMENT_REMINDER`.
+`kind` is `EXPENSE_ADDED`, `COMMENT_ADDED`, `SETTLEMENT_RECORDED`,
+`PAYMENT_REMINDER`, `BUDGET_WARNING`, `BUDGET_EXCEEDED` or `BILL_DUE`.
 
 Who gets told what:
 
@@ -285,6 +452,11 @@ Who gets told what:
 - **a comment** -- everyone on the expense, plus anyone already in the thread
 - **a settlement** -- the other person
 - **a reminder** -- the person who owes
+- **a budget** -- every member, including whoever spent the money
+- **a bill due** -- every member
+
+Budget and bill notifications have **`actor: null`**. Nobody did those; a
+threshold and a calendar did.
 
 **`title` and `body` are rendered per request, not stored**, and they are English
 for now. `payload` carries the same facts in structured form (`actor_name`,
@@ -421,6 +593,39 @@ built from.** Asking for just last month still compares against the full history
 No AI is involved. It is a median + median-absolute-deviation test, which stays
 meaningful on the dozen or so observations a real flatshare produces.
 
+### Duplicate payments
+
+`GET /groups/{group_id}/analytics/duplicates` -- pairs of expenses that look like
+the same payment entered twice, likeliest first. Accepts `date_from`, `date_to`,
+`window_days` (0-31, default 3) and `min_score` (0-1, default 0.60).
+
+```
+DuplicateReport = { group_id, currency, window_days, pairs: [{
+  score, day_gap, same_payer, reasons: string[],
+  first: { id, title, total_amount, expense_date, category, payer },
+  second: { ...the same }
+}] }
+```
+
+**Not the same question as anomalies.** `analytics/anomalies` asks whether *one*
+expense is unlike its own history. This asks whether *two* expenses are the same
+event, which needs money, timing and wording to agree at once.
+
+The three things it is built to catch: two people paying the same bill, one
+person tapping *Add* twice, and a bill recorded again under a slightly different
+name. Every pair carries plain sentences saying why it was flagged, because a
+confidence number on its own is not something anyone can act on.
+
+The three-day window is what stops January rent being reported as a duplicate of
+February rent. Widen it with `window_days` if you mean to.
+
+**Suggestions only -- nothing is deleted or merged.** Two coffees at 12.00 on the
+same day look exactly like a double tap and are not one. To stop duplicates being
+recorded in the first place, use `Idempotency-Key`.
+
+Dates narrow what is *reported*, never what is searched: a duplicate straddles
+dates, so a pair is kept when either side falls in range.
+
 ### Ask a question (natural language)
 
 `POST /groups/{group_id}/analytics/ask` with `{"question": "..."}` (3-500 chars).
@@ -458,7 +663,6 @@ Do not build UI against these; they don't exist:
 - Receipt **OCR** (uploading a receipt image works; reading one does not),
   voice entry, Gmail scraping, per-item splitting
 - Bit / PayBox deep links
-- Recurring bills, budgets, duplicate-payment detection
 
 ## Demo data
 

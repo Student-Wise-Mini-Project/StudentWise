@@ -11,8 +11,12 @@ from app.db import Base
 
 config = context.config
 
+# The test suite migrates its own database by passing a url through here, so an
+# explicit override wins over the configured one.
+database_url = config.get_main_option("sqlalchemy.url", None) or settings.database_url
+
 # `%` is configparser's interpolation character, so escape it before injecting the URL.
-config.set_main_option("sqlalchemy.url", settings.database_url.replace("%", "%%"))
+config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -22,7 +26,7 @@ target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
     context.configure(
-        url=settings.database_url,
+        url=database_url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},

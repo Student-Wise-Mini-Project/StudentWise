@@ -301,6 +301,15 @@ def render(notification: Notification) -> RenderedNotification:
         case NotificationKind.PAYMENT_REMINDER:
             title = f"{actor} is waiting to be paid back"
             body = f"You owe {payload.get('amount', '?')} {currency} in {group}."
+        case NotificationKind.BILL_DUE:
+            bill = payload.get("bill_title", "A bill")
+            when = payload.get("due_on", "soon")
+            if payload.get("needs_amount"):
+                title = f"{bill} is due -- somebody needs to enter the amount"
+                body = f"Due {when} in {group}. The amount varies, so nothing was posted."
+            else:
+                title = f"{bill} is due"
+                body = f"{payload.get('amount', '?')} {currency} on {when} in {group}."
         case NotificationKind.BUDGET_WARNING | NotificationKind.BUDGET_EXCEEDED:
             scope = payload.get("category") or "overall"
             over = notification.kind is NotificationKind.BUDGET_EXCEEDED
@@ -355,6 +364,44 @@ def record_budget_alert(
                     "share_used": str(share_used),
                     "currency": group.currency,
                     "month": month,
+                },
+            )
+            for user_id in sorted(recipients, key=str)
+        ]
+    )
+
+
+def record_bill_due(
+    db: Session,
+    group: Group,
+    *,
+    kind: NotificationKind,
+    recipients: Iterable[uuid.UUID],
+    bill_title: str,
+    due_on: str,
+    amount: Decimal | None,
+    needs_amount: bool,
+) -> None:
+    """Tell the group a recurring bill is due, or nearly.
+
+    `needs_amount` is the whole point of the distinction: a bill with a fixed
+    amount posts itself and this is a courtesy, while a bill whose amount varies
+    is waiting for somebody to read the meter.
+    """
+    NotificationRepository(db).add_all(
+        [
+            Notification(
+                user_id=user_id,
+                actor_id=None,  # a calendar did this, not a person
+                group_id=group.id,
+                kind=kind,
+                payload={
+                    "group_name": group.name,
+                    "bill_title": bill_title,
+                    "due_on": due_on,
+                    "amount": _money(amount) if amount is not None else None,
+                    "needs_amount": needs_amount,
+                    "currency": group.currency,
                 },
             )
             for user_id in sorted(recipients, key=str)
