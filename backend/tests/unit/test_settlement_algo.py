@@ -142,3 +142,91 @@ def test_random_balances_always_settle(seed: int):
     # The last person absorbs the remainder so the group nets to zero.
     raw.append(-sum(raw))
     check_settles(dict(zip(people, raw, strict=True)))
+
+
+# --- exactness -----------------------------------------------------------
+
+
+def brute_force_minimum(values: list[int]) -> int:
+    """Independent reference: n - (max disjoint zero-sum subgroups), by DP.
+
+    Deliberately written differently from the implementation so it is a real
+    check rather than a restatement.
+    """
+    from functools import cache
+
+    non_zero = [v for v in values if v != 0]
+    n = len(non_zero)
+    if n == 0:
+        return 0
+    totals = [0] * (1 << n)
+    for mask in range(1 << n):
+        totals[mask] = sum(non_zero[i] for i in range(n) if mask >> i & 1)
+
+    @cache
+    def most_groups(mask: int) -> int:
+        if mask == 0:
+            return 0
+        low = mask & -mask
+        rest = mask ^ low
+        best = 0
+        sub = rest
+        while True:
+            group = sub | low
+            if totals[group] == 0:
+                best = max(best, 1 + most_groups(mask ^ group))
+            if sub == 0:
+                break
+            sub = (sub - 1) & rest
+        return best
+
+    return n - most_groups((1 << n) - 1)
+
+
+def count_for(values: list[int]) -> int:
+    people = ids(len(values))
+    nets = {u: Decimal(v) for u, v in zip(people, values, strict=True)}
+    return len(minimise_transfers(nets))
+
+
+def test_a_case_the_plain_greedy_got_wrong():
+    """Greedy alone needed 5 transfers here; the exact partition needs 4."""
+    values = [-4, -2, -8, -7, 11, 10]
+    assert count_for(values) == 4
+    assert brute_force_minimum(values) == 4
+
+
+def test_two_hidden_zero_sum_subgroups_are_found():
+    """{+4,-1,-3} twice -- no two members cancel, so only a real partition
+    search finds the two subgroups."""
+    values = [4, -1, -3, 4, -1, -3]
+    assert count_for(values) == 4
+
+
+@pytest.mark.parametrize("seed", range(40))
+def test_matches_the_brute_force_minimum(seed: int):
+    import random
+
+    rng = random.Random(1000 + seed)
+    n = rng.randint(2, 9)
+    values = [rng.randint(-60, 60) for _ in range(n - 1)]
+    values.append(-sum(values))
+    if all(v == 0 for v in values):
+        return
+    assert count_for(values) == brute_force_minimum(values)
+
+
+def test_large_groups_fall_back_but_still_settle():
+    """Above MAX_EXACT_PEOPLE we stop being provably minimal, but the plan must
+    still be correct and bounded by n-1."""
+    import random
+
+    from app.domain.settlement_algo import MAX_EXACT_PEOPLE
+
+    rng = random.Random(99)
+    n = MAX_EXACT_PEOPLE + 6
+    values = [rng.randint(-5000, 5000) for _ in range(n - 1)]
+    values.append(-sum(values))
+    people = ids(n)
+    nets = {u: Decimal(v) / 100 for u, v in zip(people, values, strict=True)}
+    check_settles(nets)

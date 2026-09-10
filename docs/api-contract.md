@@ -172,11 +172,11 @@ SettlementPlan = { group_id, currency, transfers: [{ from_user, to_user, amount 
 actually happened, POST it to `/groups/{id}/settlements`; that is what moves the
 balances. An empty `transfers` list means everyone is square.
 
-The algorithm pairs off exactly-matching debts first, then greedily matches the
-largest debtor against the largest creditor. It never needs more than
-*(people with a non-zero balance) − 1* transfers. Finding the true minimum in
-every case is NP-hard (it is subset-sum), so this is a good plan rather than a
-provably optimal one.
+The plan is the **provably minimum** number of transfers for groups of up to 14
+people with a non-zero balance, which covers every realistic flat, couple or
+trip. Above 14 it falls back to a greedy heuristic that still never exceeds
+*(people with a non-zero balance) − 1* transfers, but is no longer guaranteed
+shortest — finding the true minimum in general is NP-hard (subset-sum).
 
 ## Not built yet (Step 3+)
 
