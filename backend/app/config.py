@@ -1,5 +1,6 @@
 """Application settings, loaded from environment / .env."""
 
+from decimal import Decimal
 from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -31,6 +32,10 @@ class Settings(BaseSettings):
     # store later without touching anything that reads a receipt.
     receipt_storage_dir: str = "var/receipts"
     receipt_max_bytes: int = 5 * 1024 * 1024  # 5 MB -- a phone photo, not a scan
+
+    # Warn once a budget reaches this share of its limit. 0.8 leaves enough
+    # month to do something about it; 0.95 does not.
+    budget_warning_threshold: Decimal = Decimal("0.80")
 
     # Vite dev server and CRA dev server, for the frontend teammate.
     cors_origins: list[str] = [

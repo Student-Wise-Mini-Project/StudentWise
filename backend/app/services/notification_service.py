@@ -301,9 +301,62 @@ def render(notification: Notification) -> RenderedNotification:
         case NotificationKind.PAYMENT_REMINDER:
             title = f"{actor} is waiting to be paid back"
             body = f"You owe {payload.get('amount', '?')} {currency} in {group}."
+        case NotificationKind.BUDGET_WARNING | NotificationKind.BUDGET_EXCEEDED:
+            scope = payload.get("category") or "overall"
+            over = notification.kind is NotificationKind.BUDGET_EXCEEDED
+            title = (
+                f"{group} is over its {scope} budget"
+                if over
+                else f"{group} is close to its {scope} budget"
+            )
+            body = (
+                f"{payload.get('spent', '?')} {currency} of "
+                f"{payload.get('limit', '?')} {currency} "
+                f"({payload.get('share_used', '?')}%) in {payload.get('month', 'this month')}."
+            )
         case _:
             # Unreachable while every kind above is handled, and a loud failure
             # if a new kind is ever added without a branch here.
             raise BadRequestError(f"Cannot render notification kind {notification.kind}")
 
     return RenderedNotification(title=title.strip(), body=" ".join(body.split()))
+
+
+def record_budget_alert(
+    db: Session,
+    group: Group,
+    *,
+    kind: NotificationKind,
+    recipients: Iterable[uuid.UUID],
+    category: str | None,
+    spent: Decimal,
+    limit: Decimal,
+    share_used: Decimal,
+    month: str,
+) -> None:
+    """Tell the group a budget is close to, or past, its limit.
+
+    Everyone hears about this one, including whoever entered the expense that
+    tripped it -- a budget is the group's, not one person's, and the person who
+    just spent the money is the one best placed to do something about it.
+    """
+    NotificationRepository(db).add_all(
+        [
+            Notification(
+                user_id=user_id,
+                actor_id=None,  # nobody did this; an arithmetic threshold did
+                group_id=group.id,
+                kind=kind,
+                payload={
+                    "group_name": group.name,
+                    "category": category,
+                    "spent": _money(spent),
+                    "limit": _money(limit),
+                    "share_used": str(share_used),
+                    "currency": group.currency,
+                    "month": month,
+                },
+            )
+            for user_id in sorted(recipients, key=str)
+        ]
+    )

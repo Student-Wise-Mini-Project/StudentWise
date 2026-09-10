@@ -64,6 +64,17 @@ class SettlementMethod(StrEnum):
     PAYBOX = "PAYBOX"
 
 
+class BudgetPeriod(StrEnum):
+    """How often a budget resets.
+
+    Only monthly for now, and deliberately an enum rather than a bare flag:
+    weekly is a plausible ask, and adding a value to a VARCHAR + CHECK column is
+    a one-line migration.
+    """
+
+    MONTHLY = "MONTHLY"
+
+
 class NotificationKind(StrEnum):
     """Why someone is being told something.
 
@@ -76,6 +87,8 @@ class NotificationKind(StrEnum):
     COMMENT_ADDED = "COMMENT_ADDED"
     SETTLEMENT_RECORDED = "SETTLEMENT_RECORDED"
     PAYMENT_REMINDER = "PAYMENT_REMINDER"
+    BUDGET_WARNING = "BUDGET_WARNING"
+    BUDGET_EXCEEDED = "BUDGET_EXCEEDED"
 
 
 def enum_column(enum_cls: type[StrEnum]) -> SAEnum:

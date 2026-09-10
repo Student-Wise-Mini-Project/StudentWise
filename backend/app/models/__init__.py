@@ -1,7 +1,9 @@
 """All models are imported here so Alembic autogenerate can see them."""
 
+from app.models.budget import Budget
 from app.models.comment import ExpenseComment
 from app.models.enums import (
+    BudgetPeriod,
     ExpenseCategory,
     ExpenseSource,
     GroupType,
@@ -19,6 +21,8 @@ from app.models.split_rule import SplitRule, SplitRuleShare
 from app.models.user import User
 
 __all__ = [
+    "Budget",
+    "BudgetPeriod",
     "Expense",
     "ExpenseCategory",
     "ExpenseComment",
