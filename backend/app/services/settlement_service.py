@@ -13,7 +13,7 @@ from app.models.settlement import Settlement
 from app.models.user import User
 from app.repositories.group_repository import GroupRepository
 from app.repositories.settlement_repository import SettlementRepository
-from app.services import notification_service
+from app.services import idempotency_service, notification_service
 
 
 def _require_member(db: Session, group: Group, user_id: uuid.UUID, label: str) -> None:
@@ -50,7 +50,22 @@ def create_settlement(
     method: SettlementMethod = SettlementMethod.MANUAL,
     note: str | None = None,
     settled_at: datetime | None = None,
+    idempotency_key: str | None = None,
+    request_fingerprint: str | None = None,
 ) -> Settlement:
+    claim = None
+    if idempotency_key and request_fingerprint:
+        outcome = idempotency_service.claim(
+            db,
+            user=creator,
+            scope=f"settlements:{group.id}",
+            key=idempotency_key,
+            request_fingerprint=request_fingerprint,
+        )
+        if isinstance(outcome, idempotency_service.Replay):
+            return get_settlement(db, outcome.resource_id)
+        claim = outcome
+
     if from_user_id == to_user_id:
         raise BadRequestError("A settlement needs two different people")
     if amount <= 0:
@@ -73,6 +88,8 @@ def create_settlement(
 
     SettlementRepository(db).add(settlement)
     notification_service.record_settlement(db, settlement, group, actor=creator)
+    if claim is not None:
+        claim.resource_id = settlement.id
     db.commit()
     db.refresh(settlement)
     return settlement

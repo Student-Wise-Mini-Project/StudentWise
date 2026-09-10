@@ -21,7 +21,7 @@ from app.models.split_rule import SplitRule
 from app.models.user import User
 from app.repositories.expense_repository import ExpenseRepository
 from app.repositories.group_repository import GroupRepository
-from app.services import notification_service, split_rule_service
+from app.services import idempotency_service, notification_service, split_rule_service
 
 
 @dataclass(frozen=True)
@@ -164,7 +164,23 @@ def create_expense(
     notes: str | None = None,
     source: ExpenseSource = ExpenseSource.MANUAL,
     apply_split_rule: bool = True,
+    idempotency_key: str | None = None,
+    request_fingerprint: str | None = None,
 ) -> Expense:
+    claim = None
+    if idempotency_key and request_fingerprint:
+        outcome = idempotency_service.claim(
+            db,
+            user=creator,
+            scope=f"expenses:{group.id}",
+            key=idempotency_key,
+            request_fingerprint=request_fingerprint,
+        )
+        if isinstance(outcome, idempotency_service.Replay):
+            # The first request already did this. Same answer, no second expense.
+            return get_expense(db, outcome.resource_id)
+        claim = outcome
+
     rule: SplitRule | None = None
     if apply_split_rule:
         rule, participants, split_type = _apply_split_rule(
@@ -202,6 +218,8 @@ def create_expense(
     # Same transaction as the expense: nobody should be told about an expense
     # that failed to save, and no expense should land silently.
     notification_service.record_expense_added(db, expense, group, actor=creator)
+    if claim is not None:
+        claim.resource_id = expense.id
     db.commit()
     db.refresh(expense)
     return expense

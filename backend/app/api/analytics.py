@@ -6,17 +6,22 @@ consumed" -- their share of each expense, not what they paid out.
 
 import uuid
 from datetime import date
+from decimal import Decimal
 from typing import Annotated
 
 from fastapi import APIRouter, Query
 
 from app.core.deps import DbSession, GroupMembership, ReadOnlyConnection
 from app.domain.anomalies import AnomalyDirection
+from app.domain.duplicates import DEFAULT_MIN_SCORE, DEFAULT_WINDOW_DAYS
 from app.schemas.analytics import (
     AnomalyOut,
     AnomalyReportOut,
     CategoryBreakdownOut,
     CategorySliceOut,
+    DuplicatePairOut,
+    DuplicateReportOut,
+    DuplicateSideOut,
     ExpenseBrief,
     MemberBreakdownOut,
     MemberSliceOut,
@@ -26,7 +31,12 @@ from app.schemas.analytics import (
 )
 from app.schemas.nl_query import AskRequest, AskResponse
 from app.schemas.user import UserOut
-from app.services import analytics_service, anomaly_service, nl_query_service
+from app.services import (
+    analytics_service,
+    anomaly_service,
+    duplicate_service,
+    nl_query_service,
+)
 
 router = APIRouter(prefix="/groups", tags=["analytics"])
 
@@ -170,6 +180,59 @@ def get_anomalies(
                 direction=a.direction,
             )
             for a in found
+        ],
+    )
+
+
+@router.get("/{group_id}/analytics/duplicates", response_model=DuplicateReportOut)
+def get_duplicates(
+    membership: GroupMembership,
+    db: DbSession,
+    date_from: DateFilter = None,
+    date_to: DateFilter = None,
+    window_days: Annotated[
+        int, Query(ge=0, le=31, description="How far apart two entries can be")
+    ] = DEFAULT_WINDOW_DAYS,
+    min_score: Annotated[
+        Decimal, Query(ge=0, le=1, description="Only report pairs at least this confident")
+    ] = DEFAULT_MIN_SCORE,
+) -> DuplicateReportOut:
+    """Pairs of expenses that look like the same payment entered twice.
+
+    Two people paying the same bill, one person tapping Add twice, or a bill
+    recorded again under a slightly different name. Each pair says *why* it was
+    flagged.
+
+    **Suggestions only** -- nothing is deleted or merged. Two coffees at 12.00
+    on the same day look exactly like a double tap and are not one.
+
+    The whole history is scanned whatever the dates say; `date_from` and
+    `date_to` narrow what is reported. A pair is kept if either side falls in
+    range, so a report never shows half of one.
+    """
+    group = membership.group
+    found = duplicate_service.detect(
+        db,
+        group,
+        date_from=date_from,
+        date_to=date_to,
+        window_days=window_days,
+        min_score=min_score,
+    )
+    return DuplicateReportOut(
+        group_id=group.id,
+        currency=group.currency,
+        window_days=window_days,
+        pairs=[
+            DuplicatePairOut(
+                score=d.score,
+                day_gap=d.day_gap,
+                same_payer=d.same_payer,
+                reasons=list(d.reasons),
+                first=DuplicateSideOut.model_validate(d.first, from_attributes=True),
+                second=DuplicateSideOut.model_validate(d.second, from_attributes=True),
+            )
+            for d in found
         ],
     )
 
