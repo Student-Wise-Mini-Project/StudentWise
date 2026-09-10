@@ -12,3 +12,7 @@ quote-style = "double"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+
+[tool.ruff.lint.isort]
+# The alembic/ directory makes ruff treat `alembic` as a local package otherwise.
+known-third-party = ["alembic"]
