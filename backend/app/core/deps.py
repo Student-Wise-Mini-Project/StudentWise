@@ -12,9 +12,11 @@ from app.core.security import decode_access_token
 from app.db import get_db
 from app.models.expense import Expense
 from app.models.group import GroupMember
+from app.models.settlement import Settlement
 from app.models.user import User
 from app.repositories.expense_repository import ExpenseRepository
 from app.repositories.group_repository import GroupRepository
+from app.repositories.settlement_repository import SettlementRepository
 from app.repositories.user_repository import UserRepository
 
 # tokenUrl makes the /docs "Authorize" button log in for you.
@@ -75,3 +77,22 @@ def get_expense_for_member(
 
 
 ExpenseForMember = Annotated[Expense, Depends(get_expense_for_member)]
+
+
+def get_settlement_for_member(
+    settlement_id: uuid.UUID,
+    db: DbSession,
+    current_user: CurrentUser,
+) -> Settlement:
+    """Resolve a settlement and apply the group membership rule to it."""
+    settlement = SettlementRepository(db).get(settlement_id)
+    if settlement is None:
+        raise NotFoundError("Settlement not found")
+
+    membership = GroupRepository(db).get_membership(settlement.group_id, current_user.id)
+    if membership is None or not membership.is_active:
+        raise ForbiddenError("You are not a member of this group")
+    return settlement
+
+
+SettlementForMember = Annotated[Settlement, Depends(get_settlement_for_member)]

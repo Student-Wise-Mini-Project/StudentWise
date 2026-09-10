@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api import auth, expenses, groups, users
+from app.api import auth, expenses, groups, settlements, users
 from app.config import settings
 from app.core.errors import AppError
 
@@ -43,3 +43,5 @@ app.include_router(users.router, prefix="/api")
 app.include_router(groups.router, prefix="/api")
 app.include_router(expenses.group_router, prefix="/api")
 app.include_router(expenses.router, prefix="/api")
+app.include_router(settlements.group_router, prefix="/api")
+app.include_router(settlements.router, prefix="/api")

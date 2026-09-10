@@ -9,6 +9,7 @@ from app.models.enums import (
 )
 from app.models.expense import Expense, ExpenseSplit
 from app.models.group import Group, GroupMember
+from app.models.settlement import Settlement
 from app.models.user import User
 
 __all__ = [
@@ -19,6 +20,7 @@ __all__ = [
     "GroupMember",
     "GroupType",
     "MemberRole",
+    "Settlement",
     "SettlementMethod",
     "SplitType",
     "User",

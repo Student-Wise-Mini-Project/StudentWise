@@ -1,0 +1,78 @@
+"""Settlement business rules. Owns the transaction."""
+
+import uuid
+from datetime import datetime
+from decimal import Decimal
+
+from sqlalchemy.orm import Session
+
+from app.core.errors import BadRequestError, NotFoundError
+from app.models.enums import SettlementMethod
+from app.models.group import Group
+from app.models.settlement import Settlement
+from app.models.user import User
+from app.repositories.group_repository import GroupRepository
+from app.repositories.settlement_repository import SettlementRepository
+
+
+def _require_member(db: Session, group: Group, user_id: uuid.UUID, label: str) -> None:
+    """Membership is checked without regard to left_at: someone who has left the
+    group can still be owed money, and must still be able to be paid back."""
+    if GroupRepository(db).get_membership(group.id, user_id) is None:
+        raise BadRequestError(f"The {label} is not a member of this group")
+
+
+def get_settlement(db: Session, settlement_id: uuid.UUID) -> Settlement:
+    settlement = SettlementRepository(db).get(settlement_id)
+    if settlement is None:
+        raise NotFoundError("Settlement not found")
+    return settlement
+
+
+def list_settlements(
+    db: Session, group: Group, *, limit: int = 50, offset: int = 0
+) -> list[Settlement]:
+    return SettlementRepository(db).list_by_group(group.id, limit=limit, offset=offset)
+
+
+def create_settlement(
+    db: Session,
+    group: Group,
+    *,
+    creator: User,
+    from_user_id: uuid.UUID,
+    to_user_id: uuid.UUID,
+    amount: Decimal,
+    method: SettlementMethod = SettlementMethod.MANUAL,
+    note: str | None = None,
+    settled_at: datetime | None = None,
+) -> Settlement:
+    if from_user_id == to_user_id:
+        raise BadRequestError("A settlement needs two different people")
+    if amount <= 0:
+        raise BadRequestError("Settlement amount must be greater than zero")
+
+    _require_member(db, group, from_user_id, "payer")
+    _require_member(db, group, to_user_id, "recipient")
+
+    settlement = Settlement(
+        group_id=group.id,
+        from_user_id=from_user_id,
+        to_user_id=to_user_id,
+        amount=amount,
+        method=method,
+        note=note,
+        created_by=creator.id,
+    )
+    if settled_at is not None:
+        settlement.settled_at = settled_at
+
+    SettlementRepository(db).add(settlement)
+    db.commit()
+    db.refresh(settlement)
+    return settlement
+
+
+def delete_settlement(db: Session, settlement: Settlement) -> None:
+    SettlementRepository(db).delete(settlement)
+    db.commit()
