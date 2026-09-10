@@ -21,7 +21,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
-from app.models.enums import ExpenseSource, SplitType, enum_column
+from app.models.enums import ExpenseCategory, ExpenseSource, SplitType, enum_column
 from app.models.group import Group
 from app.models.user import User
 
@@ -45,8 +45,11 @@ class Expense(Base):
 
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     total_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    # Free text on purpose: the AI modules will invent categories we have not thought of.
-    category: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    # Nullable means "nobody said". Analytics folds that in with OTHER so the
+    # chart shows one unknown bucket rather than two.
+    category: Mapped[ExpenseCategory | None] = mapped_column(
+        enum_column(ExpenseCategory), nullable=True
+    )
     expense_date: Mapped[date] = mapped_column(Date, nullable=False)
 
     split_type: Mapped[SplitType] = mapped_column(enum_column(SplitType), nullable=False)

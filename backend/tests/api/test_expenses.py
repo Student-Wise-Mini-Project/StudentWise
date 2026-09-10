@@ -182,6 +182,25 @@ def test_payer_must_be_a_group_member(client, flat, make_user):
     assert response.status_code == 400
 
 
+def test_category_must_be_one_of_the_enum(client, flat):
+    assert post_expense(client, flat, category="PIZZA").status_code == 422
+
+
+def test_category_is_optional(client, flat):
+    response = post_expense(client, flat)
+    assert response.status_code == 201
+    assert response.json()["category"] is None
+
+
+def test_every_category_in_the_enum_is_accepted(client, flat):
+    from app.models.enums import ExpenseCategory
+
+    for category in ExpenseCategory:
+        response = post_expense(client, flat, category=category.value)
+        assert response.status_code == 201, f"{category} rejected: {response.text}"
+        assert response.json()["category"] == category.value
+
+
 def test_non_positive_total_is_rejected(client, flat):
     assert post_expense(client, flat, total_amount="0.00").status_code == 422
 
@@ -215,10 +234,10 @@ def test_list_and_get_expenses(client, flat):
 
 
 def test_list_filters_by_category(client, flat):
-    post_expense(client, flat, category="super")
-    post_expense(client, flat, title="Electricity", category="bills")
+    post_expense(client, flat, category="GROCERIES")
+    post_expense(client, flat, title="Electricity", category="UTILITIES")
     listed = client.get(
-        f"/api/groups/{flat['group_id']}/expenses?category=bills", headers=flat["headers"]
+        f"/api/groups/{flat['group_id']}/expenses?category=UTILITIES", headers=flat["headers"]
     ).json()
     assert [e["title"] for e in listed] == ["Electricity"]
 

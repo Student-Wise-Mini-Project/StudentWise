@@ -11,6 +11,7 @@ from datetime import date
 from fastapi import APIRouter, Query, status
 
 from app.core.deps import CurrentUser, DbSession, ExpenseForMember, GroupMembership
+from app.models.enums import ExpenseCategory
 from app.schemas.expense import ExpenseCreate, ExpenseOut, ExpenseUpdate
 from app.services import expense_service
 from app.services.expense_service import ParticipantSpec
@@ -33,7 +34,7 @@ def list_expenses(
     db: DbSession,
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
-    category: str | None = None,
+    category: ExpenseCategory | None = None,
     payer_id: uuid.UUID | None = None,
     date_from: date | None = None,
     date_to: date | None = None,

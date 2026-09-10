@@ -7,7 +7,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.models.enums import ExpenseSource, SplitType
+from app.models.enums import ExpenseCategory, ExpenseSource, SplitType
 from app.schemas.user import UserOut
 
 
@@ -27,7 +27,7 @@ class ExpenseCreate(BaseModel):
     split_type: SplitType = SplitType.EQUAL
     # Omit to include every active member of the group.
     participants: list[ParticipantIn] | None = None
-    category: str | None = Field(default=None, max_length=64)
+    category: ExpenseCategory | None = None
     notes: str | None = None
     source: ExpenseSource = ExpenseSource.MANUAL
 
@@ -39,7 +39,7 @@ class ExpenseUpdate(BaseModel):
     payer_id: uuid.UUID | None = None
     split_type: SplitType | None = None
     participants: list[ParticipantIn] | None = None
-    category: str | None = Field(default=None, max_length=64)
+    category: ExpenseCategory | None = None
     notes: str | None = None
 
 
@@ -59,7 +59,7 @@ class ExpenseOut(BaseModel):
     payer: UserOut
     title: str
     total_amount: Decimal
-    category: str | None = None
+    category: ExpenseCategory | None = None
     expense_date: date
     split_type: SplitType
     source: ExpenseSource

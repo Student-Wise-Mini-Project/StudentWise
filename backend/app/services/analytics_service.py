@@ -13,6 +13,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from sqlalchemy.orm import Session
 
 from app.core.errors import BadRequestError
+from app.models.enums import ExpenseCategory
 from app.models.expense import Expense
 from app.models.group import Group
 from app.models.user import User
@@ -20,12 +21,11 @@ from app.repositories.analytics_repository import AnalyticsRepository
 from app.repositories.group_repository import GroupRepository
 
 ZERO = Decimal("0.00")
-UNCATEGORISED = "uncategorised"
 
 
 @dataclass(frozen=True)
 class CategorySlice:
-    category: str
+    category: ExpenseCategory
     total: Decimal
     expense_count: int
     share_percent: Decimal
@@ -103,10 +103,20 @@ def by_category(
     rows = AnalyticsRepository(db).by_category(
         group.id, user_id=user_id, date_from=date_from, date_to=date_to
     )
-    total = sum((row[1] for row in rows), ZERO)
-    return [
+
+    # An expense with no category and one explicitly marked OTHER are the same
+    # thing to a reader, so they share a bucket. SQL groups them separately, so
+    # the merge has to happen here or the chart grows two "unknown" slices.
+    merged: dict[ExpenseCategory, tuple[Decimal, int]] = {}
+    for category, amount, count in rows:
+        key = ExpenseCategory(category) if category else ExpenseCategory.OTHER
+        running_total, running_count = merged.get(key, (ZERO, 0))
+        merged[key] = (running_total + amount, running_count + count)
+
+    total = sum((amount for amount, _ in merged.values()), ZERO)
+    slices = [
         CategorySlice(
-            category=category or UNCATEGORISED,
+            category=category,
             total=amount,
             expense_count=count,
             share_percent=(
@@ -115,8 +125,10 @@ def by_category(
                 else ZERO
             ),
         )
-        for category, amount, count in rows
+        for category, (amount, count) in merged.items()
     ]
+    slices.sort(key=lambda s: (-s.total, s.category.value))
+    return slices
 
 
 def by_month(

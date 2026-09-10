@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.core.errors import BadRequestError, NotFoundError
 from app.domain.splitting import ParticipantInput, compute_splits
-from app.models.enums import ExpenseSource, SplitType
+from app.models.enums import ExpenseCategory, ExpenseSource, SplitType
 from app.models.expense import Expense, ExpenseSplit
 from app.models.group import Group, GroupMember
 from app.models.user import User
@@ -91,7 +91,7 @@ def list_expenses(
     *,
     limit: int = 50,
     offset: int = 0,
-    category: str | None = None,
+    category: ExpenseCategory | None = None,
     payer_id: uuid.UUID | None = None,
     date_from: date | None = None,
     date_to: date | None = None,
@@ -118,7 +118,7 @@ def create_expense(
     expense_date: date,
     split_type: SplitType,
     participants: list[ParticipantSpec] | None = None,
-    category: str | None = None,
+    category: ExpenseCategory | None = None,
     notes: str | None = None,
     source: ExpenseSource = ExpenseSource.MANUAL,
 ) -> Expense:
@@ -158,7 +158,7 @@ def update_expense(
     title: str | None = None,
     total_amount: Decimal | None = None,
     expense_date: date | None = None,
-    category: str | None = None,
+    category: ExpenseCategory | None = None,
     notes: str | None = None,
     payer_id: uuid.UUID | None = None,
     split_type: SplitType | None = None,

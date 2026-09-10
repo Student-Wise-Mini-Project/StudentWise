@@ -77,8 +77,8 @@ def test_summary_totals_and_average(client, flat):
 
 
 def test_summary_reports_the_largest_expense(client, flat):
-    add(client, flat, "20.00", category="small")
-    big = add(client, flat, "500.00", category="big")
+    add(client, flat, "20.00", category="TRANSPORT")
+    big = add(client, flat, "500.00", category="RENT")
     body = get(client, flat, "summary").json()
     assert body["largest_expense"]["id"] == big["id"]
     assert Decimal(body["largest_expense"]["total_amount"]) == Decimal("500.00")
@@ -130,31 +130,42 @@ def test_personal_scope_rejects_a_non_member(client, flat, make_user):
 
 
 def test_category_breakdown_sorted_biggest_first(client, flat):
-    add(client, flat, "300.00", category="bills")
-    add(client, flat, "100.00", category="super")
+    add(client, flat, "300.00", category="UTILITIES")
+    add(client, flat, "100.00", category="GROCERIES")
     body = get(client, flat, "by-category").json()
-    assert [c["category"] for c in body["categories"]] == ["bills", "super"]
+    assert [c["category"] for c in body["categories"]] == ["UTILITIES", "GROCERIES"]
     assert Decimal(body["total"]) == Decimal("400.00")
 
 
 def test_category_percentages_add_up(client, flat):
-    add(client, flat, "300.00", category="bills")
-    add(client, flat, "100.00", category="super")
+    add(client, flat, "300.00", category="UTILITIES")
+    add(client, flat, "100.00", category="GROCERIES")
     body = get(client, flat, "by-category").json()
     shares = {c["category"]: Decimal(c["share_percent"]) for c in body["categories"]}
-    assert shares == {"bills": Decimal("75.0"), "super": Decimal("25.0")}
+    assert shares == {"UTILITIES": Decimal("75.0"), "GROCERIES": Decimal("25.0")}
     assert sum(shares.values()) == Decimal("100.0")
 
 
-def test_expenses_without_a_category_are_labelled(client, flat):
+def test_expenses_without_a_category_land_in_other(client, flat):
     add(client, flat, "40.00")
     body = get(client, flat, "by-category").json()
-    assert body["categories"][0]["category"] == "uncategorised"
+    assert body["categories"][0]["category"] == "OTHER"
+
+
+def test_uncategorised_and_explicit_other_share_one_bucket(client, flat):
+    """SQL groups NULL and 'OTHER' separately; the chart must show one slice."""
+    add(client, flat, "30.00")
+    add(client, flat, "70.00", category="OTHER")
+    body = get(client, flat, "by-category").json()
+    assert len(body["categories"]) == 1
+    assert body["categories"][0]["category"] == "OTHER"
+    assert Decimal(body["categories"][0]["total"]) == Decimal("100.00")
+    assert body["categories"][0]["expense_count"] == 2
 
 
 def test_category_counts_expenses(client, flat):
-    add(client, flat, "10.00", category="super")
-    add(client, flat, "20.00", category="super")
+    add(client, flat, "10.00", category="GROCERIES")
+    add(client, flat, "20.00", category="GROCERIES")
     body = get(client, flat, "by-category").json()
     assert body["categories"][0]["expense_count"] == 2
 

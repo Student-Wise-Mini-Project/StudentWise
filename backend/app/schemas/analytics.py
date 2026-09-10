@@ -6,6 +6,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel
 
+from app.models.enums import ExpenseCategory
 from app.schemas.user import UserOut
 
 
@@ -14,7 +15,7 @@ class ExpenseBrief(BaseModel):
     title: str
     total_amount: Decimal
     expense_date: date
-    category: str | None = None
+    category: ExpenseCategory | None = None
 
 
 class SummaryOut(BaseModel):
@@ -31,7 +32,7 @@ class SummaryOut(BaseModel):
 
 
 class CategorySliceOut(BaseModel):
-    category: str
+    category: ExpenseCategory
     total: Decimal
     expense_count: int
     share_percent: Decimal

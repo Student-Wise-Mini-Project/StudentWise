@@ -15,7 +15,13 @@ from decimal import Decimal
 from sqlalchemy import delete
 
 from app.db import SessionLocal
-from app.models.enums import ExpenseSource, GroupType, SettlementMethod, SplitType
+from app.models.enums import (
+    ExpenseCategory,
+    ExpenseSource,
+    GroupType,
+    SettlementMethod,
+    SplitType,
+)
 from app.models.expense import Expense, ExpenseSplit
 from app.models.group import Group, GroupMember
 from app.models.settlement import Settlement
@@ -62,7 +68,7 @@ def main() -> None:
             expense_date=date(2026, 9, 1),
             split_type=SplitType.EQUAL,
             participants=everyone,
-            category="super",
+            category=ExpenseCategory.GROCERIES,
         )
         expense_service.create_expense(
             db,
@@ -74,7 +80,7 @@ def main() -> None:
             expense_date=date(2026, 9, 3),
             split_type=SplitType.EQUAL,
             participants=everyone,
-            category="bills",
+            category=ExpenseCategory.UTILITIES,
         )
         # 100 / 3 -- the rounding case worth eyeballing in the API.
         expense_service.create_expense(
@@ -87,7 +93,7 @@ def main() -> None:
             expense_date=date(2026, 9, 5),
             split_type=SplitType.EQUAL,
             participants=everyone,
-            category="home",
+            category=ExpenseCategory.OTHER,
         )
         # Only two of the three flatmates drink the oat milk.
         expense_service.create_expense(
@@ -100,7 +106,7 @@ def main() -> None:
             expense_date=date(2026, 9, 6),
             split_type=SplitType.EQUAL,
             participants=[ParticipantSpec(user_id=gal.id), ParticipantSpec(user_id=maya.id)],
-            category="super",
+            category=ExpenseCategory.GROCERIES,
         )
         expense_service.create_expense(
             db,
@@ -116,7 +122,7 @@ def main() -> None:
                 ParticipantSpec(user_id=maya.id, share_value=Decimal("50")),
                 ParticipantSpec(user_id=noa.id, share_value=Decimal("20")),
             ],
-            category="bills",
+            category=ExpenseCategory.UTILITIES,
         )
         expense_service.create_expense(
             db,
@@ -132,7 +138,7 @@ def main() -> None:
                 ParticipantSpec(user_id=maya.id, share_value=Decimal("50.00")),
                 ParticipantSpec(user_id=noa.id, share_value=Decimal("43.50")),
             ],
-            category="fun",
+            category=ExpenseCategory.ENTERTAINMENT,
             source=ExpenseSource.MANUAL,
         )
 

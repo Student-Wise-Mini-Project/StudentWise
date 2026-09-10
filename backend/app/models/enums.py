@@ -23,6 +23,27 @@ class MemberRole(StrEnum):
     MEMBER = "MEMBER"
 
 
+class ExpenseCategory(StrEnum):
+    """What an expense was for.
+
+    Deliberately a closed set: free text would fragment the charts, where
+    "super", "Super" and "supermarket" become three slices of the same pie.
+    When the AI modules land they map their free-form guess onto one of these
+    and keep the raw text in `Expense.ai_metadata`, so nothing is lost.
+
+    Stored as VARCHAR + CHECK, so adding a category later is a one-line
+    migration.
+    """
+
+    GROCERIES = "GROCERIES"
+    RENT = "RENT"
+    UTILITIES = "UTILITIES"
+    EATING_OUT = "EATING_OUT"
+    ENTERTAINMENT = "ENTERTAINMENT"
+    TRANSPORT = "TRANSPORT"
+    OTHER = "OTHER"
+
+
 class SplitType(StrEnum):
     EQUAL = "EQUAL"
     EXACT = "EXACT"

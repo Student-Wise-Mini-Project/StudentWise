@@ -92,9 +92,31 @@ ExpenseCreate = {
   title, total_amount, expense_date, payer_id,
   split_type?: "EQUAL"|"EXACT"|"PERCENTAGE"|"WEIGHT",   // default EQUAL
   participants?: [{ user_id, share_value? }],           // omit = everyone active
-  category?, notes?, source?: "MANUAL"|"VOICE"|"OCR"|"GMAIL_API"
+  category?: ExpenseCategory,                           // omit = null
+  notes?, source?: "MANUAL"|"VOICE"|"OCR"|"GMAIL_API"
 }
 ```
+
+### Categories
+
+`category` is **optional** and drawn from a **closed set**:
+
+`GROCERIES` · `RENT` · `UTILITIES` · `EATING_OUT` · `ENTERTAINMENT` · `TRANSPORT` · `OTHER`
+
+Anything else is a 422. There is no endpoint for the list because there does not
+need to be one — it is in the OpenAPI schema as `components.schemas.ExpenseCategory`,
+so a generated client already has it and a dropdown can be built straight from it.
+
+Omitting it stores `null`, meaning "nobody said". Analytics folds `null` in with
+`OTHER` so the chart shows one unknown bucket rather than two.
+
+It is a closed set precisely because the charts depend on it: with free text,
+"super", "Super" and "supermarket" become three slices of the same pie and
+month-over-month comparison quietly breaks. When the AI ingestion modules land
+they will map their free-form guess onto one of these values and keep the raw
+text in `ai_metadata`.
+
+`GET /groups/{id}/expenses?category=UTILITIES` filters by it.
 
 ### How splitting works
 
@@ -210,7 +232,8 @@ a 400.
   September but not July or August, you get all four months back. Drawing a line
   chart straight from raw database rows would join June to September and imply
   spending that never happened.
-- Expenses with no category are reported under `"uncategorised"`.
+- Categories come from the fixed `ExpenseCategory` set. Expenses with no
+  category are merged into the `OTHER` bucket rather than shown separately.
 - **`by-member` is not `/balances`.** It is a spending breakdown (`paid` and
   `consumed`) and nets nothing off against settlements. For who owes whom, use
   `/balances`.

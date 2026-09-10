@@ -6,6 +6,7 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.models.enums import ExpenseCategory
 from app.models.expense import Expense, ExpenseSplit
 
 
@@ -22,7 +23,7 @@ class ExpenseRepository:
         *,
         limit: int = 50,
         offset: int = 0,
-        category: str | None = None,
+        category: ExpenseCategory | None = None,
         payer_id: uuid.UUID | None = None,
         date_from: date | None = None,
         date_to: date | None = None,

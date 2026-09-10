@@ -1,6 +1,7 @@
 """All models are imported here so Alembic autogenerate can see them."""
 
 from app.models.enums import (
+    ExpenseCategory,
     ExpenseSource,
     GroupType,
     MemberRole,
@@ -14,6 +15,7 @@ from app.models.user import User
 
 __all__ = [
     "Expense",
+    "ExpenseCategory",
     "ExpenseSource",
     "ExpenseSplit",
     "Group",
