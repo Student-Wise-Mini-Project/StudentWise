@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api import auth, groups, users
+from app.api import auth, expenses, groups, users
 from app.config import settings
 from app.core.errors import AppError
 
@@ -41,3 +41,5 @@ def health() -> dict[str, str]:
 app.include_router(auth.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(groups.router, prefix="/api")
+app.include_router(expenses.group_router, prefix="/api")
+app.include_router(expenses.router, prefix="/api")
