@@ -16,6 +16,7 @@ from app.models.expense import Expense, ExpenseSplit
 from app.models.group import Group, GroupMember
 from app.models.idempotency import IdempotencyKey
 from app.models.notification import Notification
+from app.models.recurring_bill import RecurringBill, RecurringBillParticipant
 from app.models.settlement import Settlement
 from app.models.split_rule import SplitRule, SplitRuleShare
 from app.models.user import User
@@ -34,6 +35,8 @@ __all__ = [
     "IdempotencyKey",
     "MemberRole",
     "Notification",
+    "RecurringBill",
+    "RecurringBillParticipant",
     "NotificationKind",
     "Settlement",
     "SettlementMethod",

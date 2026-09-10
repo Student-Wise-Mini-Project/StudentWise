@@ -56,6 +56,9 @@ class ExpenseSource(StrEnum):
     VOICE = "VOICE"
     OCR = "OCR"
     GMAIL_API = "GMAIL_API"
+    #: Posted by a schedule rather than by a person. Worth distinguishing in the
+    #: feed: "rent appeared" reads very differently from "somebody added rent".
+    RECURRING = "RECURRING"
 
 
 class SettlementMethod(StrEnum):
@@ -89,6 +92,7 @@ class NotificationKind(StrEnum):
     PAYMENT_REMINDER = "PAYMENT_REMINDER"
     BUDGET_WARNING = "BUDGET_WARNING"
     BUDGET_EXCEEDED = "BUDGET_EXCEEDED"
+    BILL_DUE = "BILL_DUE"
 
 
 def enum_column(enum_cls: type[StrEnum]) -> SAEnum:
