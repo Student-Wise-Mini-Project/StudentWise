@@ -173,3 +173,17 @@ class AnalyticsRepository:
             stmt = stmt.where(Expense.expense_date <= date_to)
         stmt = stmt.group_by(ExpenseSplit.user_id)
         return {user_id: Decimal(total) for user_id, total in self.db.execute(stmt)}
+
+    def expense_history(self, group_id: uuid.UUID) -> list[Expense]:
+        """Every expense in the group, oldest first.
+
+        Anomaly detection needs the whole history to build a baseline, even when
+        the caller only wants to see recent anomalies -- so this deliberately
+        takes no date filter.
+        """
+        stmt = (
+            select(Expense)
+            .where(Expense.group_id == group_id)
+            .order_by(Expense.expense_date, Expense.created_at)
+        )
+        return list(self.db.scalars(stmt).unique())

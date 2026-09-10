@@ -248,13 +248,45 @@ MonthlyTrend   = { group_id, currency, scope, months: [{ month: "YYYY-MM", total
 MemberBreakdown = { group_id, currency, members: [{ user, paid, consumed }] }
 ```
 
+### Anomalies
+
+`GET /groups/{group_id}/analytics/anomalies` — expenses that don't look like
+their own history, worst first. Accepts `direction` (`HIGH` / `LOW`),
+`date_from` and `date_to`.
+
+```
+AnomalyReport = { group_id, currency, anomalies: [{
+  expense, series_label, series_size,
+  baseline, difference, percent_change, score, direction
+}] }
+```
+
+**Series are grouped by title**, normalised for case and spacing — so
+"Electricity bill" is judged against previous electricity bills, not against the
+weekly shop. Category would be too coarse: `UTILITIES` mixes water, electricity
+and gas, and their combined spread hides a spike in any one of them.
+
+A title needs **at least five** occurrences before any of them can be flagged. A
+one-off expense is therefore never an anomaly however large it is — there is no
+history to judge it against. `series_size` tells you how much history there was.
+
+`baseline` is the median of the series' *other* observations, so the reading
+under test never props up its own baseline. Every anomaly is explainable from
+the response alone: *1244.00 against a usual 398.65, +212.1%*.
+
+**`date_from` / `date_to` narrow what is reported, not what the baseline is
+built from.** Asking for just last month still compares against the full history.
+
+No AI is involved. It is a median + median-absolute-deviation test, which stays
+meaningful on the dozen or so observations a real flatshare produces.
+
 ## Not built yet (Step 3+)
 
 Do not build UI against these; they don't exist:
 
 - Receipt OCR, voice entry, Gmail scraping, per-item splitting
 - Bit / PayBox deep links
-- Anomaly detection and natural-language querying (Text-to-SQL)
+- Natural-language querying (Text-to-SQL)
 
 ## Demo data
 

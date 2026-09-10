@@ -142,6 +142,52 @@ def main() -> None:
             source=ExpenseSource.MANUAL,
         )
 
+        # A run of recurring bills, so the anomaly endpoint has real history to
+        # work with. Electricity is steady until August, when it triples --
+        # someone left the air conditioning on. Water stays boring on purpose:
+        # detection has to be quiet about normal variation, not just loud about
+        # spikes.
+        recurring = [
+            (
+                "Electricity bill",
+                maya,
+                [
+                    (date(2026, 3, 5), "388.00"),
+                    (date(2026, 4, 5), "401.50"),
+                    (date(2026, 5, 5), "376.20"),
+                    (date(2026, 6, 5), "419.90"),
+                    (date(2026, 7, 5), "395.80"),
+                    (date(2026, 8, 5), "1244.00"),
+                ],
+            ),
+            (
+                "Water bill",
+                noa,
+                [
+                    (date(2026, 3, 12), "142.00"),
+                    (date(2026, 4, 12), "155.30"),
+                    (date(2026, 5, 12), "138.90"),
+                    (date(2026, 6, 12), "161.40"),
+                    (date(2026, 7, 12), "149.70"),
+                    (date(2026, 8, 12), "153.20"),
+                ],
+            ),
+        ]
+        for title, payer, readings in recurring:
+            for when, amount in readings:
+                expense_service.create_expense(
+                    db,
+                    flat,
+                    creator=payer,
+                    payer_id=payer.id,
+                    title=title,
+                    total_amount=Decimal(amount),
+                    expense_date=when,
+                    split_type=SplitType.EQUAL,
+                    participants=everyone,
+                    category=ExpenseCategory.UTILITIES,
+                )
+
         settlement_service.create_settlement(
             db,
             flat,
@@ -158,7 +204,7 @@ def main() -> None:
         print(f"  group   : {flat.name} ({flat.id})")
         print("  users   : gal@studentwise.dev, maya@studentwise.dev, noa@studentwise.dev")
         print(f"  password: {PASSWORD}")
-        print("  6 expenses, 1 settlement")
+        print("  18 expenses (incl. 6 months of electricity and water), 1 settlement")
     finally:
         db.close()
 

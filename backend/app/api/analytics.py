@@ -11,7 +11,10 @@ from typing import Annotated
 from fastapi import APIRouter, Query
 
 from app.core.deps import DbSession, GroupMembership
+from app.domain.anomalies import AnomalyDirection
 from app.schemas.analytics import (
+    AnomalyOut,
+    AnomalyReportOut,
     CategoryBreakdownOut,
     CategorySliceOut,
     ExpenseBrief,
@@ -22,7 +25,7 @@ from app.schemas.analytics import (
     SummaryOut,
 )
 from app.schemas.user import UserOut
-from app.services import analytics_service
+from app.services import analytics_service, anomaly_service
 
 router = APIRouter(prefix="/groups", tags=["analytics"])
 
@@ -122,5 +125,49 @@ def get_by_member(
         members=[
             MemberSliceOut(user=UserOut.model_validate(s.user), paid=s.paid, consumed=s.consumed)
             for s in slices
+        ],
+    )
+
+
+@router.get("/{group_id}/analytics/anomalies", response_model=AnomalyReportOut)
+def get_anomalies(
+    membership: GroupMembership,
+    db: DbSession,
+    direction: Annotated[
+        AnomalyDirection | None,
+        Query(description="Only unusually high, or only unusually low, amounts"),
+    ] = None,
+    date_from: DateFilter = None,
+    date_to: DateFilter = None,
+) -> AnomalyReportOut:
+    """Expenses that do not look like their own history, worst first.
+
+    Expenses are grouped into series by title, so "Electricity bill" is compared
+    against previous electricity bills rather than against the weekly shop. A
+    title that has not appeared at least five times is never flagged -- there is
+    no history to judge it against.
+
+    `date_from` / `date_to` narrow what is reported, not what the baseline is
+    built from.
+    """
+    group = membership.group
+    found = anomaly_service.detect(
+        db, group, direction=direction, date_from=date_from, date_to=date_to
+    )
+    return AnomalyReportOut(
+        group_id=group.id,
+        currency=group.currency,
+        anomalies=[
+            AnomalyOut(
+                expense=ExpenseBrief.model_validate(a.expense, from_attributes=True),
+                series_label=a.series_label,
+                series_size=a.series_size,
+                baseline=a.baseline,
+                difference=a.difference,
+                percent_change=a.percent_change,
+                score=a.score,
+                direction=a.direction,
+            )
+            for a in found
         ],
     )

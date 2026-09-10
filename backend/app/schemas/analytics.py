@@ -6,6 +6,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel
 
+from app.domain.anomalies import AnomalyDirection
 from app.models.enums import ExpenseCategory
 from app.schemas.user import UserOut
 
@@ -69,3 +70,22 @@ class MemberBreakdownOut(BaseModel):
     group_id: uuid.UUID
     currency: str
     members: list[MemberSliceOut]
+
+
+class AnomalyOut(BaseModel):
+    expense: ExpenseBrief
+    # The normalised title the series was built from, e.g. "electricity bill".
+    series_label: str
+    series_size: int
+    # The usual amount for this series: the median of its other observations.
+    baseline: Decimal
+    difference: Decimal
+    percent_change: Decimal
+    score: Decimal
+    direction: AnomalyDirection
+
+
+class AnomalyReportOut(BaseModel):
+    group_id: uuid.UUID
+    currency: str
+    anomalies: list[AnomalyOut]
