@@ -7,12 +7,15 @@ and applies the same membership rule.
 
 import uuid
 from datetime import date
+from typing import Annotated
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, File, Query, Response, UploadFile, status
 
+from app.config import settings
 from app.core.deps import CurrentUser, DbSession, ExpenseForMember, GroupMembership
 from app.models.enums import ExpenseCategory
 from app.schemas.expense import ExpenseCreate, ExpenseOut, ExpenseUpdate
+from app.schemas.page import Page
 from app.services import expense_service
 from app.services.expense_service import ParticipantSpec
 
@@ -28,7 +31,7 @@ def _specs(payload: ExpenseCreate | ExpenseUpdate) -> list[ParticipantSpec] | No
     ]
 
 
-@group_router.get("/{group_id}/expenses", response_model=list[ExpenseOut])
+@group_router.get("/{group_id}/expenses", response_model=Page[ExpenseOut])
 def list_expenses(
     membership: GroupMembership,
     db: DbSession,
@@ -38,8 +41,8 @@ def list_expenses(
     payer_id: uuid.UUID | None = None,
     date_from: date | None = None,
     date_to: date | None = None,
-) -> list[ExpenseOut]:
-    expenses = expense_service.list_expenses(
+) -> Page[ExpenseOut]:
+    expenses, total = expense_service.list_expenses(
         db,
         membership.group,
         limit=limit,
@@ -49,7 +52,12 @@ def list_expenses(
         date_from=date_from,
         date_to=date_to,
     )
-    return [ExpenseOut.model_validate(e) for e in expenses]
+    return Page[ExpenseOut](
+        items=[ExpenseOut.model_validate(e) for e in expenses],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
 
 
 @group_router.post(
@@ -109,3 +117,56 @@ def update_expense(
 @router.delete("/{expense_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_expense(expense: ExpenseForMember, db: DbSession) -> None:
     expense_service.delete_expense(db, expense)
+
+
+# --- receipts ---------------------------------------------------------------
+
+
+@router.put("/{expense_id}/receipt", response_model=ExpenseOut)
+def upload_receipt(
+    expense: ExpenseForMember,
+    db: DbSession,
+    file: Annotated[UploadFile, File(description="A JPEG, PNG or WebP photo of the receipt.")],
+) -> ExpenseOut:
+    """Attach a receipt photo. Uploading again replaces the previous one.
+
+    PUT rather than POST because there is one receipt per expense: sending the
+    same file twice leaves the same state, and no second receipt appears.
+    """
+    # One byte past the limit is all we need to know it is too big, so an
+    # oversized upload never lands in memory in full. Starlette has already
+    # spooled the body to a temporary file by this point, though -- capping what
+    # actually reaches the server is the reverse proxy's job in production
+    # (`client_max_body_size` in nginx).
+    data = file.file.read(settings.receipt_max_bytes + 1)
+    updated = expense_service.attach_receipt(db, expense, data=data)
+    return ExpenseOut.model_validate(updated)
+
+
+@router.get("/{expense_id}/receipt")
+def get_receipt(expense: ExpenseForMember) -> Response:
+    """Serve the receipt image to members of the group.
+
+    Receipts show what people bought and where they were, so they go through
+    this authorized route rather than a public static directory.
+    """
+    data, content_type = expense_service.read_receipt(expense)
+    return Response(
+        content=data,
+        media_type=content_type,
+        headers={
+            # Private: a receipt is not something to leave in a shared cache.
+            "Cache-Control": "private, max-age=3600",
+            # These are bytes a user uploaded. A file can be a valid PNG *and*
+            # valid HTML; nosniff stops a browser from deciding for itself that
+            # this one is a document and running it.
+            "X-Content-Type-Options": "nosniff",
+            "Content-Disposition": "inline",
+        },
+    )
+
+
+@router.delete("/{expense_id}/receipt", response_model=ExpenseOut)
+def delete_receipt(expense: ExpenseForMember, db: DbSession) -> ExpenseOut:
+    updated = expense_service.remove_receipt(db, expense)
+    return ExpenseOut.model_validate(updated)

@@ -193,7 +193,7 @@ def test_the_database_is_unchanged_after_a_refused_query(client, flat, stub_clau
     assert ask(client, flat).status_code == 400
 
     listed = client.get(f"/api/groups/{flat['group_id']}/expenses", headers=flat["headers"]).json()
-    assert len(listed) == 3
+    assert listed["total"] == 3
 
 
 # --- limits and validation ----------------------------------------------

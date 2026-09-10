@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Query, status
 
 from app.core.deps import CurrentUser, DbSession, GroupMembership, SettlementForMember
+from app.schemas.page import Page
 from app.schemas.settlement import SettlementCreate, SettlementOut
 from app.services import settlement_service
 
@@ -10,17 +11,22 @@ group_router = APIRouter(prefix="/groups", tags=["settlements"])
 router = APIRouter(prefix="/settlements", tags=["settlements"])
 
 
-@group_router.get("/{group_id}/settlements", response_model=list[SettlementOut])
+@group_router.get("/{group_id}/settlements", response_model=Page[SettlementOut])
 def list_settlements(
     membership: GroupMembership,
     db: DbSession,
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
-) -> list[SettlementOut]:
-    settlements = settlement_service.list_settlements(
+) -> Page[SettlementOut]:
+    settlements, total = settlement_service.list_settlements(
         db, membership.group, limit=limit, offset=offset
     )
-    return [SettlementOut.model_validate(s) for s in settlements]
+    return Page[SettlementOut](
+        items=[SettlementOut.model_validate(s) for s in settlements],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
 
 
 @group_router.post(

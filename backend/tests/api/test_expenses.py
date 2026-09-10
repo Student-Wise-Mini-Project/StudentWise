@@ -225,8 +225,10 @@ def test_creating_an_expense_requires_membership(client, flat, make_user):
 
 def test_list_and_get_expenses(client, flat):
     created = post_expense(client, flat).json()
-    listed = client.get(f"/api/groups/{flat['group_id']}/expenses", headers=flat["headers"]).json()
-    assert [e["id"] for e in listed] == [created["id"]]
+    page = client.get(f"/api/groups/{flat['group_id']}/expenses", headers=flat["headers"]).json()
+    assert [e["id"] for e in page["items"]] == [created["id"]]
+    assert page["total"] == 1
+    assert page["has_more"] is False
 
     fetched = client.get(f"/api/expenses/{created['id']}", headers=flat["headers"]).json()
     assert fetched["title"] == "Groceries"
@@ -236,10 +238,12 @@ def test_list_and_get_expenses(client, flat):
 def test_list_filters_by_category(client, flat):
     post_expense(client, flat, category="GROCERIES")
     post_expense(client, flat, title="Electricity", category="UTILITIES")
-    listed = client.get(
+    page = client.get(
         f"/api/groups/{flat['group_id']}/expenses?category=UTILITIES", headers=flat["headers"]
     ).json()
-    assert [e["title"] for e in listed] == ["Electricity"]
+    assert [e["title"] for e in page["items"]] == ["Electricity"]
+    # The total counts what matches the filter, not everything in the group.
+    assert page["total"] == 1
 
 
 def test_outsider_cannot_read_an_expense(client, flat, make_user):

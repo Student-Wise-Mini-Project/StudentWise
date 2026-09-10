@@ -3,6 +3,9 @@
 Expense splitting for shared apartments, couples and trips — with AI on top.
 University project, 3 people. See `CLAUDE.md` for the rules of the road.
 
+**New to the project?** Start with **[`docs/onboarding.md`](docs/onboarding.md)** —
+clone to a running app in about ten minutes, then your first mission.
+
 ## Setup (Windows, PowerShell)
 
 ```powershell
@@ -31,12 +34,14 @@ Health check: http://localhost:8000/health
 | Apply migrations | `alembic upgrade head` (from `backend/`) |
 | Run server | `uvicorn app.main:app --reload` |
 | Run tests | `pytest` |
-| Lint + format | `ruff check --fix . && ruff format .` |
+| Lint + format | `ruff check --fix . ; ruff format .` |
+| Reseed demo data | `python seed.py` (from `backend/`) |
 
 ## Layout
 
 - `backend/` — FastAPI + Postgres API
 - `frontend/` — React + Tailwind PWA (not started)
+- `docs/onboarding.md` — first-run guide for a new teammate
 - `docs/roadmap.md` — every epic and mission, with what's done
 - `docs/api-contract.md` — the endpoint contract the frontend builds against
 - `docs/sessions/` — end-of-session summaries
@@ -63,6 +68,13 @@ same command over a range, then update `docker-compose.yml` and `.env`.
 
 **Reset the database completely** — `docker compose down -v` (the `-v` drops the
 volume), then `docker compose up -d` and `alembic upgrade head`.
+
+## Uploaded files
+
+Receipt images are written to `backend/var/receipts/` in development — local
+disk behind a small interface, so moving to object storage later changes nothing
+that reads a receipt. The directory is gitignored. Change it with
+`RECEIPT_STORAGE_DIR` in `.env`.
 
 ## Natural-language querying
 

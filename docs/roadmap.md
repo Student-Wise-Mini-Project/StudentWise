@@ -3,8 +3,8 @@
 Everything the project needs, A to Z, split into **epics** (features) and
 **missions** (a task one person can finish and merge).
 
-**Status as of 2026-09-10:** 30 endpoints · 6 tables · 337 tests · 4 migrations ·
-13 commits · CI green.
+**Status as of 2026-09-10:** 44 endpoints · 8 tables · 437 tests · 5 migrations ·
+CI green.
 
 | Marker | Meaning |
 |---|---|
@@ -25,24 +25,24 @@ touch the same file.
 
 | Epic | Done | Left | State |
 |---|---:|---:|---|
-| 0. Ways of working | 4 | 3 | mostly done |
+| 0. Ways of working | 5 | 2 | 🚫 both blocked on GitHub, not on us |
 | 1. Backend foundation | 5 | 0 | ✅ complete |
-| 2. Core domain (Splitwise parity) | 8 | 5 | mostly done |
+| 2. Core domain (Splitwise parity) | 13 | 0 | ✅ complete |
 | 3. Algorithms | 3 | 1 | mostly done |
 | 4. Analytics & intelligence | 3 | 3 | mostly done |
-| 5. AI ingestion (Module 1) | 0 | 9 | ⬜ not started |
+| 5. AI ingestion (Module 1) | 1 | 8 | started |
 | 6. Recurring & automation | 0 | 4 | ⬜ not started |
 | 7. Payments (Bit / PayBox) | 0 | 3 | ⬜ not started |
 | 8. AI chat assistant / RAG | 0 | 4 | ⬜ not started |
 | 9. Frontend | 0 | 12 | ⬜ not started |
 | 10. Deployment | 0 | 6 | ⬜ not started |
 | 11. Academic deliverables | 1 | 4 | started |
-| **Total** | **24** | **54** | |
+| **Total** | **31** | **47** | |
 
-**The honest read:** the backend's *thinking* parts are done — splitting,
-balances, min-cash-flow, analytics, anomalies, Text-to-SQL. What is left is
-mostly **breadth**: a frontend that does not exist yet, AI ingestion, and
-deployment. Epic 9 is the critical path to having something demoable.
+**The honest read:** the backend is now complete for Splitwise parity — nothing
+in Epic 2 is left. What remains is **breadth**: a frontend that does not exist
+yet, AI ingestion, and deployment. Epic 9 is the critical path to having
+something demoable, and it is not blocked by anything.
 
 ---
 
@@ -54,12 +54,23 @@ deployment. Epic 9 is the critical path to having something demoable.
 | 0.2 | `CLAUDE.md` — stack, layering rule, code standards | S | Gal | ✅ |
 | 0.3 | End-of-session summaries in `docs/sessions/` | S | Gal | ✅ |
 | 0.4 | CI: ruff + `alembic check` + pytest on every push | S | Gal | ✅ |
-| 0.5 | Add teammates as GitHub collaborators | S | Gal | ⬜ |
-| 0.6 | Protect `main`: require PR + 1 review + green CI | S | Gal | ⬜ |
-| 0.7 | Onboarding doc: clone → running app in 10 minutes | S | Gal | ⬜ |
+| 0.5 | Add teammates as GitHub collaborators | S | Gal | 🚫 |
+| 0.6 | Protect `main`: require PR + 1 review + green CI | S | Gal | 🚫 |
+| 0.7 | Onboarding doc: clone → running app in 10 minutes | S | Gal | ✅ |
 
-> 0.5 needs your teammates' GitHub usernames. Until then they cannot contribute
-> at all, which makes it the highest-value 10 minutes in this table.
+> **0.5 needs GitHub usernames, not email addresses.** The REST API only takes a
+> username, so this cannot be scripted from the emails we have. The web UI *does*
+> accept an email: <https://github.com/galharel23/StudentWise/settings/access> →
+> **Add people** → paste the address. Two minutes, and it unblocks two people.
+>
+> **0.6 needs a paid plan.** Branch protection *and* rulesets are both refused on
+> a private repo on the Free plan (`403 Upgrade to GitHub Pro`). The rule we want
+> is written and ready to apply in `.github/ruleset-main.json`; the routes out are
+> in `.github/branch-protection.md`. The best one is the GitHub Student Developer
+> Pack — free Pro, and both `.ac.il` addresses qualify.
+>
+> 0.7 is `docs/onboarding.md`: install list, first run, five checks that prove the
+> environment, where the code lives, and each teammate's first mission.
 
 ---
 
@@ -87,14 +98,38 @@ deployment. Epic 9 is the critical path to having something demoable.
 | 2.6 | `settlements` — recording repayments | M | Gal | ✅ |
 | 2.7 | `ExpenseCategory` enum + CHECK constraint | S | Gal | ✅ |
 | 2.8 | Seed script with realistic demo data | S | Gal | ✅ |
-| 2.9 | **Pagination metadata** (`total`) on list endpoints | S | Gal | ⬜ |
-| 2.10 | **Cross-group activity feed** for a home screen | M | Gal | ⬜ |
-| 2.11 | **Receipt image upload + storage** (feeds 5.2) | M | Gal | ⬜ |
-| 2.12 | Comments / notes thread on an expense | M | Gal | ⬜ |
-| 2.13 | In-app notifications + reminders | L | Gal | ⬜ |
+| 2.9 | **Pagination metadata** (`total`) on list endpoints | S | Gal | ✅ |
+| 2.10 | **Cross-group activity feed** for a home screen | M | Gal | ✅ |
+| 2.11 | **Receipt image upload + storage** (feeds 5.4) | M | Gal | ✅ |
+| 2.12 | Comments / notes thread on an expense | M | Gal | ✅ |
+| 2.13 | In-app notifications + reminders | L | Gal | ✅ |
 
-> 2.9 and 2.10 are small and unblock the frontend: without `total` nobody can
-> build a pager, and without a feed there is no home screen.
+**Epic 2 is complete. Splitwise parity is done.**
+
+Decisions from 2.9–2.13 worth keeping:
+
+- **List endpoints return `Page<T>`, not a bare array.** `total` counts what
+  matches the filters, ignoring limit/offset. The page and the count are built
+  from the same filter helper — a total that disagrees with its page is worse
+  than no total.
+- **`created_at` now defaults to `clock_timestamp()`, not `now()`.** `now()` is
+  the *transaction's* start time, so several rows written in one transaction get
+  identical timestamps and anything ordered by them lands in an arbitrary order.
+  A comment thread found this immediately, and Epic 5 would have hit it hard —
+  one receipt becomes several expenses in one transaction.
+- **Notifications fan out on write**, one row per recipient, inside the
+  originating service's transaction. Reads are then a single indexed lookup, and
+  an expense can never land without its notifications.
+- **Notification wording is not stored.** A row keeps `kind` plus a payload of
+  facts; the text is rendered at read time. Hebrew is another branch in one
+  function, not a migration.
+- **A reminder can only go to someone who owes you**, and the amount comes from
+  the settlement plan rather than the request body. A reminder anyone could send
+  to anyone for any amount is a harassment feature, not a payments feature.
+- **Receipts are served through an authorized endpoint, never a static path**,
+  the format is decided by sniffing the bytes rather than trusting
+  `Content-Type`, and the storage key is generated from the expense UUID — so
+  nothing a user typed ever reaches the filesystem.
 
 ---
 
@@ -143,7 +178,7 @@ The largest remaining backend chunk, and the headline "AI" of the project.
 |---|---|---|---|---|
 | 5.1 | `expense_items` + `item_splits` tables + migration | M | #2 | ⬜ |
 | 5.2 | Per-item split API — write into `expense_splits` | L | #2 | ⬜ |
-| 5.3 | Receipt upload endpoint + object storage | M | #2 | ⬜ |
+| 5.3 | Receipt upload endpoint + object storage | M | #2 | ✅ |
 | 5.4 | Vision OCR: receipt image → items + amounts | L | #2 | ⬜ |
 | 5.5 | Review-and-confirm flow for extracted receipts | M | #2 | ⬜ |
 | 5.6 | Speech-to-text: audio → transcript | M | #2 | ⬜ |
@@ -158,6 +193,12 @@ in Epic 3 and 4 needs reworking.
 
 **Order:** 5.1 → 5.2 first. They are pure backend with no AI, and everything
 else in this epic writes through them.
+
+**5.3 was delivered as mission 2.11.** Upload, storage, authorized retrieval and
+deletion all work; the store sits behind a small interface (`core/storage.py`)
+whose only external contract is an opaque key, so moving to object storage is a
+deployment task (Epic 10) and touches nothing that reads a receipt. **5.4 starts
+from an image that is already on the server.**
 
 ---
 
@@ -277,6 +318,10 @@ with no interface is hard to demo whatever the API does.
 - The Text-to-SQL sandbox found **two real holes** when probed beyond its own
   test suite (data-modifying CTEs, the `ONLY` modifier) — a much better story
   than "all tests passed".
+- `now()` versus `clock_timestamp()`: a comment thread came back in the wrong
+  order because Postgres gives every row in a transaction the same `now()`. A
+  two-line default change, and a good illustration of a bug that only appears
+  when one action writes several rows.
 
 ---
 
@@ -284,16 +329,19 @@ with no interface is hard to demo whatever the API does.
 
 **Week 1 — unblock the team**
 
-1. 0.5 + 0.6 — add teammates, protect `main` *(10 minutes, unblocks two people)*
+1. 0.5 — add Hila and Dana in the GitHub web UI *(two minutes, unblocks two
+   people, and nothing else on this list matters until it is done)*
 2. 9.1–9.3 — frontend scaffold, API client, auth *(#3 starts immediately)*
 3. 5.1 + 5.2 — item tables and per-item splits *(#2 starts on pure backend)*
-4. 2.9 + 2.10 — pagination totals and activity feed *(Gal, small, unblocks 9.5)*
-5. 10.1 — ask the lecturer about hosting *(one question, gates Epic 10)*
+4. 10.1 — ask the lecturer about hosting *(one question, gates Epic 10)*
+5. 0.6 — apply for the Student Developer Pack, then run the one command in
+   `.github/branch-protection.md`
 
 **Week 2 — make it demoable**
 
 6. 9.4–9.7 — groups, expenses, balances screens
-7. 5.3 + 5.4 — receipt upload and OCR *(the headline demo moment)*
+7. 5.4 + 5.5 — receipt OCR and the review-and-confirm flow *(the headline demo
+   moment; upload already works)*
 8. 4.4 — measure Text-to-SQL quality once a key exists
 9. 10.2 + 10.3 — get it deployed somewhere real
 

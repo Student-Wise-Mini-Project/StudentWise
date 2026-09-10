@@ -15,6 +15,24 @@ if it ever disagrees with `/docs`, `/docs` is generated from the code and wins.
   these values exactly.
 - **IDs** are UUID strings. **Dates** are `YYYY-MM-DD`. **Timestamps** are ISO-8601 UTC.
 - **Errors** always come back as `{"detail": "<message>"}`.
+- **List endpoints return a page, not a bare array** (see below).
+
+### Paged lists
+
+Every endpoint that can grow without bound returns the same envelope:
+
+```
+Page<T> = { items: T[], total: number, limit: number, offset: number, has_more: boolean }
+```
+
+`total` is the number of rows matching **the filters you sent**, ignoring
+`limit` and `offset` -- so `?category=UTILITIES&limit=10` gives you ten items and
+the true number of utilities expenses. That is what a pager needs, and it is why
+these are not bare arrays.
+
+Paged: `/groups/{id}/expenses`, `/groups/{id}/settlements`,
+`/expenses/{id}/comments`, `/activity`, `/groups/{id}/activity`,
+`/notifications`.
 
 | Status | Meaning |
 |---|---|
@@ -142,14 +160,37 @@ changing an amount will not spread the expense across the whole group.
 ```
 Expense = {
   id, group_id, payer: User, title, total_amount, category, expense_date,
-  split_type, source, notes, receipt_image_url, ai_metadata,
+  split_type, source, notes, receipt_url, ai_metadata,
   created_by, created_at, updated_at,
   splits: [{ user: User, owed_amount, share_value }]
 }
 ```
 
-`receipt_image_url` and `ai_metadata` are always `null` for now; the Step 3 AI
-ingestion modules will populate them.
+`receipt_url` is `null` until a receipt is uploaded, and otherwise the path to
+fetch it (see below). `ai_metadata` is always `null` for now; the Step 3 AI
+ingestion modules will populate it.
+
+### Receipts
+
+| Method | Path | Body | Notes |
+|---|---|---|---|
+| PUT | `/expenses/{expense_id}/receipt` | multipart `file` | Returns the updated `Expense` |
+| GET | `/expenses/{expense_id}/receipt` | -- | The image itself |
+| DELETE | `/expenses/{expense_id}/receipt` | -- | Returns the updated `Expense` |
+
+JPEG, PNG or WebP, up to 5 MB. **The server identifies the format from the bytes,
+not from the `Content-Type` you send** -- a `.png` that is really a script is a
+400, whatever the header says.
+
+PUT rather than POST because an expense has exactly one receipt: uploading again
+replaces it, and no second receipt appears.
+
+`GET` returns the raw image and needs the same `Authorization` header as every
+other route -- receipts are not on a public path, because they show what people
+bought and where they were. In an `<img>` tag that means fetching the blob
+yourself rather than pointing `src` straight at the URL.
+
+404 if the expense has no receipt. Deleting the expense deletes the file.
 
 ## Settlements
 
@@ -165,6 +206,106 @@ Recording that someone actually paid someone back.
 `method` is `MANUAL`, `BIT` or `PAYBOX` (default `MANUAL`). `from_user_id` and
 `to_user_id` must differ, `amount` must be > 0, and both people must belong to
 the group — including someone who has left, since leaving does not erase a debt.
+
+## Comments
+
+A thread hanging off one expense -- where "this was only me and Dana" gets said.
+
+| Method | Path | Body | Notes |
+|---|---|---|---|
+| GET | `/expenses/{expense_id}/comments` | -- | `Page<Comment>`, **oldest first** |
+| POST | `/expenses/{expense_id}/comments` | `{body}` | 201 |
+| PATCH | `/comments/{comment_id}` | `{body}` | Author only |
+| DELETE | `/comments/{comment_id}` | -- | 204. Author, or a group OWNER |
+
+```
+Comment = { id, expense_id, user: User, body, created_at, edited_at }
+```
+
+Any member of the group can comment, including someone who is not on the
+expense -- "why am I not on this?" is exactly the comment worth allowing.
+
+`edited_at` is `null` until the text actually changes, so the UI can show
+"edited". Re-sending identical text is not an edit. An unmarked edit would let
+someone rewrite what they agreed to, which defeats the point of the feature.
+
+A thread reads oldest-first, unlike everything else here, because that is how a
+conversation reads. Comments are deleted with their expense.
+
+Body is 1-2000 characters; whitespace-only is a 400.
+
+## Activity
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/activity` | Everything across every group you are in, newest first |
+| GET | `/groups/{group_id}/activity` | The same, for one group |
+
+```
+Activity = {
+  kind: "EXPENSE_ADDED" | "SETTLEMENT_RECORDED",
+  occurred_at, group_id, group_name, currency,
+  expense: Expense | null, settlement: Settlement | null   // exactly one, per kind
+}
+```
+
+This is what a home screen is built from. Each item carries the **whole** row, so
+a feed can be rendered and a row opened without a second request.
+
+Ordered by when things were entered, not by `expense_date` or `settled_at` --
+those are user-supplied and can be backdated, and a bill entered today for last
+month belongs at the top. Leaving a group removes it from your feed; the
+expenses themselves are untouched and still count towards that group's balances.
+
+`limit` caps at 100 here.
+
+## Notifications
+
+| Method | Path | Body | Notes |
+|---|---|---|---|
+| GET | `/notifications` | -- | `Page<Notification>`, newest first. Query: `unread_only` |
+| GET | `/notifications/unread-count` | -- | `{unread: number}` |
+| POST | `/notifications/{notification_id}/read` | -- | Returns the notification |
+| POST | `/notifications/read-all` | -- | `{marked_read: number}` |
+| POST | `/groups/{group_id}/reminders` | `{debtor_ids?}` | 201, a list of `Notification` |
+
+```
+Notification = {
+  id, kind, title, body, group_id, actor: User | null,
+  expense_id, settlement_id, payload, read_at, created_at
+}
+```
+
+`kind` is `EXPENSE_ADDED`, `COMMENT_ADDED`, `SETTLEMENT_RECORDED` or
+`PAYMENT_REMINDER`.
+
+Who gets told what:
+
+- **an expense** -- everyone on it, except whoever entered it
+- **a comment** -- everyone on the expense, plus anyone already in the thread
+- **a settlement** -- the other person
+- **a reminder** -- the person who owes
+
+**`title` and `body` are rendered per request, not stored**, and they are English
+for now. `payload` carries the same facts in structured form (`actor_name`,
+`owed_amount`, `currency`, ...), so a Hebrew UI can write its own wording without
+parsing English. Money in `payload` is a string, like everywhere else.
+
+Marking as read does not delete anything. A notification belonging to someone
+else is a 404, not a 403 -- saying "forbidden" would confirm the id exists.
+
+### Reminders
+
+`POST /groups/{id}/reminders` nudges the people who owe **you** in that group.
+Send `{}` for everyone who owes you, or `{"debtor_ids": [...]}` for specific
+people.
+
+You cannot remind someone who does not owe you (400), and **the amount comes
+from the settlement plan, not from the request** -- so a reminder always matches
+what the balances screen says. A reminder anyone could send to anyone for any
+amount would be a harassment feature, not a payments feature.
+
+400 if nobody in the group owes you anything.
 
 ## Balances
 
@@ -314,11 +455,15 @@ trusted component — remember it is fed user-written expense titles:
 
 Do not build UI against these; they don't exist:
 
-- Receipt OCR, voice entry, Gmail scraping, per-item splitting
+- Receipt **OCR** (uploading a receipt image works; reading one does not),
+  voice entry, Gmail scraping, per-item splitting
 - Bit / PayBox deep links
+- Recurring bills, budgets, duplicate-payment detection
 
 ## Demo data
 
 `python seed.py` (from `backend/`) creates the flat "Dizengoff 5" with
-`gal@`, `maya@` and `noa@studentwise.dev`, password `password123`, six expenses
-covering every split type, and one Bit settlement.
+`gal@`, `maya@` and `noa@studentwise.dev`, password `password123`, eighteen
+expenses covering every split type (including six months of electricity and
+water so the anomaly endpoint has history), one Bit settlement, a two-message
+comment thread, and the notifications all of that raised.
