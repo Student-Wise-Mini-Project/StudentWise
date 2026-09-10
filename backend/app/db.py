@@ -20,10 +20,20 @@ class Base(DeclarativeBase):
 
 
 def get_db() -> Generator[Session, None, None]:
-    """FastAPI dependency: one session per request."""
+    """FastAPI dependency: one session per request.
+
+    A request that raises rolls back explicitly rather than relying on `close()`
+    to do it. Things now depend on that rollback: an idempotency key is claimed
+    inside the transaction it protects, so a rejected request has to release its
+    key rather than burn it, and a caller who fixes a typo and sends again must
+    not be told the key is spent.
+    """
     db = SessionLocal()
     try:
         yield db
+    except Exception:
+        db.rollback()
+        raise
     finally:
         db.close()
 

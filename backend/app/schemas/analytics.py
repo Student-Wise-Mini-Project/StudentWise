@@ -19,6 +19,30 @@ class ExpenseBrief(BaseModel):
     category: ExpenseCategory | None = None
 
 
+class DuplicateSideOut(ExpenseBrief):
+    """One half of a suspected duplicate, with who paid it."""
+
+    payer: UserOut
+
+
+class DuplicatePairOut(BaseModel):
+    #: 0.00-1.00. How much this looks like one payment recorded twice.
+    score: Decimal
+    day_gap: int
+    same_payer: bool
+    #: Plain sentences saying why, so the UI can explain rather than assert.
+    reasons: list[str]
+    first: DuplicateSideOut
+    second: DuplicateSideOut
+
+
+class DuplicateReportOut(BaseModel):
+    group_id: uuid.UUID
+    currency: str
+    window_days: int
+    pairs: list[DuplicatePairOut]
+
+
 class SummaryOut(BaseModel):
     group_id: uuid.UUID
     currency: str
