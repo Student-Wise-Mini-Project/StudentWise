@@ -25,7 +25,7 @@ touch the same file.
 
 | Epic | Done | Left | State |
 |---|---:|---:|---|
-| 0. Ways of working | 5 | 2 | 🚫 both blocked on GitHub, not on us |
+| 0. Ways of working | 5 | 2 | 🔨 invites sent, not yet accepted |
 | 1. Backend foundation | 5 | 0 | ✅ complete |
 | 2. Core domain (Splitwise parity) | 13 | 0 | ✅ complete |
 | 3. Algorithms | 4 | 0 | ✅ complete |
@@ -57,14 +57,18 @@ nothing blocking them. There is a great deal of API and still no interface.
 | 0.2 | `CLAUDE.md` — stack, layering rule, code standards | S | Gal | ✅ |
 | 0.3 | End-of-session summaries in `docs/sessions/` | S | Gal | ✅ |
 | 0.4 | CI: ruff + `alembic check` + pytest on every push | S | Gal | ✅ |
-| 0.5 | Add teammates as GitHub collaborators | S | Gal | 🚫 |
+| 0.5 | Add teammates as GitHub collaborators | S | Gal | 🔨 |
 | 0.6 | Protect `main`: require PR + 1 review + green CI | S | Gal | 🚫 |
 | 0.7 | Onboarding doc: clone → running app in 10 minutes | S | Gal | ✅ |
 
-> **0.5 needs GitHub usernames, not email addresses.** The REST API only takes a
-> username, so this cannot be scripted from the emails we have. The web UI *does*
-> accept an email: <https://github.com/galharel23/StudentWise/settings/access> →
-> **Add people** → paste the address. Two minutes, and it unblocks two people.
+> **0.5 — invitations are sent, and none has been accepted yet.** Four are
+> pending: three by email and one to `galq-harel`. An invitation grants nothing
+> until the person clicks the link GitHub emailed them, so Hila and Dana still
+> cannot see the code. Chase it before anything else; check with
+> `gh api repos/galharel23/StudentWise/invitations`.
+>
+> *(The REST API only takes a username, which is why this had to be done in the
+> web UI in the first place.)*
 >
 > **0.6 needs a paid plan.** Branch protection *and* rulesets are both refused on
 > a private repo on the Free plan (`403 Upgrade to GitHub Pro`). The rule we want

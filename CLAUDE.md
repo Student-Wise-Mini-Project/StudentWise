@@ -76,7 +76,16 @@ alembic revision --autogenerate -m "add expenses"   # new migration
   plan on a private repo. See `.github/branch-protection.md`; the rule is
   written and ready to apply. Never push to `main` directly.
 - Branch per milestone: `feat/expenses-crud`.
-- PR → one teammate approves → squash-merge.
+- PR → one teammate approves → merge.
+- **Rebase-merge when every commit is a mission; squash when the branch is
+  messy.** Squashing four missions into one commit throws away four commit
+  messages, and those messages are most of what mission 11.1 (design decisions
+  recorded as we go) will be written from.
+- **Do not delete a base branch while a PR is stacked on it.** GitHub closes the
+  stacked PR and it cannot be reopened once the base is gone -- rebase the
+  stacked branch onto `main` and open a fresh PR. Rebase-merging also rewrites
+  the SHA, so a stacked branch always needs
+  `git rebase --onto origin/main <old base sha>` afterwards.
 - CI runs `ruff check` + `pytest`.
 
 ## Ownership (so we don't collide)
