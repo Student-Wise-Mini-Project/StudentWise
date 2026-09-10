@@ -82,6 +82,7 @@ def create_expense(
         category=payload.category,
         notes=payload.notes,
         source=payload.source,
+        apply_split_rule=payload.apply_split_rule,
     )
     return ExpenseOut.model_validate(expense)
 

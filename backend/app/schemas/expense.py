@@ -8,6 +8,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from app.models.enums import ExpenseCategory, ExpenseSource, SplitType
+from app.schemas.split_rule import SplitRuleSummary
 from app.schemas.user import UserOut
 
 
@@ -30,6 +31,8 @@ class ExpenseCreate(BaseModel):
     category: ExpenseCategory | None = None
     notes: str | None = None
     source: ExpenseSource = ExpenseSource.MANUAL
+    #: Set false to split equally even when a standing rule would have applied.
+    apply_split_rule: bool = True
 
 
 class ExpenseUpdate(BaseModel):
@@ -65,6 +68,8 @@ class ExpenseOut(BaseModel):
     source: ExpenseSource
     notes: str | None = None
     ai_metadata: dict[str, Any] | None = None
+    #: Which standing rule decided this split, if one did.
+    split_rule: SplitRuleSummary | None = None
     created_by: uuid.UUID
     created_at: datetime
     updated_at: datetime

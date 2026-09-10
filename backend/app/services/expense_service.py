@@ -17,10 +17,11 @@ from app.domain.splitting import ParticipantInput, compute_splits
 from app.models.enums import ExpenseCategory, ExpenseSource, SplitType
 from app.models.expense import Expense, ExpenseSplit
 from app.models.group import Group, GroupMember
+from app.models.split_rule import SplitRule
 from app.models.user import User
 from app.repositories.expense_repository import ExpenseRepository
 from app.repositories.group_repository import GroupRepository
-from app.services import notification_service
+from app.services import notification_service, split_rule_service
 
 
 @dataclass(frozen=True)
@@ -80,6 +81,40 @@ def _build_splits(
     ]
 
 
+def _apply_split_rule(
+    db: Session,
+    group: Group,
+    *,
+    category: ExpenseCategory | None,
+    participants: list[ParticipantSpec] | None,
+    split_type: SplitType,
+) -> tuple[SplitRule | None, list[ParticipantSpec] | None, SplitType]:
+    """Let a standing rule decide the split, when nobody said otherwise.
+
+    Precedence, in one line: **whoever names participants wins.** A rule only
+    ever fills the gap left by not naming them, so an expense that says exactly
+    who is on it is never quietly re-split by a rule somebody set last month.
+    """
+    if participants is not None:
+        return None, participants, split_type
+
+    rule = split_rule_service.find_applicable(db, group, category)
+    if rule is None:
+        return None, participants, split_type
+
+    shares = split_rule_service.shares_for(db, group, rule)
+    if not shares:
+        # Everyone the rule names has left. Falling back to an equal split beats
+        # refusing to record rent.
+        return None, participants, split_type
+
+    return (
+        rule,
+        [ParticipantSpec(user_id=s.user_id, share_value=s.weight) for s in shares],
+        SplitType.WEIGHT,
+    )
+
+
 def get_expense(db: Session, expense_id: uuid.UUID) -> Expense:
     expense = ExpenseRepository(db).get(expense_id)
     if expense is None:
@@ -128,7 +163,18 @@ def create_expense(
     category: ExpenseCategory | None = None,
     notes: str | None = None,
     source: ExpenseSource = ExpenseSource.MANUAL,
+    apply_split_rule: bool = True,
 ) -> Expense:
+    rule: SplitRule | None = None
+    if apply_split_rule:
+        rule, participants, split_type = _apply_split_rule(
+            db,
+            group,
+            category=category,
+            participants=participants,
+            split_type=split_type,
+        )
+
     splits = _build_splits(
         db,
         group,
@@ -148,6 +194,7 @@ def create_expense(
         split_type=split_type,
         source=source,
         notes=notes,
+        split_rule_id=rule.id if rule is not None else None,
         created_by=creator.id,
         splits=splits,
     )
