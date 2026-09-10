@@ -37,6 +37,7 @@ Health check: http://localhost:8000/health
 
 - `backend/` — FastAPI + Postgres API
 - `frontend/` — React + Tailwind PWA (not started)
+- `docs/roadmap.md` — every epic and mission, with what's done
 - `docs/api-contract.md` — the endpoint contract the frontend builds against
 - `docs/sessions/` — end-of-session summaries
 
