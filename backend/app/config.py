@@ -13,7 +13,7 @@ class Settings(BaseSettings):
         "postgresql+psycopg://studentwise:studentwise@localhost:5434/studentwise_test"
     )
 
-    jwt_secret: str = "dev-secret-change-me"
+    jwt_secret: str = "dev-secret-change-me-before-deploying-anywhere"  # >=32 bytes for HS256
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60 * 24 * 7  # one week
 

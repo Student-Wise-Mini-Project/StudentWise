@@ -1,9 +1,12 @@
 """FastAPI application entrypoint."""
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
+from app.api import auth
 from app.config import settings
+from app.core.errors import AppError
 
 app = FastAPI(
     title="StudentWise API",
@@ -20,7 +23,19 @@ app.add_middleware(
 )
 
 
+@app.exception_handler(AppError)
+def handle_app_error(request: Request, exc: AppError) -> JSONResponse:
+    """Turn a service-layer error into a JSON response.
+
+    This is why services never import HTTPException.
+    """
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+
+
 @app.get("/health", tags=["meta"])
 def health() -> dict[str, str]:
     """Liveness probe. Does not touch the database."""
     return {"status": "ok"}
+
+
+app.include_router(auth.router, prefix="/api")
