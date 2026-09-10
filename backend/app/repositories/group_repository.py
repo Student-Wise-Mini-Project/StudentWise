@@ -29,6 +29,12 @@ class GroupRepository:
     def get_membership(self, group_id: uuid.UUID, user_id: uuid.UUID) -> GroupMember | None:
         return self.db.get(GroupMember, (group_id, user_id))
 
+    def all_memberships(self, group_id: uuid.UUID) -> list[GroupMember]:
+        """Every membership row, including people who have left -- leaving does
+        not erase a debt, so balances still need them."""
+        stmt = select(GroupMember).where(GroupMember.group_id == group_id)
+        return list(self.db.scalars(stmt))
+
     def active_members(self, group_id: uuid.UUID) -> list[GroupMember]:
         stmt = select(GroupMember).where(
             GroupMember.group_id == group_id, GroupMember.left_at.is_(None)

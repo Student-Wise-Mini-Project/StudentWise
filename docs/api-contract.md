@@ -144,13 +144,46 @@ Recording that someone actually paid someone back.
 `to_user_id` must differ, `amount` must be > 0, and both people must belong to
 the group — including someone who has left, since leaving does not erase a debt.
 
-## Not built yet (Step 2+)
+## Balances
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/groups/{group_id}/balances` | Who is up and who is down, net of everything |
+| GET | `/groups/{group_id}/settlement-plan` | Fewest transfers that would square the group up |
+
+```
+GroupBalances = { group_id, currency, balances: UserBalance[] }
+UserBalance = { user: User, paid, owed, settlements_sent, settlements_received, net }
+```
+
+`net = paid - owed + settlements_sent - settlements_received`.
+**Positive means the group owes them; negative means they owe the group.** The
+nets always sum to exactly zero — if they ever don't, that's a bug, and the
+settlement-plan endpoint will return 400 rather than invent money.
+
+Rows are sorted richest creditor first. Someone who has left the group still
+appears while their net is non-zero, and drops off once they are square.
+
+```
+SettlementPlan = { group_id, currency, transfers: [{ from_user, to_user, amount }] }
+```
+
+**The plan is a suggestion — it writes nothing.** To record that a transfer
+actually happened, POST it to `/groups/{id}/settlements`; that is what moves the
+balances. An empty `transfers` list means everyone is square.
+
+The algorithm pairs off exactly-matching debts first, then greedily matches the
+largest debtor against the largest creditor. It never needs more than
+*(people with a non-zero balance) − 1* transfers. Finding the true minimum in
+every case is NP-hard (it is subset-sum), so this is a good plan rather than a
+provably optimal one.
+
+## Not built yet (Step 3+)
 
 Do not build UI against these; they don't exist:
 
-- `GET /groups/{id}/balances` — who owes what, net
-- `POST /groups/{id}/settle` — min-cash-flow suggestions, and Bit/PayBox deep links
 - Receipt OCR, voice entry, Gmail scraping, per-item splitting
+- Bit / PayBox deep links
 - Analytics, charts, anomaly detection, natural-language querying
 
 ## Demo data

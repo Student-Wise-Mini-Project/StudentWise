@@ -61,14 +61,35 @@ balances query would silently corrupt everyone's numbers).
 - **`ruff` treated `alembic` as a local package** because of the `alembic/` directory;
   pinned it as third-party in `pyproject.toml`.
 
-## Next: Step 2 (algorithms)
+## Step 2 (algorithms) — also done this session
 
-1. `GET /groups/{id}/balances` — net per user: splits owed − expenses paid −
-   settlements sent + settlements received.
-2. `app/domain/settlement_algo.py` — min-cash-flow, written test-first like
-   `splitting.py`.
-3. `POST /groups/{id}/settle` — suggestions that become `settlements` rows.
-4. Bit / PayBox deep links off `users.phone_number`.
+- `GET /groups/{id}/balances` — `net = paid - owed + settlements_sent - settlements_received`.
+  Positive means the group owes you. Nets always sum to exactly zero.
+- `app/domain/settlement_algo.py` — min-cash-flow, written test-first like
+  `splitting.py`. 42 tests including 30 randomised property tests.
+- `GET /groups/{id}/settlement-plan` — suggestions only, writes nothing.
 
-Balances is a read-only query over data that already exists — nothing in the schema
-needs to change for it.
+Nothing in the schema had to change: balances are a read-only aggregate over
+`expenses`, `expense_splits` and `settlements`.
+
+**Deviation from the plan:** the plan said `POST /groups/{id}/settle`. It became
+`GET /groups/{id}/settlement-plan`, because an endpoint that suggests transfers
+without changing anything should not be a POST. Recording a real repayment is
+still `POST /groups/{id}/settlements`.
+
+**On "minimum":** finding the genuinely fewest transfers is NP-hard (subset-sum).
+We pair off exactly-matching debts, then match largest debtor against largest
+creditor. That guarantees at most n-1 transfers — good, not provably optimal.
+Worth saying plainly in the report rather than claiming optimality.
+
+Sanity check against the seeded flat: Maya +206.74, Gal −99.46, Noa −107.28,
+summing to 0.00, settled by 2 transfers for 3 people.
+
+## Next: Step 3
+
+1. Bit / PayBox deep links off `users.phone_number`, driven by the settlement plan.
+2. AI ingestion: `expense_items` + `item_splits`, receipt OCR, voice entry.
+3. Analytics and anomaly detection.
+
+The frontend is now unblocked on everything a Splitwise clone needs: groups,
+expenses, splits, repayments and balances.
