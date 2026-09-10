@@ -12,6 +12,7 @@ from app.models.enums import (
 )
 from app.models.expense import Expense, ExpenseSplit
 from app.models.group import Group, GroupMember
+from app.models.idempotency import IdempotencyKey
 from app.models.notification import Notification
 from app.models.settlement import Settlement
 from app.models.split_rule import SplitRule, SplitRuleShare
@@ -26,6 +27,7 @@ __all__ = [
     "Group",
     "GroupMember",
     "GroupType",
+    "IdempotencyKey",
     "MemberRole",
     "Notification",
     "NotificationKind",

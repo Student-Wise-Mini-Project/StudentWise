@@ -9,18 +9,31 @@ import uuid
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, File, Query, Response, UploadFile, status
+from fastapi import APIRouter, File, Header, Query, Response, UploadFile, status
 
 from app.config import settings
 from app.core.deps import CurrentUser, DbSession, ExpenseForMember, GroupMembership
 from app.models.enums import ExpenseCategory
 from app.schemas.expense import ExpenseCreate, ExpenseOut, ExpenseUpdate
 from app.schemas.page import Page
-from app.services import expense_service
+from app.services import expense_service, idempotency_service
 from app.services.expense_service import ParticipantSpec
 
 group_router = APIRouter(prefix="/groups", tags=["expenses"])
 router = APIRouter(prefix="/expenses", tags=["expenses"])
+
+#: An optional client-generated key. Send the same one when retrying a request
+#: whose reply never arrived, and the retry returns the original resource
+#: instead of creating a second one. A key is remembered per user and per
+#: endpoint, so two people are free to pick the same one.
+IdempotencyKey = Annotated[
+    str | None,
+    Header(
+        alias="Idempotency-Key",
+        max_length=200,
+        description="Retry-safe key. The same key with the same body returns the first result.",
+    ),
+]
 
 
 def _specs(payload: ExpenseCreate | ExpenseUpdate) -> list[ParticipantSpec] | None:
@@ -68,7 +81,15 @@ def create_expense(
     membership: GroupMembership,
     current_user: CurrentUser,
     db: DbSession,
+    idempotency_key: IdempotencyKey = None,
 ) -> ExpenseOut:
+    """Record an expense.
+
+    Send an `Idempotency-Key` header to make a retry safe: the same key with the
+    same body returns the expense the first request created, rather than a
+    second one. A different body under the same key is a 409, because that is a
+    client bug and answering it with the wrong resource would hide it.
+    """
     expense = expense_service.create_expense(
         db,
         membership.group,
@@ -83,6 +104,8 @@ def create_expense(
         notes=payload.notes,
         source=payload.source,
         apply_split_rule=payload.apply_split_rule,
+        idempotency_key=idempotency_key,
+        request_fingerprint=idempotency_service.fingerprint(payload),
     )
     return ExpenseOut.model_validate(expense)
 
