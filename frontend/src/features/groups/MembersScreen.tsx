@@ -3,28 +3,37 @@ import { useState } from 'react'
 import { detailOf } from '@/api/errors'
 import type { GroupMember } from '@/api/types'
 import { Avatar } from '@/components/Avatar'
-import { Badge } from '@/components/Badge'
 import { Button } from '@/components/Button'
 import { Field } from '@/components/Field'
 import { Input } from '@/components/Input'
 import { ListRow, ListSection } from '@/components/ListRow'
 import { Sheet } from '@/components/Sheet'
 import { Stack } from '@/components/layout'
+import { Money } from '@/components/Money'
 import { useAuth } from '@/features/auth/authContext'
+import { useBalances } from '@/features/balances/api'
+import { cn } from '@/lib/cn'
 import { memberRoleLabel } from '@/lib/labels'
-import { isValidAmount, isPositive } from '@/lib/money'
+import { isPositive, isValidAmount, isZero } from '@/lib/money'
 
 import { useAddMember, useRemoveMember, useUpdateMemberWeight } from './api'
 import { useGroupScope } from './groupContext'
 
 export function MembersScreen() {
-  const { activeMembers, allMembers, isOwner, groupId } = useGroupScope()
+  const { activeMembers, allMembers, isOwner, groupId, currency } = useGroupScope()
   const { user } = useAuth()
   const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState<GroupMember | null>(null)
 
   const departed = allMembers.filter((member) => member.left_at !== null)
   const remove = useRemoveMember(groupId)
+
+  // Already in the cache from the group header, so this costs nothing: a
+  // members list without balances is a list of names, and the question people
+  // actually have about a housemate is how much.
+  const balances = useBalances(groupId)
+  const netOf = (userId: string) =>
+    balances.data?.balances.find((row) => row.user.id === userId)?.net
 
   return (
     <>
@@ -39,21 +48,38 @@ export function MembersScreen() {
         {activeMembers.map((member) => {
           const isMe = member.user.id === user?.id
           const canRemove = isOwner || isMe
+          const net = netOf(member.user.id)
           return (
             <ListRow
               key={member.user.id}
               leading={<Avatar user={member.user} />}
-              title={isMe ? `${member.user.name} (you)` : member.user.name}
-              subtitle={member.user.email}
+              title={
+                <>
+                  {member.user.name}
+                  {isMe && <span className="text-faint font-normal"> (you)</span>}
+                </>
+              }
+              subtitle={
+                <>
+                  {member.role === 'OWNER' && `${memberRoleLabel[member.role]} · `}
+                  {String(member.default_split_weight)}&times; share
+                </>
+              }
               meta={
-                <Stack direction="row" gap={2} className="items-center">
-                  {member.role === 'OWNER' && (
-                    <Badge tone="accent">{memberRoleLabel[member.role]}</Badge>
-                  )}
-                  <span className="text-muted tnum text-sm">
-                    {String(member.default_split_weight)}&times;
+                net !== undefined ? (
+                  <Money amount={net} currency={currency} tone="auto" size="lg" />
+                ) : undefined
+              }
+              metaSubtitle={
+                net === undefined ? undefined : isZero(net) ? (
+                  'square'
+                ) : (
+                  <span
+                    className={cn('font-semibold', isPositive(net) ? 'text-credit' : 'text-debt')}
+                  >
+                    {isPositive(net) ? 'is owed' : 'owes'}
                   </span>
-                </Stack>
+                )
               }
               trailing={
                 <Stack direction="row" gap={1}>
@@ -150,7 +176,7 @@ function AddMemberSheet({ open, onClose }: { open: boolean; onClose: () => void 
     >
       <Stack gap={4}>
         {add.isError && (
-          <p role="alert" className="bg-danger-soft text-danger rounded-lg px-3 py-2.5 text-sm">
+          <p role="alert" className="bg-danger-soft text-danger rounded-sm px-3 py-2.5 text-sm">
             {detailOf(add.error)}
           </p>
         )}
