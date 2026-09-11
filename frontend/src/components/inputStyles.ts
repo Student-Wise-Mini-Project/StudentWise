@@ -7,14 +7,14 @@ import { cn } from '@/lib/cn'
  * only components and fast refresh keeps working -- editing a component should
  * not reload the page and lose the form you were half way through.
  *
- * The 44px height is Apple's minimum comfortable touch target. This app is
- * operated with one thumb in a supermarket queue, so it is a floor, not a
- * suggestion.
+ * 48px clears Apple's 44px minimum comfortable touch target with room to spare.
+ * This app is operated with one thumb in a supermarket queue, so that is a
+ * floor, not a suggestion.
  */
 export const inputClasses = cn(
-  'bg-surface border-line text-ink placeholder:text-faint w-full rounded-lg border',
-  'h-11 px-3 text-base transition-colors',
+  'bg-surface border-line-strong text-ink placeholder:text-faint w-full rounded-md border',
+  'h-12 px-3.5 text-base transition-colors',
   'focus:border-accent focus:outline-none',
-  'aria-[invalid]:border-danger',
+  'aria-[invalid]:border-danger aria-[invalid]:bg-danger-soft',
   'disabled:bg-sunken disabled:text-muted disabled:cursor-not-allowed',
 )

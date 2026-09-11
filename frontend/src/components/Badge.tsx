@@ -25,7 +25,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-semibold whitespace-nowrap',
+        'font-display text-2xs inline-flex items-center rounded-sm px-2 py-1 font-extrabold tracking-wide whitespace-nowrap uppercase',
         TONES[tone],
         className,
       )}
@@ -40,7 +40,7 @@ export function CountBadge({ count, max = 99 }: { count: number; max?: number })
   if (count <= 0) return null
   return (
     <span
-      className="bg-debt text-on-accent tnum text-2xs inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 font-bold"
+      className="bg-debt font-display tnum text-2xs text-on-slab inline-flex min-w-5 items-center justify-center rounded-sm px-1.5 py-0.5 font-extrabold"
       aria-label={`${count} unread`}
     >
       {count > max ? `${max}+` : count}

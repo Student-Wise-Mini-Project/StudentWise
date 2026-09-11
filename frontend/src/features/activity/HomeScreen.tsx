@@ -97,7 +97,7 @@ function PositionCard({
 
   if (totals.length === 0) {
     return (
-      <Card className="mx-4 mt-4" elevated>
+      <Card className="mx-4 mt-4">
         <p className="text-muted py-4 text-center text-base font-medium">
           You are all square. Nothing owed either way.
         </p>
@@ -106,7 +106,7 @@ function PositionCard({
   }
 
   return (
-    <Card className="mx-4 mt-4" elevated>
+    <Card className="mx-4 mt-4">
       <Stack gap={3} className="py-2">
         {totals.map((total) => (
           <Stack key={total.currency} gap={1} className="items-center text-center">

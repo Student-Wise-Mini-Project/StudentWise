@@ -10,7 +10,7 @@ export type ButtonSize = 'sm' | 'md' | 'lg'
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: 'bg-accent text-on-accent hover:bg-accent-hover active:bg-accent-hover',
-  secondary: 'bg-surface text-ink border border-line hover:bg-sunken active:bg-sunken',
+  secondary: 'bg-surface text-ink border-line-strong border hover:bg-sunken active:bg-sunken',
   ghost: 'bg-transparent text-ink hover:bg-sunken active:bg-sunken',
   danger: 'bg-danger-soft text-danger hover:bg-danger hover:text-on-accent',
 }
@@ -18,9 +18,9 @@ const VARIANTS: Record<ButtonVariant, string> = {
 const SIZES: Record<ButtonSize, string> = {
   // 44px is Apple's minimum comfortable touch target, and this app is used
   // one-handed on a phone. `md` is deliberately at it rather than near it.
-  sm: 'h-9 px-3 text-sm rounded-md gap-1.5',
-  md: 'h-11 px-4 text-base rounded-lg gap-2',
-  lg: 'h-13 px-5 text-lg rounded-xl gap-2',
+  sm: 'h-9 px-3.5 text-sm rounded-sm gap-1.5',
+  md: 'h-11 px-4.5 text-base rounded-md gap-2',
+  lg: 'h-13 px-5.5 text-lg rounded-lg gap-2',
 }
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -53,7 +53,7 @@ export function Button({
       // for a spinner and losing what it does.
       aria-busy={loading || undefined}
       className={cn(
-        'inline-flex items-center justify-center font-semibold transition-colors',
+        'font-display inline-flex items-center justify-center font-bold transition-colors',
         'disabled:cursor-not-allowed disabled:opacity-50',
         VARIANTS[variant],
         SIZES[size],
@@ -95,7 +95,7 @@ export function LinkButton({
     <Link
       to={to}
       className={cn(
-        'inline-flex items-center justify-center font-semibold transition-colors',
+        'font-display inline-flex items-center justify-center font-bold transition-colors',
         VARIANTS[variant],
         SIZES[size],
         fullWidth && 'w-full',

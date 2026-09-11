@@ -1,10 +1,15 @@
 import { cn } from '@/lib/cn'
 
+/**
+ * Squares, not circles. People are chips in a ledger here, not profile pictures
+ * -- a round avatar is the single loudest "app" signal there is, and this one is
+ * meant to read as a printed ticket.
+ */
 const SIZES = {
-  xs: 'size-6 text-2xs',
-  sm: 'size-8 text-xs',
-  md: 'size-10 text-sm',
-  lg: 'size-14 text-lg',
+  xs: 'size-6 text-2xs rounded-sm',
+  sm: 'size-8 text-xs rounded-sm',
+  md: 'size-10 text-sm rounded-md',
+  lg: 'size-14 text-lg rounded-md',
 } as const
 
 /** Six avatar tokens, chosen from `theme.css`. No colour is named here. */
@@ -45,7 +50,7 @@ export function Avatar({ user, size = 'md', className }: AvatarProps) {
       aria-hidden="true"
       title={user.name}
       className={cn(
-        'text-on-accent inline-flex shrink-0 items-center justify-center rounded-full font-semibold select-none',
+        'text-on-avatar font-display inline-flex shrink-0 items-center justify-center font-extrabold select-none',
         tokenFor(user.id),
         SIZES[size],
         className,
@@ -83,7 +88,7 @@ export function AvatarStack({
       {extra > 0 && (
         <span
           className={cn(
-            'bg-sunken text-muted ring-surface -ms-2 inline-flex items-center justify-center rounded-full font-semibold ring-2',
+            'bg-sunken text-muted ring-surface font-display -ms-2 inline-flex items-center justify-center font-extrabold ring-2',
             SIZES[size],
           )}
         >

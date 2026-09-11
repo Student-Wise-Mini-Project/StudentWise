@@ -98,7 +98,9 @@ export function ListSection({
       {(header || action) && (
         <header className="flex items-center justify-between gap-3 px-4 pt-4 pb-2">
           {header && (
-            <h2 className="text-muted text-xs font-semibold tracking-wide uppercase">{header}</h2>
+            <h2 className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
+              {header}
+            </h2>
           )}
           {action}
         </header>

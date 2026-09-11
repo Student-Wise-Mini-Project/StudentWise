@@ -40,6 +40,31 @@
     text-wrap: pretty;
   }
 
+  /* A loading placeholder. A travelling highlight rather than a pulse, because a
+   * whole list pulsing in unison reads as a broken screen; this reads as one
+   * that is filling in. The `prefers-reduced-motion` block below flattens it to
+   * a still band, which is why the base colour is the one you want left over. */
+  @keyframes sw-shimmer {
+    from {
+      background-position: 100% 0;
+    }
+    to {
+      background-position: -100% 0;
+    }
+  }
+
+  .shimmer {
+    background-color: var(--color-sunken);
+    background-image: linear-gradient(
+      90deg,
+      var(--color-sunken) 25%,
+      var(--color-ground) 37%,
+      var(--color-sunken) 63%
+    );
+    background-size: 400% 100%;
+    animation: sw-shimmer 1.4s linear infinite;
+  }
+
   /* Money, counts and dates sit in columns and must line up. */
   .tnum {
     font-variant-numeric: tabular-nums;

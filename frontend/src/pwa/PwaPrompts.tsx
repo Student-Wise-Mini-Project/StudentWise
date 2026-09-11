@@ -83,9 +83,7 @@ function Banner({ children }: { children: React.ReactNode }) {
         insetBlockEnd: 'calc(var(--sw-tabbar-height) + var(--sw-safe-block-end) + 0.75rem)',
       }}
     >
-      <Card className="shadow-float mx-auto max-w-md" elevated>
-        {children}
-      </Card>
+      <Card className="shadow-float mx-auto max-w-md">{children}</Card>
     </div>
   )
 }

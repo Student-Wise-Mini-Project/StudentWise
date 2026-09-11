@@ -64,7 +64,7 @@ export function ExpenseDetailScreen() {
 
       <Page width="narrow">
         <Stack gap={5} className="py-4">
-          <Card className="mx-4" elevated>
+          <Card className="mx-4">
             <Stack gap={1} className="items-center py-2 text-center">
               <Money amount={expense.total_amount} currency={currency} size="display" />
               <p className="text-muted text-sm">

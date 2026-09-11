@@ -52,10 +52,11 @@ export function Sheet({
       aria-labelledby="sheet-title"
       className={cn(
         'bg-surface text-ink m-0 w-full max-w-none p-0 backdrop:backdrop-blur-[2px]',
-        // Phone: pinned to the bottom, clearing the home indicator.
-        'mt-auto max-h-[90dvh] rounded-t-2xl',
+        // Phone: pinned to the bottom, clearing the home indicator. The radius
+        // is on the leading edge only, and logical so it mirrors for Hebrew.
+        'mt-auto max-h-[90dvh] rounded-ss-2xl rounded-se-2xl',
         // Desktop: a centred dialog with a max width.
-        'sm:m-auto sm:max-w-md sm:rounded-2xl',
+        'sm:m-auto sm:max-w-md sm:rounded-lg',
         'shadow-sheet',
         className,
       )}
@@ -63,7 +64,10 @@ export function Sheet({
       <div className="flex max-h-[90dvh] flex-col">
         <header className="border-line flex items-start justify-between gap-3 border-b px-4 py-3">
           <div className="min-w-0">
-            <h2 id="sheet-title" className="font-display text-lg font-semibold">
+            <h2
+              id="sheet-title"
+              className="font-display text-2xl font-extrabold tracking-[-0.02em]"
+            >
               {title}
             </h2>
             {description && <p className="text-muted mt-0.5 text-sm">{description}</p>}

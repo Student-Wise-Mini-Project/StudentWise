@@ -19,7 +19,7 @@ export function TabBar({ unreadCount = 0 }: { unreadCount?: number }) {
       className="bg-surface border-line fixed inset-x-0 bottom-0 z-30 border-t lg:hidden"
       style={{ paddingBlockEnd: 'var(--sw-safe-block-end)' }}
     >
-      <ul className="flex items-stretch">
+      <ul className="flex items-stretch" style={{ blockSize: 'var(--sw-tabbar-height)' }}>
         {NAV_ITEMS.map((item) => (
           <li key={item.to} className="flex-1">
             <NavLink
@@ -27,8 +27,11 @@ export function TabBar({ unreadCount = 0 }: { unreadCount?: number }) {
               end={item.end}
               className={({ isActive }) =>
                 cn(
-                  'text-2xs relative flex h-14 flex-col items-center justify-center gap-0.5 font-semibold transition-colors',
-                  isActive ? 'text-accent' : 'text-muted',
+                  // Marked by weight and colour, never by position: a moving
+                  // indicator or a highlighted first slot reads backwards the
+                  // moment the bar mirrors for Hebrew.
+                  'text-2xs font-display relative flex h-full flex-col items-center justify-center gap-1 transition-colors',
+                  isActive ? 'text-accent font-extrabold' : 'text-muted font-bold',
                 )
               }
             >

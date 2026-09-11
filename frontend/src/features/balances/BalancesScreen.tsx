@@ -50,7 +50,7 @@ export function BalancesScreen() {
   return (
     <>
       {mine && (
-        <Card className="mx-4 mt-4" elevated>
+        <Card className="mx-4 mt-4">
           <Stack gap={1} className="items-center py-3 text-center">
             <p className="text-muted text-sm font-medium">
               {isZero(mine.net)

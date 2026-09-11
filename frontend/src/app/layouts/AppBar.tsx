@@ -32,18 +32,18 @@ export function AppBar({
       )}
       style={{ paddingBlockStart: 'var(--sw-safe-block-start)' }}
     >
-      <div className="mx-auto flex h-14 max-w-2xl items-center gap-2 px-2">
+      <div className="mx-auto flex h-13 max-w-2xl items-center gap-2 px-2">
         {back && (
           <button
             type="button"
             aria-label="Back"
             onClick={() => (typeof back === 'string' ? navigate(back) : navigate(-1))}
-            className="text-ink hover:bg-sunken rounded-lg p-2 transition-colors"
+            className="text-ink hover:bg-sunken rounded-md p-2 transition-colors"
           >
             <BackIcon />
           </button>
         )}
-        <h1 className={cn('font-display flex-1 truncate text-lg font-semibold', !back && 'ps-2')}>
+        <h1 className={cn('font-display flex-1 truncate text-lg font-bold', !back && 'ps-2')}>
           {title}
         </h1>
         {actions && <div className="flex shrink-0 items-center gap-1">{actions}</div>}

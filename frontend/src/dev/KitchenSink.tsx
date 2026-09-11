@@ -56,6 +56,29 @@ export function KitchenSink() {
       <PageHeader title="Kitchen sink" subtitle="Every shared component, in one place." />
 
       <Stack gap={6} className="px-4 pb-10">
+        <Section title="The slab">
+          {/* Exactly one of these per screen, carrying the number the user
+           * opened the app for. It stays dark in both themes. */}
+          <div className="bg-slab text-on-slab rounded-sm px-5 py-5">
+            <div className="font-display text-2xs text-faint font-extrabold tracking-[0.1em] uppercase">
+              Overall you're owed
+            </div>
+            <div className="mt-1.5">
+              <Money amount="412.60" size="hero" className="text-slab-credit" sign="always" />
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <div className="border-line-strong rounded-sm border px-3 py-2">
+                <div className="text-2xs text-faint">Dizengoff 5</div>
+                <Money amount="141.53" size="sm" className="text-slab-credit" sign="always" />
+              </div>
+              <div className="border-line-strong rounded-sm border px-3 py-2">
+                <div className="text-2xs text-faint">Eilat trip</div>
+                <Money amount="-113.33" size="sm" className="text-slab-debt" sign="always" />
+              </div>
+            </div>
+          </div>
+        </Section>
+
         <Section title="Money">
           <Card>
             <Stack gap={2}>
@@ -111,6 +134,12 @@ export function KitchenSink() {
 
               <Field label="Amount" required>
                 {(props) => <MoneyInput {...props} value={amount} onValueChange={setAmount} />}
+              </Field>
+
+              <Field label="Amount, hero treatment">
+                {(props) => (
+                  <MoneyInput {...props} size="hero" value={amount} onValueChange={setAmount} />
+                )}
               </Field>
 
               <Field label="Category">
@@ -321,7 +350,7 @@ export function KitchenSink() {
             </Stack>
             <Card padding="none">
               <EmptyState
-                icon={<ReceiptIcon className="size-10" />}
+                icon={<ReceiptIcon className="size-5" />}
                 title="No expenses yet"
                 body="Add the first one and everyone else will see it."
                 action={{ label: 'Add an expense', onClick: () => {} }}
@@ -337,7 +366,7 @@ export function KitchenSink() {
             </Card>
             <Card padding="none">
               <EmptyState
-                icon={<ScalesIcon className="size-10" />}
+                icon={<ScalesIcon className="size-5" />}
                 title="Everyone is square"
                 body="Nothing left to settle up."
                 size="inline"
@@ -353,7 +382,9 @@ export function KitchenSink() {
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-muted text-xs font-semibold tracking-[0.12em] uppercase">{title}</h2>
+      <h2 className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
+        {title}
+      </h2>
       {children}
     </section>
   )

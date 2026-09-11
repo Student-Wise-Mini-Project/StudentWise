@@ -11,8 +11,8 @@ export function SideNav({ unreadCount = 0 }: { unreadCount?: number }) {
       aria-label="Main"
       className="border-line bg-surface fixed inset-y-0 start-0 z-30 hidden w-60 border-e lg:block"
     >
-      <div className="flex h-14 items-center px-5">
-        <span className="font-display text-lg font-semibold tracking-tight">StudentWise</span>
+      <div className="border-line flex h-13 items-center border-b px-5">
+        <span className="font-display text-lg font-extrabold tracking-[-0.01em]">StudentWise</span>
       </div>
 
       <ul className="flex flex-col gap-0.5 px-3 py-2">
@@ -23,10 +23,10 @@ export function SideNav({ unreadCount = 0 }: { unreadCount?: number }) {
               end={item.end}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition-colors',
+                  'font-display flex items-center gap-3 rounded-md px-3 py-2.5 text-base transition-colors',
                   isActive
-                    ? 'bg-accent-soft text-accent'
-                    : 'text-muted hover:bg-sunken hover:text-ink',
+                    ? 'bg-accent-soft text-accent font-extrabold'
+                    : 'text-muted hover:bg-sunken hover:text-ink font-bold',
                 )
               }
             >

@@ -1,11 +1,16 @@
 import { cn } from '@/lib/cn'
 import { type ApproximateAmount, formatMoney, isNegative, isPositive } from '@/lib/money'
 
+/**
+ * Money is the heaviest ink on every screen, at every size. Heebo 800 with
+ * tabular figures throughout; only the size and the tracking change.
+ */
 const SIZES = {
   sm: 'text-sm',
   md: 'text-base',
-  lg: 'text-lg font-semibold',
-  display: 'font-display text-3xl font-semibold tracking-tight',
+  lg: 'text-lg',
+  display: 'text-4xl tracking-[-0.03em]',
+  hero: 'text-hero tracking-[-0.035em]',
 } as const
 
 export type MoneyTone = 'neutral' | 'auto' | 'credit' | 'debt' | 'muted'
@@ -24,10 +29,18 @@ export type MoneyProps = {
   currency?: string
   /** `auto` colours by sign: positive is a credit, negative is a debt. */
   tone?: MoneyTone
+  /**
+   * Defaults to `always` for the three tones that mean "this is a balance", and
+   * to `never` otherwise. A plain total ("this shop cost ₪212.30") has no sign;
+   * a credit or a debt always has one, because colour alone fails the commonest
+   * colour-vision deficiency.
+   */
   sign?: 'auto' | 'never' | 'always'
   size?: keyof typeof SIZES
   className?: string
 }
+
+const SIGNED_TONES = new Set<MoneyTone>(['auto', 'credit', 'debt'])
 
 /**
  * The only place a money string becomes pixels.
@@ -52,28 +65,35 @@ export function Money({
   amount,
   currency = 'ILS',
   tone = 'neutral',
-  sign = 'never',
+  sign,
   size = 'md',
   className,
 }: MoneyProps) {
   const approximate = typeof amount === 'object'
   const value = approximate ? amount.value : amount
+  const signDisplay = sign ?? (SIGNED_TONES.has(tone) ? 'always' : 'never')
 
   const autoTone = isPositive(value)
     ? 'text-credit'
     : isNegative(value)
       ? 'text-debt'
       : 'text-muted'
-  const formatted = formatMoney(value, currency, { sign })
+  const formatted = formatMoney(value, currency, { sign: signDisplay })
 
   return (
     <span
       className={cn(
-        'tnum whitespace-nowrap',
+        'tnum font-display font-extrabold whitespace-nowrap',
         SIZES[size],
         tone === 'auto' ? autoTone : TONES[tone],
         className,
       )}
+      // An amount is a left-to-right run wherever it appears. Without this, a
+      // leading `+` or `−` is bidi-reordered to the trailing end inside an RTL
+      // paragraph and `+₪412.60` renders as `₪412.60+` -- the app's single most
+      // load-bearing character, silently moved. Isolating here rather than at
+      // each call site means no screen has to remember.
+      style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
       aria-label={approximate ? `approximately ${formatted}` : undefined}
     >
       {approximate && (

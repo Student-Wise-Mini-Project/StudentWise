@@ -27,7 +27,10 @@ export function SegmentedControl<T extends string>({
     <div
       role="radiogroup"
       aria-label={name}
-      className={cn('bg-sunken flex w-full gap-0.5 rounded-lg p-0.5', className)}
+      className={cn(
+        'bg-sunken border-line flex w-full gap-[3px] rounded-md border p-[3px]',
+        className,
+      )}
     >
       {segments.map((segment) => {
         const selected = segment.value === value
@@ -35,9 +38,13 @@ export function SegmentedControl<T extends string>({
           <label
             key={segment.value}
             className={cn(
-              'flex-1 cursor-pointer rounded-md px-2 py-2 text-center text-sm font-semibold transition-colors',
+              'font-display flex-1 cursor-pointer rounded-sm px-2 py-2 text-center text-sm transition-colors',
               'has-[:focus-visible]:outline-accent has-[:focus-visible]:outline-2',
-              selected ? 'bg-surface text-ink shadow-raised' : 'text-muted hover:text-ink',
+              // The thumb is a filled accent block, not a raised white tile.
+              // Nothing that does not move carries a shadow in this identity.
+              selected
+                ? 'bg-accent text-on-accent font-extrabold'
+                : 'text-muted hover:text-ink font-bold',
             )}
           >
             <input

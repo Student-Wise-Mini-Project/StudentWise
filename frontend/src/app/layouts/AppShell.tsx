@@ -29,23 +29,32 @@ export function AppShell() {
 
       <main
         className="pb-20 lg:pb-8"
-        // Clear the tab bar *and* the home indicator, so the last row of a list
-        // is never stuck behind either.
+        // Clear the tab bar, the FAB bar above it *and* the home indicator, so
+        // the last row of a list is never stuck behind any of them.
         style={{
-          paddingBlockEnd: 'calc(var(--sw-tabbar-height) + var(--sw-safe-block-end) + 1rem)',
+          paddingBlockEnd: 'calc(var(--sw-tabbar-height) + var(--sw-safe-block-end) + 4.5rem)',
         }}
       >
         <Outlet />
       </main>
 
-      <Link
-        to="/groups"
-        aria-label="Add an expense"
-        className="bg-accent text-on-accent shadow-float fixed end-4 z-30 flex size-14 items-center justify-center rounded-full transition-transform active:scale-95 lg:hidden"
-        style={{ insetBlockEnd: 'calc(var(--sw-tabbar-height) + var(--sw-safe-block-end) + 1rem)' }}
+      {/* A bar, not a disc. A circle in the corner hides its own label and a
+       * right-to-left reader has to learn a new corner; a full-width pill says
+       * what it does, is reachable by either thumb, and mirrors for free. The
+       * `+` is its own flex child so it stays on the leading edge under `rtl`
+       * rather than being swept to the end of the text run. */}
+      <div
+        className="from-ground pointer-events-none fixed inset-x-0 z-30 bg-linear-to-t from-60% to-transparent px-4 pt-6 pb-2 lg:hidden"
+        style={{ insetBlockEnd: 'calc(var(--sw-tabbar-height) + var(--sw-safe-block-end))' }}
       >
-        <PlusIcon className="size-7" />
-      </Link>
+        <Link
+          to="/groups"
+          className="bg-accent text-on-accent shadow-float font-display pointer-events-auto mx-auto flex h-13 max-w-2xl items-center justify-center gap-2 rounded-full text-lg font-extrabold transition-transform active:scale-[0.98]"
+        >
+          <PlusIcon className="size-5" />
+          Add expense
+        </Link>
+      </div>
 
       <TabBar unreadCount={unreadCount} />
 

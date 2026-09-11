@@ -89,7 +89,7 @@ export function InsightsScreen() {
 
       {!loading && !nothingYet && summary.data && (
         <>
-          <Card className="mx-4" elevated>
+          <Card className="mx-4">
             <Stack gap={3}>
               <Stack gap={1} className="items-center text-center">
                 <p className="text-muted text-xs font-semibold tracking-wide uppercase">
