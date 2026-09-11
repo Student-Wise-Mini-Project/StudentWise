@@ -607,9 +607,9 @@
         waiting on a person rather than on code.
       </p>
       <p>
-        <strong>Which is now the real constraint.</strong> Three things are
-        blocked on a human decision, not on engineering time, and none of them
-        takes more than a few minutes to unblock.
+        <strong>Which is now the real constraint.</strong> Two things are
+        blocked on a human decision, not on engineering time, and neither takes
+        more than a few minutes to unblock.
       </p>
     </div>
 
@@ -621,16 +621,6 @@
           Sent, never accepted. Two of three people still cannot see any code —
           and with nobody able to approve a pull request, every branch is being
           merged by its own author.
-        </p>
-      </div>
-      <div class="blocker">
-        <span class="who">Nobody else can do this</span>
-        <h4>The design brief has not been run</h4>
-        <p>
-          <code>docs/design-brief.md</code> is written and ready to paste into
-          Claude Design. Applying what comes back is a token edit, not a rebuild:
-          two guard tests fail the build if a colour is named outside the theme
-          file.
         </p>
       </div>
       <div class="blocker">
@@ -684,7 +674,6 @@
         <p>Every item here is minutes of work that something larger is waiting behind.</p>
         <ol>
           <li><div>Chase the four invitations before they expire<span>0.5 · 17 September, and until then nobody can review a PR</span></div></li>
-          <li><div>Run <code>docs/design-brief.md</code> through Claude Design<span>the app works and looks like a wireframe; this is the only piece nobody else can do</span></div></li>
           <li><div>Ask the lecturer about hosting<span>10.1 · one question, gates all six deployment missions</span></div></li>
           <li><div>Finish Epic 9 bar the APK<span>9.9 + 9.10 · the Ask screen needs an API key; anomalies work today</span></div></li>
           <li><div>Item tables and per-item splits<span>5.1 + 5.2 · #2 starts on pure backend, no AI yet</span></div></li>
@@ -695,7 +684,6 @@
         <h3>Week 2 — make it real</h3>
         <p>Turn a working app on a laptop into something a marker can open.</p>
         <ol>
-          <li><div>Apply the design tokens<span>one commit touching <code>theme.css</code>; if it touches a screen, the token system failed</span></div></li>
           <li><div>Deploy the database, API and frontend<span>10.2–10.4 · a link beats a screenshot, and it fixes phone testing too</span></div></li>
           <li><div>Receipt OCR and review-and-confirm<span>5.4 + 5.5 · the headline demo moment; upload already works</span></div></li>
           <li><div>Measure Text-to-SQL quality<span>4.4 · ~20 real questions with expected answers</span></div></li>

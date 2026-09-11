@@ -324,10 +324,13 @@ with no interface is hard to demo whatever the API does.
 > install it to an iOS home screen. What is left is the natural-language Ask
 > screen (9.9), anomaly alerts (9.10) and the APK (9.12).
 >
-> Start from `frontend/README.md`. The visual identity is deliberately a
-> placeholder: every colour and typeface lives in `src/styles/theme.css` and a
-> test fails if one appears anywhere else, so applying the Claude Design output
-> (`docs/design-brief.md`) is a one-file edit.
+> Start from `frontend/README.md`. **The visual identity has landed**: the
+> "Kiosk" design from Claude Design is applied — tokens, the eleven shared
+> components and all six primary screens. The bet that it would be a one-file
+> edit held for the tokens (`src/styles/theme.css` was a drop-in replacement)
+> and roughly held for the components, which took one or two lines each. The
+> screens were rebuilt, which was always the plan: a token system promises that
+> a *recolour* is one file, not that a new layout is.
 >
 > **Money is a string in every response.** Parse with a decimal library —
 > JavaScript numbers cannot hold these values exactly, and a rounding bug in the
