@@ -13,6 +13,7 @@ import { useGroupScope } from '@/features/groups/groupContext'
 import { cn } from '@/lib/cn'
 import { formatDay } from '@/lib/dates'
 import { EXPENSE_CATEGORIES } from '@/api/types'
+import { useT } from '@/i18n/i18nContext'
 import { categoryLabelOf } from '@/lib/labels'
 
 import { useExpenses, type ExpenseFilters } from './api'
@@ -46,6 +47,7 @@ function useFilters(): [ExpenseFilters, (next: ExpenseFilters) => void] {
 }
 
 export function ExpenseListScreen() {
+  const t = useT()
   const { groupId, currency, activeMembers } = useGroupScope()
   const [filters, setFilters] = useFilters()
   const expenses = useExpenses(groupId, filters)
@@ -76,7 +78,7 @@ export function ExpenseListScreen() {
         {EXPENSE_CATEGORIES.map((category) => (
           <FilterChip
             key={category}
-            label={categoryLabelOf(category)}
+            label={categoryLabelOf(t, category)}
             active={filters.category === category}
             onClick={() =>
               setFilters({
@@ -118,7 +120,7 @@ export function ExpenseListScreen() {
             meta={<Money amount={expense.total_amount} currency={currency} size="lg" />}
             metaSubtitle={
               expense.splits.length === activeMembers.length
-                ? categoryLabelOf(expense.category)
+                ? categoryLabelOf(t, expense.category)
                 : `${expense.splits.length} of ${activeMembers.length}`
             }
             trailing={

@@ -15,12 +15,14 @@ import { useGroups } from '@/features/groups/api'
 import { useUnreadCount } from '@/features/notifications/api'
 import { cn } from '@/lib/cn'
 import { formatDayHeader } from '@/lib/dates'
+import { useT } from '@/i18n/i18nContext'
 import { groupTypeLabel } from '@/lib/labels'
 import { abs, addAll, compare, isPositive, isZero, subtract } from '@/lib/money'
 
 import { useActivityFeed, useOverallPosition } from './api'
 
 export function HomeScreen() {
+  const t = useT()
   const { user } = useAuth()
   const groups = useGroups()
   const feed = useActivityFeed()
@@ -64,7 +66,7 @@ export function HomeScreen() {
                       key={group.id}
                       to={`/groups/${group.id}`}
                       title={group.name}
-                      subtitle={groupTypeLabel[group.type]}
+                      subtitle={groupTypeLabel(t, group.type)}
                       trailing={<ChevronEnd />}
                       dense
                     />

@@ -13,6 +13,7 @@ import { Money } from '@/components/Money'
 import { useAuth } from '@/features/auth/authContext'
 import { useBalances } from '@/features/balances/api'
 import { cn } from '@/lib/cn'
+import { useT } from '@/i18n/i18nContext'
 import { memberRoleLabel } from '@/lib/labels'
 import { isPositive, isValidAmount, isZero } from '@/lib/money'
 
@@ -20,6 +21,7 @@ import { useAddMember, useRemoveMember, useUpdateMemberWeight } from './api'
 import { useGroupScope } from './groupContext'
 
 export function MembersScreen() {
+  const t = useT()
   const { activeMembers, allMembers, isOwner, groupId, currency } = useGroupScope()
   const { user } = useAuth()
   const [adding, setAdding] = useState(false)
@@ -61,7 +63,7 @@ export function MembersScreen() {
               }
               subtitle={
                 <>
-                  {member.role === 'OWNER' && `${memberRoleLabel[member.role]} · `}
+                  {member.role === 'OWNER' && `${memberRoleLabel(t, member.role)} · `}
                   {String(member.default_split_weight)}&times; share
                 </>
               }

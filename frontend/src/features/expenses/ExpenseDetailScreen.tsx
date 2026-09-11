@@ -18,12 +18,14 @@ import { useGroupScope } from '@/features/groups/groupContext'
 import { ReceiptSection } from '@/features/receipts/ReceiptSection'
 import { cn } from '@/lib/cn'
 import { formatDay, formatRelative } from '@/lib/dates'
+import { useT } from '@/i18n/i18nContext'
 import { categoryLabelOf, sourceLabel, splitTypeLabel } from '@/lib/labels'
 import { subtract } from '@/lib/money'
 
 import { useDeleteExpense, useExpense } from './api'
 
 export function ExpenseDetailScreen() {
+  const t = useT()
   const { expenseId } = useParams<{ expenseId: string }>()
   const navigate = useNavigate()
   const query = useExpense(expenseId)
@@ -81,10 +83,10 @@ export function ExpenseDetailScreen() {
         <Stack gap={5} className="pb-4">
           <header className="px-4 pt-1">
             <Stack direction="row" gap={2} className="flex-wrap">
-              <Badge>{categoryLabelOf(expense.category)}</Badge>
-              <Badge tone="neutral">{splitTypeLabel[expense.split_type]}</Badge>
+              <Badge>{categoryLabelOf(t, expense.category)}</Badge>
+              <Badge tone="neutral">{splitTypeLabel(t, expense.split_type)}</Badge>
               {expense.source !== 'MANUAL' && (
-                <Badge tone="accent">{sourceLabel[expense.source]}</Badge>
+                <Badge tone="accent">{sourceLabel(t, expense.source)}</Badge>
               )}
             </Stack>
 
@@ -126,7 +128,7 @@ export function ExpenseDetailScreen() {
           )}
 
           <ListSection
-            header={`${splitTypeLabel[expense.split_type]} between ${expense.splits.length}`}
+            header={`${splitTypeLabel(t, expense.split_type)} between ${expense.splits.length}`}
           >
             {expense.splits.map((split) => (
               <ListRow

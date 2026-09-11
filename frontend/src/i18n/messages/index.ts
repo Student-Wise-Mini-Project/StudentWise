@@ -1,8 +1,14 @@
 import { isPluralForms } from '../format'
 import type { FlatCatalogue, Flatten, Locale, Widen } from '../types'
 
+import balancesEn from './en/balances.json'
 import commonEn from './en/common.json'
+import expensesEn from './en/expenses.json'
+import groupsEn from './en/groups.json'
+import balancesHe from './he/balances.json'
 import commonHe from './he/common.json'
+import expensesHe from './he/expenses.json'
+import groupsHe from './he/groups.json'
 
 /**
  * The English catalogue is the source of truth for keys.
@@ -12,7 +18,10 @@ import commonHe from './he/common.json'
  * to three different screens.
  */
 export const en = {
+  balances: balancesEn,
   common: commonEn,
+  expenses: expensesEn,
+  groups: groupsEn,
 } as const
 
 /**
@@ -20,7 +29,10 @@ export const en = {
  * the same key set as English, no fewer and no extras.
  */
 export const he: Widen<typeof en> = {
+  balances: balancesHe,
   common: commonHe,
+  expenses: expensesHe,
+  groups: groupsHe,
 }
 
 export type MessageKey = Flatten<typeof en>

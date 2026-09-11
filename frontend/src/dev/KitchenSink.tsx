@@ -18,6 +18,7 @@ import { Spinner } from '@/components/Spinner'
 import { EmptyState, ErrorState, ListRowSkeleton, Skeleton } from '@/components/feedback'
 import { ChevronEnd, ReceiptIcon, ScalesIcon } from '@/components/icons'
 import { Page, PageHeader, Stack } from '@/components/layout'
+import { useT } from '@/i18n/i18nContext'
 import { categoryLabel, splitTypeLabel } from '@/lib/labels'
 import { divideForDisplay } from '@/lib/money'
 
@@ -45,6 +46,7 @@ const [GAL, MAYA, NOA] = PEOPLE as [
  * Dev only. The route is not registered in a production build.
  */
 export function KitchenSink() {
+  const t = useT()
   const [split, setSplit] = useState<(typeof SPLIT_TYPES)[number]>('EQUAL')
   const [amount, setAmount] = useState('212.30')
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -147,7 +149,7 @@ export function KitchenSink() {
                   <Select {...props} defaultValue="GROCERIES">
                     {EXPENSE_CATEGORIES.map((category) => (
                       <option key={category} value={category}>
-                        {categoryLabel[category]}
+                        {categoryLabel(t, category)}
                       </option>
                     ))}
                   </Select>
@@ -162,7 +164,7 @@ export function KitchenSink() {
                     onChange={setSplit}
                     segments={SPLIT_TYPES.map((type) => ({
                       value: type,
-                      label: splitTypeLabel[type],
+                      label: splitTypeLabel(t, type),
                     }))}
                   />
                 )}

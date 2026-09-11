@@ -3,65 +3,59 @@ import type {
   ExpenseSource,
   GroupType,
   MemberRole,
-  NotificationKind,
   SettlementMethod,
   SplitType,
 } from '@/api/types'
+import type { MessageKey } from '@/i18n/messages'
+import type { Vars } from '@/i18n/types'
 
 /**
- * Enum values to English, in one place.
+ * Enum values to words, in one place.
  *
- * This is the translation seam. The UI is English today and Hebrew later; when
- * that happens a second table goes in this file and every screen follows,
- * because no screen writes `SHARED_APARTMENT` into the DOM itself.
+ * This was the translation seam, and it has now been used. What used to be a
+ * `Record<Enum, string>` per enum is a function taking the `t` from `useT()`.
+ * The old comment here predicted that "a second table goes in this file and
+ * every screen follows, because no screen writes `SHARED_APARTMENT` into the
+ * DOM itself" -- which held: this was the only file that needed a new idea, and
+ * the screens only needed a `t`.
  *
- * Deliberately *not* a full i18n system. The choice made was "RTL-ready", which
- * is a layout problem that logical CSS properties solve. Translation is a
- * separate axis, and routing every button label through `t('...')` before anyone
- * needs a second language buys indirection rather than readiness.
+ * The `as MessageKey` casts are the one place the types are loosened. The enum
+ * unions come from the generated API types, so the *inputs* are checked at
+ * every call site; only the assembled dotted string is not, and
+ * `messages.test.ts` asserts both catalogues carry the same key set.
  */
+type T = (key: MessageKey, vars?: Vars) => string
 
-export const groupTypeLabel: Record<GroupType, string> = {
-  SHARED_APARTMENT: 'Flat',
-  COUPLE: 'Couple',
-  SOLO: 'Personal',
-  TRIP: 'Trip',
+export function groupTypeLabel(t: T, type: GroupType): string {
+  return t(`groups.types.${type}` as MessageKey)
 }
 
-export const memberRoleLabel: Record<MemberRole, string> = {
-  OWNER: 'Owner',
-  MEMBER: 'Member',
+export function memberRoleLabel(t: T, role: MemberRole): string {
+  return t(`groups.roles.${role}` as MessageKey)
 }
 
-export const categoryLabel: Record<ExpenseCategory, string> = {
-  GROCERIES: 'Groceries',
-  RENT: 'Rent',
-  UTILITIES: 'Utilities',
-  EATING_OUT: 'Eating out',
-  ENTERTAINMENT: 'Entertainment',
-  TRANSPORT: 'Transport',
-  OTHER: 'Other',
+export function categoryLabel(t: T, category: ExpenseCategory): string {
+  return t(`expenses.categories.${category}` as MessageKey)
 }
 
-export const splitTypeLabel: Record<SplitType, string> = {
-  EQUAL: 'Equally',
-  EXACT: 'Exact amounts',
-  PERCENTAGE: 'Percentages',
-  WEIGHT: 'Shares',
+/** A category is optional on an expense; `null` is a real, common state. */
+export function categoryLabelOf(t: T, category: ExpenseCategory | null | undefined): string {
+  return t(
+    category ? (`expenses.categories.${category}` as MessageKey) : 'expenses.categories.NONE',
+  )
+}
+
+export function splitTypeLabel(t: T, type: SplitType): string {
+  return t(`expenses.splitTypes.${type}` as MessageKey)
 }
 
 /** The one-line explanation under each split mode. */
-export const splitTypeHint: Record<SplitType, string> = {
-  EQUAL: 'Everyone selected pays the same.',
-  EXACT: 'Type what each person owes. It has to add up to the total.',
-  PERCENTAGE: 'Type each share as a percentage. It has to add up to 100.',
-  WEIGHT: 'Split in proportion — 2 shares to 1 pays twice as much.',
+export function splitTypeHint(t: T, type: SplitType): string {
+  return t(`expenses.splitHints.${type}` as MessageKey)
 }
 
-export const settlementMethodLabel: Record<SettlementMethod, string> = {
-  MANUAL: 'Cash or transfer',
-  BIT: 'Bit',
-  PAYBOX: 'PayBox',
+export function settlementMethodLabel(t: T, method: SettlementMethod): string {
+  return t(`balances.methods.${method}` as MessageKey)
 }
 
 /**
@@ -69,25 +63,6 @@ export const settlementMethodLabel: Record<SettlementMethod, string> = {
  * AI ingestion work in Epic 5 and are listed so the feed does not render a bare
  * enum value the day one of them first appears.
  */
-export const sourceLabel: Record<ExpenseSource, string> = {
-  MANUAL: 'Added by hand',
-  VOICE: 'Added by voice',
-  OCR: 'Read from a receipt',
-  GMAIL_API: 'Found in email',
-  RECURRING: 'Posted by a schedule',
-}
-
-export const notificationKindLabel: Record<NotificationKind, string> = {
-  EXPENSE_ADDED: 'New expense',
-  COMMENT_ADDED: 'New comment',
-  SETTLEMENT_RECORDED: 'Payment recorded',
-  PAYMENT_REMINDER: 'Reminder',
-  BUDGET_WARNING: 'Budget warning',
-  BUDGET_EXCEEDED: 'Budget exceeded',
-  BILL_DUE: 'Bill due',
-}
-
-/** A category is optional on an expense; `null` is a real, common state. */
-export function categoryLabelOf(category: ExpenseCategory | null | undefined): string {
-  return category ? categoryLabel[category] : 'Uncategorised'
+export function sourceLabel(t: T, source: ExpenseSource): string {
+  return t(`expenses.sources.${source}` as MessageKey)
 }

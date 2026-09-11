@@ -2,13 +2,16 @@ import { NavLink } from 'react-router'
 
 import { NAV_ITEMS } from '@/app/nav/navItems'
 import { CountBadge } from '@/components/Badge'
+import { useT } from '@/i18n/i18nContext'
 import { cn } from '@/lib/cn'
 
 /** The same destinations as the tab bar, laid out for a pointer and a big screen. */
 export function SideNav({ unreadCount = 0 }: { unreadCount?: number }) {
+  const t = useT()
+
   return (
     <nav
-      aria-label="Main"
+      aria-label={t('common.nav.main')}
       className="border-line bg-surface fixed inset-y-0 start-0 z-30 hidden w-60 border-e lg:block"
     >
       <div className="border-line flex h-13 items-center border-b px-5">
@@ -31,7 +34,7 @@ export function SideNav({ unreadCount = 0 }: { unreadCount?: number }) {
               }
             >
               <item.icon className="size-5" />
-              <span className="flex-1">{item.label}</span>
+              <span className="flex-1">{t(item.label)}</span>
               {item.badge === 'unread' && <CountBadge count={unreadCount} />}
             </NavLink>
           </li>

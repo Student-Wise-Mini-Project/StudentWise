@@ -13,7 +13,13 @@ import type { Locale, Vars } from './types'
  * `locale` is a prop only so tests can pin one; the app passes nothing and the
  * stored preference wins.
  */
-export function I18nProvider({ children, locale: fixed }: { children: ReactNode; locale?: Locale }) {
+export function I18nProvider({
+  children,
+  locale: fixed,
+}: {
+  children: ReactNode
+  locale?: Locale
+}) {
   const [locale, setLocaleState] = useState<Locale>(fixed ?? readStoredLocale)
 
   useEffect(() => {

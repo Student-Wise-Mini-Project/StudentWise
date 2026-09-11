@@ -1,10 +1,12 @@
 import type { ComponentType, SVGProps } from 'react'
 
 import { BellIcon, GroupsIcon, HomeIcon, PersonIcon } from '@/components/icons'
+import type { MessageKey } from '@/i18n/messages'
 
 export type NavItem = {
   to: string
-  label: string
+  /** A catalogue key. The two nav components translate at render.*/
+  label: MessageKey
   icon: ComponentType<SVGProps<SVGSVGElement>>
   /** Only match this exact path, not its children. */
   end?: boolean
@@ -19,8 +21,8 @@ export type NavItem = {
  * not have, six weeks after anyone remembers why.
  */
 export const NAV_ITEMS: NavItem[] = [
-  { to: '/', label: 'Home', icon: HomeIcon, end: true },
-  { to: '/groups', label: 'Groups', icon: GroupsIcon },
-  { to: '/notifications', label: 'Alerts', icon: BellIcon, badge: 'unread' },
-  { to: '/settings', label: 'You', icon: PersonIcon },
+  { to: '/', label: 'common.nav.home', icon: HomeIcon, end: true },
+  { to: '/groups', label: 'common.nav.groups', icon: GroupsIcon },
+  { to: '/notifications', label: 'common.nav.alerts', icon: BellIcon, badge: 'unread' },
+  { to: '/settings', label: 'common.nav.you', icon: PersonIcon },
 ]

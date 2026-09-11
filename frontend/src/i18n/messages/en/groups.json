@@ -1,0 +1,62 @@
+{
+  "types": {
+    "SHARED_APARTMENT": "Flat",
+    "COUPLE": "Couple",
+    "SOLO": "Personal",
+    "TRIP": "Trip"
+  },
+  "roles": {
+    "OWNER": "Owner",
+    "MEMBER": "In the group"
+  },
+  "list": {
+    "title": "Groups",
+    "new": "New",
+    "emptyTitle": "No groups yet",
+    "emptyBody": "A group is a flat, a trip, or the two of you. Everything else hangs off one.",
+    "emptyAction": "Create a group",
+    "memberCount": { "one": "{count} person", "other": "{count} people" }
+  },
+  "create": {
+    "title": "New group",
+    "description": "You can add the others once it exists.",
+    "nameLabel": "Name",
+    "nameHint": "Dizengoff 5, Greece 2026, us two.",
+    "kindLabel": "What kind?"
+  },
+  "scope": {
+    "loading": "Loading the group",
+    "error": "Cannot open that group",
+    "sections": "Group sections"
+  },
+  "header": {
+    "owed": "You're owed here",
+    "owe": "You owe here",
+    "neutral": "Your position here"
+  },
+  "tabs": {
+    "expenses": "Expenses",
+    "balances": "Balances",
+    "members": "Members",
+    "insights": "Insights"
+  },
+  "members": {
+    "header": "In the group",
+    "addSomeone": "Add someone",
+    "weight": "Weight",
+    "share": "{weight}× share",
+    "weightExplainer": "A weight splits things in proportion — a share of 2 is twice a share of 1. It is only used when an expense is split by shares.",
+    "departedHeader": "No longer in the group",
+    "departedSubtitle": "Left. Their past expenses and any balance still count.",
+    "departedNote": "Leaving does not erase a debt. Someone who has left still appears in the balances until they are square, and can still be paid.",
+    "addTitle": "Add someone",
+    "addDescription": "They need a StudentWise account already.",
+    "addEmailLabel": "Their email",
+    "weightTitle": "{name}'s share",
+    "weightTitleFallback": "Share",
+    "weightDescription": "Used when an expense is split by shares.",
+    "weightLabel": "Share",
+    "weightHint": "Bigger room, bigger number.",
+    "weightError": "Has to be a number above zero."
+  }
+}

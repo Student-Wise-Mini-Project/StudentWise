@@ -1,0 +1,7 @@
+{
+  "methods": {
+    "MANUAL": "Cash or transfer",
+    "BIT": "Bit",
+    "PAYBOX": "PayBox"
+  }
+}

@@ -2,6 +2,7 @@ import { NavLink } from 'react-router'
 
 import { NAV_ITEMS } from '@/app/nav/navItems'
 import { CountBadge } from '@/components/Badge'
+import { useT } from '@/i18n/i18nContext'
 import { cn } from '@/lib/cn'
 
 /**
@@ -13,9 +14,11 @@ import { cn } from '@/lib/cn'
  * was designed for.
  */
 export function TabBar({ unreadCount = 0 }: { unreadCount?: number }) {
+  const t = useT()
+
   return (
     <nav
-      aria-label="Main"
+      aria-label={t('common.nav.main')}
       className="bg-surface border-line fixed inset-x-0 bottom-0 z-30 border-t lg:hidden"
       style={{ paddingBlockEnd: 'var(--sw-safe-block-end)' }}
     >
@@ -45,7 +48,7 @@ export function TabBar({ unreadCount = 0 }: { unreadCount?: number }) {
                       </span>
                     )}
                   </span>
-                  {item.label}
+                  {t(item.label)}
                 </>
               )}
             </NavLink>

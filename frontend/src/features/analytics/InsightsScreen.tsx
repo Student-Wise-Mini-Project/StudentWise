@@ -12,6 +12,7 @@ import { Stack } from '@/components/layout'
 import { useAuth } from '@/features/auth/authContext'
 import { useGroupScope } from '@/features/groups/groupContext'
 import { formatDay, formatMonth } from '@/lib/dates'
+import { useT } from '@/i18n/i18nContext'
 import { categoryLabelOf } from '@/lib/labels'
 import { formatMoney } from '@/lib/money'
 
@@ -29,6 +30,7 @@ type Scope = 'group' | 'me'
  * concludes they are being overcharged.
  */
 export function InsightsScreen() {
+  const t = useT()
   const { groupId, currency } = useGroupScope()
   const { user } = useAuth()
   const [scope, setScope] = useState<Scope>('group')
@@ -132,7 +134,7 @@ export function InsightsScreen() {
                     .filter((slice) => Number(slice.share_percent) > 0)
                     .map((slice) => ({
                       key: slice.category ?? 'OTHER',
-                      label: categoryLabelOf(slice.category),
+                      label: categoryLabelOf(t, slice.category),
                       share: Number(slice.share_percent),
                       amount: formatMoney(slice.total, currency),
                       caption: `${slice.share_percent}%`,
@@ -205,7 +207,7 @@ export function InsightsScreen() {
                   />
                 }
                 metaSubtitle={
-                  <Badge>{categoryLabelOf(summary.data.largest_expense.category)}</Badge>
+                  <Badge>{categoryLabelOf(t, summary.data.largest_expense.category)}</Badge>
                 }
                 className="bg-surface border-line rounded-sm border"
               />

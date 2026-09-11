@@ -1,0 +1,67 @@
+{
+  "types": {
+    "SHARED_APARTMENT": "דירה",
+    "COUPLE": "זוג",
+    "SOLO": "אישי",
+    "TRIP": "טיול"
+  },
+  "roles": {
+    "OWNER": "בעלים",
+    "MEMBER": "בקבוצה"
+  },
+  "list": {
+    "title": "קבוצות",
+    "new": "חדשה",
+    "emptyTitle": "אין עדיין קבוצות",
+    "emptyBody": "קבוצה היא דירה, טיול, או שני אנשים. כל השאר נתלה עליה.",
+    "emptyAction": "יצירת קבוצה",
+    "memberCount": {
+      "one": "אדם אחד",
+      "two": "שני אנשים",
+      "many": "{count} אנשים",
+      "other": "{count} אנשים"
+    }
+  },
+  "create": {
+    "title": "קבוצה חדשה",
+    "description": "אפשר להוסיף את השאר אחרי היצירה.",
+    "nameLabel": "שם",
+    "nameHint": "דיזנגוף 5, יוון 2026, שנינו.",
+    "kindLabel": "איזה סוג?"
+  },
+  "scope": {
+    "loading": "הקבוצה בטעינה",
+    "error": "לא ניתן לפתוח את הקבוצה",
+    "sections": "מדורי הקבוצה"
+  },
+  "header": {
+    "owed": "מגיע לך כאן",
+    "owe": "החוב שלך כאן",
+    "neutral": "המצב שלך כאן"
+  },
+  "tabs": {
+    "expenses": "הוצאות",
+    "balances": "יתרות",
+    "members": "אנשים",
+    "insights": "תובנות"
+  },
+  "members": {
+    "header": "בקבוצה",
+    "addSomeone": "הוספת אדם",
+    "weight": "משקל",
+    "share": "חלק {weight}×",
+    "weightExplainer": "משקל מחלק ביחס: חלק 2 שווה כפול מחלק 1. בשימוש רק כשהוצאה מתחלקת לפי חלקים.",
+    "departedHeader": "לא בקבוצה יותר",
+    "departedSubtitle": "יצא מהקבוצה. ההוצאות והיתרה נשארות.",
+    "departedNote": "יציאה מהקבוצה לא מוחקת חוב. חשבון שיצא מופיע ביתרות עד לאיזון, ואפשר להסדיר אותו.",
+    "addTitle": "הוספת אדם",
+    "addDescription": "נדרש חשבון StudentWise קיים.",
+    "addEmailLabel": "האימייל שלהם",
+    "weightTitle": "החלק של {name}",
+    "weightTitleFallback": "חלק",
+    "weightDescription": "בשימוש כשהוצאה מתחלקת לפי חלקים.",
+    "weightLabel": "חלק",
+    "weightHint": "חדר גדול יותר, מספר גדול יותר.",
+    "weightError": "צריך מספר גדול מאפס."
+  }
+}

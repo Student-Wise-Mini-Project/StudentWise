@@ -21,6 +21,7 @@ import { useGroupScope } from '@/features/groups/groupContext'
 import { cn } from '@/lib/cn'
 import { today } from '@/lib/dates'
 import { createIdempotencyTracker } from '@/lib/idempotency'
+import { useT } from '@/i18n/i18nContext'
 import { categoryLabel } from '@/lib/labels'
 import { isPositive, isValidAmount } from '@/lib/money'
 
@@ -169,6 +170,7 @@ function ExpenseForm({
   }) => void
   onCancel: () => void
 }) {
+  const t = useT()
   const { group, me } = useGroupScope()
   // The signed-in member, and only if they are still in the group -- the API
   // rejects a payer who has left. `members[0]` used to stand in for this, and
@@ -317,7 +319,7 @@ function ExpenseForm({
                         : 'border-line text-muted hover:text-ink',
                     )}
                   >
-                    {categoryLabel[category]}
+                    {categoryLabel(t, category)}
                   </button>
                 )
               })}

@@ -19,6 +19,7 @@ import { useGroupScope } from '@/features/groups/groupContext'
 import { cn } from '@/lib/cn'
 import { today } from '@/lib/dates'
 import { createIdempotencyTracker } from '@/lib/idempotency'
+import { useT } from '@/i18n/i18nContext'
 import { settlementMethodLabel } from '@/lib/labels'
 import { isPositive, isValidAmount, isZero } from '@/lib/money'
 
@@ -265,6 +266,7 @@ function RecordPaymentSheet({
   transfer: PlannedTransfer | null
   onClose: () => void
 }) {
+  const t = useT()
   const { groupId, currency } = useGroupScope()
   const record = useRecordSettlement(groupId)
   const idempotency = useRef(createIdempotencyTracker())
@@ -363,7 +365,7 @@ function RecordPaymentSheet({
             >
               {SETTLEMENT_METHODS.map((option) => (
                 <option key={option} value={option}>
-                  {settlementMethodLabel[option]}
+                  {settlementMethodLabel(t, option)}
                 </option>
               ))}
             </Select>

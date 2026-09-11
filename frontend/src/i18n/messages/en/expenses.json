@@ -1,0 +1,31 @@
+{
+  "categories": {
+    "GROCERIES": "Groceries",
+    "RENT": "Rent",
+    "UTILITIES": "Utilities",
+    "EATING_OUT": "Eating out",
+    "ENTERTAINMENT": "Entertainment",
+    "TRANSPORT": "Transport",
+    "OTHER": "Other",
+    "NONE": "Uncategorised"
+  },
+  "splitTypes": {
+    "EQUAL": "Equally",
+    "EXACT": "Exact amounts",
+    "PERCENTAGE": "Percentages",
+    "WEIGHT": "Shares"
+  },
+  "splitHints": {
+    "EQUAL": "The total is split evenly between everyone selected.",
+    "EXACT": "Type an amount on each row. They have to add up to the total.",
+    "PERCENTAGE": "Type each share as a percentage. They have to add up to 100.",
+    "WEIGHT": "Split in proportion — a share of 2 is twice a share of 1."
+  },
+  "sources": {
+    "MANUAL": "Added by hand",
+    "VOICE": "Added by voice",
+    "OCR": "Read from a receipt",
+    "GMAIL_API": "Found in email",
+    "RECURRING": "Posted by a schedule"
+  }
+}

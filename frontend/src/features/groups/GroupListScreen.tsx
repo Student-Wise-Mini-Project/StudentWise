@@ -13,11 +13,13 @@ import { EmptyState, ErrorState, ListRowSkeleton } from '@/components/feedback'
 import { ChevronEnd, GroupsIcon } from '@/components/icons'
 import { Page, Stack } from '@/components/layout'
 import { detailOf } from '@/api/errors'
+import { useT } from '@/i18n/i18nContext'
 import { groupTypeLabel } from '@/lib/labels'
 
 import { useCreateGroup, useGroups } from './api'
 
 export function GroupListScreen() {
+  const t = useT()
   const groups = useGroups()
   const [creating, setCreating] = useState(false)
 
@@ -58,7 +60,7 @@ export function GroupListScreen() {
                   title={group.name}
                   subtitle={`${active.length} ${active.length === 1 ? 'person' : 'people'}`}
                   leading={<AvatarStack users={active.map((member) => member.user)} max={3} />}
-                  meta={<Badge>{groupTypeLabel[group.type]}</Badge>}
+                  meta={<Badge>{groupTypeLabel(t, group.type)}</Badge>}
                   trailing={<ChevronEnd />}
                 />
               )
@@ -73,6 +75,7 @@ export function GroupListScreen() {
 }
 
 function CreateGroupSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const t = useT()
   const create = useCreateGroup()
   const [name, setName] = useState('')
   const [type, setType] = useState<GroupType>('SHARED_APARTMENT')
@@ -141,7 +144,7 @@ function CreateGroupSheet({ open, onClose }: { open: boolean; onClose: () => voi
             >
               {GROUP_TYPES.map((groupType) => (
                 <option key={groupType} value={groupType}>
-                  {groupTypeLabel[groupType]}
+                  {groupTypeLabel(t, groupType)}
                 </option>
               ))}
             </Select>

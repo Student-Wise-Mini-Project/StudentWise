@@ -7,6 +7,7 @@ import { Money } from '@/components/Money'
 import { MoneyInput } from '@/components/MoneyInput'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { cn } from '@/lib/cn'
+import { useT } from '@/i18n/i18nContext'
 import { splitTypeHint, splitTypeLabel } from '@/lib/labels'
 import { addAll, divideForDisplay } from '@/lib/money'
 
@@ -48,6 +49,7 @@ export function SplitEditor({
   total,
   currency,
 }: SplitEditorProps) {
+  const t = useT()
   const selected = new Map(participants.map((p) => [p.userId, p]))
   const validation = validateSplit(splitType, participants, total)
   const equalShare = splitType === 'EQUAL' ? divideForDisplay(total, participants.length) : null
@@ -111,7 +113,7 @@ export function SplitEditor({
               })),
             )
           }}
-          segments={SPLIT_TYPES.map((type) => ({ value: type, label: splitTypeLabel[type] }))}
+          segments={SPLIT_TYPES.map((type) => ({ value: type, label: splitTypeLabel(t, type) }))}
         />
       </div>
 
@@ -173,7 +175,7 @@ export function SplitEditor({
       </div>
 
       <p className="text-muted px-4 pt-2.5 text-xs" dir="auto">
-        {splitTypeHint[splitType]}
+        {splitTypeHint(t, splitType)}
         {splitType === 'EQUAL' &&
           participants.length > 0 &&
           ' Shown rounded — the exact shares are worked out when you save, so they add up to the total to the cent.'}
