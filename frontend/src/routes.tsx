@@ -7,14 +7,28 @@ import { Page } from '@/components/layout'
 import { KitchenSink } from '@/dev/KitchenSink'
 import { LoginScreen, RegisterScreen } from '@/features/auth/AuthScreens'
 import { SettingsScreen } from '@/features/auth/SettingsScreen'
+import { ExpenseDetailScreen } from '@/features/expenses/ExpenseDetailScreen'
+import { EditExpenseScreen, NewExpenseScreen } from '@/features/expenses/ExpenseEditorScreen'
+import { ExpenseListScreen } from '@/features/expenses/ExpenseListScreen'
+import { ExpenseRedirect } from '@/features/expenses/ExpenseRedirect'
+import { GroupScopeRoute, GroupTabsLayout } from '@/features/groups/GroupLayout'
+import { GroupListScreen } from '@/features/groups/GroupListScreen'
+import { MembersScreen } from '@/features/groups/MembersScreen'
 import { env } from '@/lib/env'
 
 /**
  * Every path in the app, in one file.
  *
- * Two trees: a public one for signing in, and everything else behind
- * `RequireAuth` inside the shell. Screens arrive commit by commit; the
- * placeholders keep the shell navigable in the meantime.
+ * The nesting carries two decisions worth reading:
+ *
+ * - `GroupScopeRoute` fetches the group and provides it; `GroupTabsLayout` adds
+ *   the tab chrome. The expense editor and detail screens sit under the first
+ *   and not the second, because they need the group's members and currency but
+ *   must not appear underneath a row of tabs.
+ * - `/expenses/:id` is a redirect into the group-scoped route. The API's expense
+ *   route is flat and the activity feed links to expenses without knowing their
+ *   group, so the deep link resolves itself rather than forcing a group id into
+ *   every link that points at an expense.
  */
 export function AppRoutes() {
   return (
@@ -27,9 +41,21 @@ export function AppRoutes() {
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
           <Route index element={<Placeholder title="Home" />} />
-          <Route path="groups" element={<Placeholder title="Groups" />} />
-          <Route path="groups/:groupId" element={<Placeholder title="Group" />} />
-          <Route path="expenses/:expenseId" element={<Placeholder title="Expense" />} />
+          <Route path="groups" element={<GroupListScreen />} />
+
+          <Route path="groups/:groupId" element={<GroupScopeRoute />}>
+            <Route element={<GroupTabsLayout />}>
+              <Route index element={<ExpenseListScreen />} />
+              <Route path="balances" element={<Placeholder title="Balances" />} />
+              <Route path="members" element={<MembersScreen />} />
+            </Route>
+
+            <Route path="expenses/new" element={<NewExpenseScreen />} />
+            <Route path="expenses/:expenseId" element={<ExpenseDetailScreen />} />
+            <Route path="expenses/:expenseId/edit" element={<EditExpenseScreen />} />
+          </Route>
+
+          <Route path="expenses/:expenseId" element={<ExpenseRedirect />} />
           <Route path="notifications" element={<Placeholder title="Alerts" />} />
           <Route path="settings" element={<SettingsScreen />} />
 
@@ -49,7 +75,7 @@ function Placeholder({ title }: { title: string }) {
     <Page width="narrow">
       <EmptyState
         title={title}
-        body="This screen is not built yet. The shell, the navigation and sign-in are."
+        body="This screen is not built yet."
         action={env.DEV ? { label: 'See the components', to: '/__kitchen-sink' } : undefined}
       />
     </Page>

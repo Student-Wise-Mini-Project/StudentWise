@@ -15,9 +15,9 @@ afterEach(() => {
 })
 afterAll(() => server.close())
 
-// jsdom implements neither of these, and the app shell uses both: `matchMedia`
-// for the mobile/desktop chrome switch and `IntersectionObserver` for the
-// infinite-list sentinel. Without stubs every screen test throws on mount.
+// The DOM environment implements neither of these fully, and the app shell uses
+// both: `matchMedia` for the mobile/desktop chrome switch, and
+// `IntersectionObserver` for the infinite-list sentinel.
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: (query: string) => ({
