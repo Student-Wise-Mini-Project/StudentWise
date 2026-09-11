@@ -1,4 +1,4 @@
-import { Link, Outlet } from 'react-router'
+import { Link, Outlet, useMatch } from 'react-router'
 
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { PlusIcon } from '@/components/icons'
@@ -22,6 +22,19 @@ export function AppShell() {
   const unread = useUnreadCount()
   const unreadCount = unread.data?.unread ?? 0
 
+  // The bar is on every screen, so it has to read the screen. Inside a group it
+  // opens that group's form; everywhere else there is no group to add to yet, so
+  // it goes to the list to pick one.
+  const inGroup = useMatch('/groups/:groupId/*')
+  const groupId = inGroup?.params.groupId
+  const addExpenseTo = groupId ? `/groups/${groupId}/expenses/new` : '/groups'
+
+  // ...and on the form itself it would point at the page it is already on, over
+  // a screen whose whole job is to be finished or cancelled.
+  const onNewExpense = useMatch('/groups/:groupId/expenses/new')
+  const onEditExpense = useMatch('/groups/:groupId/expenses/:expenseId/edit')
+  const onEditor = Boolean(onNewExpense ?? onEditExpense)
+
   return (
     <div className="min-h-dvh lg:ps-60">
       <OfflineBanner />
@@ -43,18 +56,20 @@ export function AppShell() {
        * what it does, is reachable by either thumb, and mirrors for free. The
        * `+` is its own flex child so it stays on the leading edge under `rtl`
        * rather than being swept to the end of the text run. */}
-      <div
-        className="from-ground pointer-events-none fixed inset-x-0 z-30 bg-linear-to-t from-45% to-transparent px-4 pt-12 pb-2 lg:hidden"
-        style={{ insetBlockEnd: 'calc(var(--sw-tabbar-height) + var(--sw-safe-block-end))' }}
-      >
-        <Link
-          to="/groups"
-          className="bg-accent text-on-accent shadow-float font-display pointer-events-auto mx-auto flex h-13 max-w-2xl items-center justify-center gap-2 rounded-full text-lg font-extrabold transition-transform active:scale-[0.98]"
+      {!onEditor && (
+        <div
+          className="from-ground pointer-events-none fixed inset-x-0 z-30 bg-linear-to-t from-45% to-transparent px-4 pt-12 pb-2 lg:hidden"
+          style={{ insetBlockEnd: 'calc(var(--sw-tabbar-height) + var(--sw-safe-block-end))' }}
         >
-          <PlusIcon className="size-5" />
-          Add expense
-        </Link>
-      </div>
+          <Link
+            to={addExpenseTo}
+            className="bg-accent text-on-accent shadow-float font-display pointer-events-auto mx-auto flex h-13 max-w-2xl items-center justify-center gap-2 rounded-full text-lg font-extrabold transition-transform active:scale-[0.98]"
+          >
+            <PlusIcon className="size-5" />
+            Add expense
+          </Link>
+        </div>
+      )}
 
       <TabBar unreadCount={unreadCount} />
 

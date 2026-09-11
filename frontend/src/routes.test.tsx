@@ -185,3 +185,41 @@ describe('routes resolve', () => {
     expect(await screen.findByText('That page does not exist.')).toBeInTheDocument()
   })
 })
+
+/**
+ * The one button that is on every screen has to know which screen it is on.
+ *
+ * It used to be a constant link to `/groups`, which meant that standing inside a
+ * group and tapping "Add expense" threw away the group you were already in and
+ * sent you back to pick it again -- and that the new-expense form itself carried
+ * a bar pointing at the page it was already on.
+ */
+describe('the add-expense bar', () => {
+  it('opens the form for the group you are standing in', async () => {
+    renderAt('/groups/g1')
+    expect(await screen.findByRole('link', { name: /add expense/i })).toHaveAttribute(
+      'href',
+      '/groups/g1/expenses/new',
+    )
+  })
+
+  it('falls back to the group list when no group is in scope', async () => {
+    renderAt('/settings')
+    expect(await screen.findByRole('link', { name: /add expense/i })).toHaveAttribute(
+      'href',
+      '/groups',
+    )
+  })
+
+  it('is gone on the form itself', async () => {
+    renderAt('/groups/g1/expenses/new')
+    await screen.findByRole('heading', { name: 'New expense' })
+    expect(screen.queryByRole('link', { name: /add expense/i })).not.toBeInTheDocument()
+  })
+
+  it('is gone while editing an expense', async () => {
+    renderAt('/groups/g1/expenses/e1/edit')
+    await screen.findByRole('heading', { name: 'Edit expense' })
+    expect(screen.queryByRole('link', { name: /add expense/i })).not.toBeInTheDocument()
+  })
+})
