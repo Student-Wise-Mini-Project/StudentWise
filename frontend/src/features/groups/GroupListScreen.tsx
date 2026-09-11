@@ -26,10 +26,10 @@ export function GroupListScreen() {
   return (
     <>
       <AppBar
-        title="Groups"
+        title={t('groups.list.title')}
         actions={
           <Button size="sm" onClick={() => setCreating(true)}>
-            New
+            {t('groups.list.new')}
           </Button>
         }
       />
@@ -43,9 +43,9 @@ export function GroupListScreen() {
         {groups.data?.length === 0 && (
           <EmptyState
             icon={<GroupsIcon className="size-10" />}
-            title="No groups yet"
-            body="A group is a flat, a trip, or the two of you. Everything else hangs off one."
-            action={{ label: 'Create a group', onClick: () => setCreating(true) }}
+            title={t('groups.list.emptyTitle')}
+            body={t('groups.list.emptyBody')}
+            action={{ label: t('groups.list.emptyAction'), onClick: () => setCreating(true) }}
           />
         )}
 
@@ -58,7 +58,7 @@ export function GroupListScreen() {
                   key={group.id}
                   to={`/groups/${group.id}`}
                   title={group.name}
-                  subtitle={`${active.length} ${active.length === 1 ? 'person' : 'people'}`}
+                  subtitle={t('groups.list.memberCount', { count: active.length })}
                   leading={<AvatarStack users={active.map((member) => member.user)} max={3} />}
                   meta={<Badge>{groupTypeLabel(t, group.type)}</Badge>}
                   trailing={<ChevronEnd />}
@@ -91,12 +91,12 @@ function CreateGroupSheet({ open, onClose }: { open: boolean; onClose: () => voi
     <Sheet
       open={open}
       onClose={reset}
-      title="New group"
-      description="You can add the others once it exists."
+      title={t('groups.create.title')}
+      description={t('groups.create.description')}
       footer={
         <>
           <Button variant="secondary" fullWidth onClick={reset}>
-            Cancel
+            {t('common.actions.cancel')}
           </Button>
           <Button
             fullWidth
@@ -111,7 +111,7 @@ function CreateGroupSheet({ open, onClose }: { open: boolean; onClose: () => voi
               )
             }
           >
-            Create
+            {t('common.actions.create')}
           </Button>
         </>
       }
@@ -123,7 +123,7 @@ function CreateGroupSheet({ open, onClose }: { open: boolean; onClose: () => voi
           </p>
         )}
 
-        <Field label="Name" required hint="Dizengoff 5, Greece 2026, us two.">
+        <Field label={t('groups.create.nameLabel')} required hint={t('groups.create.nameHint')}>
           {(props) => (
             <Input
               {...props}
@@ -135,7 +135,7 @@ function CreateGroupSheet({ open, onClose }: { open: boolean; onClose: () => voi
           )}
         </Field>
 
-        <Field label="What kind?">
+        <Field label={t('groups.create.kindLabel')}>
           {(props) => (
             <Select
               {...props}

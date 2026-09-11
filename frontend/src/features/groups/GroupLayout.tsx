@@ -10,6 +10,8 @@ import { Page } from '@/components/layout'
 import { useAuth } from '@/features/auth/authContext'
 import { useBalances } from '@/features/balances/api'
 import { useRunDueBillsOnce } from '@/features/recurring/api'
+import { useT } from '@/i18n/i18nContext'
+import type { MessageKey } from '@/i18n/messages'
 import { cn } from '@/lib/cn'
 import { isPositive, isZero } from '@/lib/money'
 
@@ -25,6 +27,7 @@ import { GroupContext, type GroupScope, useGroupScope } from './groupContext'
  * under a row of tabs reads as a mistake.
  */
 export function GroupScopeRoute() {
+  const t = useT()
   const { groupId } = useParams<{ groupId: string }>()
   const { user } = useAuth()
   const query = useGroup(groupId)
@@ -51,7 +54,7 @@ export function GroupScopeRoute() {
   if (query.isLoading) {
     return (
       <div className="flex min-h-[50dvh] items-center justify-center">
-        <Spinner size="lg" label="Loading the group" />
+        <Spinner size="lg" label={t('groups.scope.loading')} />
       </div>
     )
   }
@@ -60,7 +63,7 @@ export function GroupScopeRoute() {
     return (
       <Page width="narrow">
         <ErrorState
-          title="Cannot open that group"
+          title={t('groups.scope.error')}
           error={query.error}
           onRetry={() => void query.refetch()}
         />
@@ -75,15 +78,17 @@ export function GroupScopeRoute() {
   )
 }
 
-const TABS = [
-  { to: '', label: 'Expenses', end: true },
-  { to: 'balances', label: 'Balances' },
-  { to: 'members', label: 'Members' },
-  { to: 'insights', label: 'Insights' },
+/** Catalogue keys, translated at render -- the same move NAV_ITEMS took. */
+const TABS: { to: string; label: MessageKey; end?: boolean }[] = [
+  { to: '', label: 'groups.tabs.expenses', end: true },
+  { to: 'balances', label: 'groups.tabs.balances' },
+  { to: 'members', label: 'groups.tabs.members' },
+  { to: 'insights', label: 'groups.tabs.insights' },
 ]
 
 /** The group's own chrome: its name, where you stand in it, and the four views. */
 export function GroupTabsLayout() {
+  const t = useT()
   const { group, groupId, activeMembers } = useGroupScope()
   const { user } = useAuth()
   const balances = useBalances(groupId)
@@ -101,9 +106,9 @@ export function GroupTabsLayout() {
             <p className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
               {mine && !isZero(mine.net)
                 ? isPositive(mine.net)
-                  ? "You're owed here"
-                  : 'You owe here'
-                : 'Your position here'}
+                  ? t('groups.header.owed')
+                  : t('groups.header.owe')
+                : t('groups.header.neutral')}
             </p>
             <p className="mt-0.5">
               {balances.isLoading ? (
@@ -116,14 +121,19 @@ export function GroupTabsLayout() {
                   className="text-3xl tracking-[-0.025em]"
                 />
               ) : (
-                <span className="font-display text-xl font-extrabold">Square</span>
+                <span className="font-display text-xl font-extrabold">
+                  {t('common.state.squareTitle')}
+                </span>
               )}
             </p>
           </div>
           <AvatarStack users={activeMembers.map((member) => member.user)} size="sm" />
         </div>
 
-        <nav className="border-line flex gap-1 border-b px-2" aria-label="Group sections">
+        <nav
+          className="border-line flex gap-1 border-b px-2"
+          aria-label={t('groups.scope.sections')}
+        >
           {TABS.map((tab) => (
             <NavLink
               key={tab.label}
@@ -141,7 +151,7 @@ export function GroupTabsLayout() {
             >
               {({ isActive }) => (
                 <>
-                  {tab.label}
+                  {t(tab.label)}
                   {isActive && <span className="bg-accent absolute inset-x-2 bottom-0 h-0.5" />}
                 </>
               )}

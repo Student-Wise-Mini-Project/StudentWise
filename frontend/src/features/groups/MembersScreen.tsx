@@ -40,10 +40,10 @@ export function MembersScreen() {
   return (
     <>
       <ListSection
-        header="In the group"
+        header={t('groups.members.header')}
         action={
           <Button size="sm" variant="secondary" onClick={() => setAdding(true)}>
-            Add someone
+            {t('groups.members.addSomeone')}
           </Button>
         }
       >
@@ -58,13 +58,15 @@ export function MembersScreen() {
               title={
                 <>
                   {member.user.name}
-                  {isMe && <span className="text-faint font-normal"> (you)</span>}
+                  {isMe && (
+                    <span className="text-faint font-normal">{t('common.state.youMarker')}</span>
+                  )}
                 </>
               }
               subtitle={
                 <>
                   {member.role === 'OWNER' && `${memberRoleLabel(t, member.role)} · `}
-                  {String(member.default_split_weight)}&times; share
+                  {t('groups.members.share', { weight: String(member.default_split_weight) })}
                 </>
               }
               meta={
@@ -74,12 +76,12 @@ export function MembersScreen() {
               }
               metaSubtitle={
                 net === undefined ? undefined : isZero(net) ? (
-                  'square'
+                  t('common.state.square')
                 ) : (
                   <span
                     className={cn('font-semibold', isPositive(net) ? 'text-credit' : 'text-debt')}
                   >
-                    {isPositive(net) ? 'is owed' : 'owes'}
+                    {isPositive(net) ? t('common.state.credit') : t('common.state.debt')}
                   </span>
                 )
               }
@@ -87,7 +89,7 @@ export function MembersScreen() {
                 <Stack direction="row" gap={1}>
                   {isOwner && (
                     <Button size="sm" variant="ghost" onClick={() => setEditing(member)}>
-                      Weight
+                      {t('groups.members.weight')}
                     </Button>
                   )}
                   {canRemove && (
@@ -97,7 +99,7 @@ export function MembersScreen() {
                       onClick={() => remove.mutate(member.user.id)}
                       loading={remove.isPending && remove.variables === member.user.id}
                     >
-                      {isMe ? 'Leave' : 'Remove'}
+                      {isMe ? t('common.actions.leave') : t('common.actions.remove')}
                     </Button>
                   )}
                 </Stack>
@@ -107,27 +109,21 @@ export function MembersScreen() {
         })}
       </ListSection>
 
-      <p className="text-muted px-4 py-3 text-xs">
-        A weight splits things in proportion &mdash; someone on 2 pays twice what someone on 1 does.
-        It is only used when an expense is split by shares.
-      </p>
+      <p className="text-muted px-4 py-3 text-xs">{t('groups.members.weightExplainer')}</p>
 
       {departed.length > 0 && (
         <>
-          <ListSection header="No longer in the group">
+          <ListSection header={t('groups.members.departedHeader')}>
             {departed.map((member) => (
               <ListRow
                 key={member.user.id}
                 leading={<Avatar user={member.user} className="opacity-50" />}
                 title={member.user.name}
-                subtitle="Left. Their past expenses and any balance still count."
+                subtitle={t('groups.members.departedSubtitle')}
               />
             ))}
           </ListSection>
-          <p className="text-muted px-4 py-3 text-xs">
-            Leaving does not erase a debt. Someone who has left still appears in the balances until
-            they are square, and can still be paid.
-          </p>
+          <p className="text-muted px-4 py-3 text-xs">{t('groups.members.departedNote')}</p>
         </>
       )}
 
@@ -144,6 +140,7 @@ export function MembersScreen() {
 }
 
 function AddMemberSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const t = useT()
   const { groupId } = useGroupScope()
   const add = useAddMember(groupId)
   const [email, setEmail] = useState('')
@@ -158,12 +155,12 @@ function AddMemberSheet({ open, onClose }: { open: boolean; onClose: () => void 
     <Sheet
       open={open}
       onClose={reset}
-      title="Add someone"
-      description="They need a StudentWise account already."
+      title={t('groups.members.addTitle')}
+      description={t('groups.members.addDescription')}
       footer={
         <>
           <Button variant="secondary" fullWidth onClick={reset}>
-            Cancel
+            {t('common.actions.cancel')}
           </Button>
           <Button
             fullWidth
@@ -171,7 +168,7 @@ function AddMemberSheet({ open, onClose }: { open: boolean; onClose: () => void 
             disabled={email.trim().length === 0}
             onClick={() => add.mutate({ email: email.trim() }, { onSuccess: reset })}
           >
-            Add
+            {t('common.actions.add')}
           </Button>
         </>
       }
@@ -182,7 +179,7 @@ function AddMemberSheet({ open, onClose }: { open: boolean; onClose: () => void 
             {detailOf(add.error)}
           </p>
         )}
-        <Field label="Their email" required>
+        <Field label={t('groups.members.addEmailLabel')} required>
           {(props) => (
             <Input
               {...props}
@@ -202,6 +199,7 @@ function AddMemberSheet({ open, onClose }: { open: boolean; onClose: () => void 
 }
 
 function WeightSheet({ member, onClose }: { member: GroupMember | null; onClose: () => void }) {
+  const t = useT()
   const { groupId } = useGroupScope()
   const update = useUpdateMemberWeight(groupId)
   const [weight, setWeight] = useState('1')
@@ -212,12 +210,16 @@ function WeightSheet({ member, onClose }: { member: GroupMember | null; onClose:
     <Sheet
       open={member !== null}
       onClose={onClose}
-      title={member ? `${member.user.name}'s share` : 'Share'}
-      description="Used when an expense is split by shares."
+      title={
+        member
+          ? t('groups.members.weightTitle', { name: member.user.name })
+          : t('groups.members.weightTitleFallback')
+      }
+      description={t('groups.members.weightDescription')}
       footer={
         <>
           <Button variant="secondary" fullWidth onClick={onClose}>
-            Cancel
+            {t('common.actions.cancel')}
           </Button>
           <Button
             fullWidth
@@ -227,16 +229,16 @@ function WeightSheet({ member, onClose }: { member: GroupMember | null; onClose:
               member && update.mutate({ userId: member.user.id, weight }, { onSuccess: onClose })
             }
           >
-            Save
+            {t('common.actions.save')}
           </Button>
         </>
       }
     >
       <Field
-        label="Share"
+        label={t('groups.members.weightLabel')}
         required
-        hint="Bigger room, bigger number."
-        error={!valid && weight !== '' ? 'Has to be a number above zero.' : undefined}
+        hint={t('groups.members.weightHint')}
+        error={!valid && weight !== '' ? t('groups.members.weightError') : undefined}
       >
         {(props) => (
           <Input
