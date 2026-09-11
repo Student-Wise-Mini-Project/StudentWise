@@ -74,6 +74,7 @@ export function GroupScopeRoute() {
 const TABS = [
   { to: '', label: 'Expenses', end: true },
   { to: 'balances', label: 'Balances' },
+  { to: 'insights', label: 'Insights' },
   { to: 'members', label: 'People' },
 ]
 

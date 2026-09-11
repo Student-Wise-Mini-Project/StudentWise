@@ -14,6 +14,7 @@ import { ExpenseRedirect } from '@/features/expenses/ExpenseRedirect'
 import { GroupScopeRoute, GroupTabsLayout } from '@/features/groups/GroupLayout'
 import { GroupListScreen } from '@/features/groups/GroupListScreen'
 import { HomeScreen } from '@/features/activity/HomeScreen'
+import { InsightsScreen } from '@/features/analytics/InsightsScreen'
 import { BalancesScreen } from '@/features/balances/BalancesScreen'
 import { MembersScreen } from '@/features/groups/MembersScreen'
 import { NotificationsScreen } from '@/features/notifications/NotificationsScreen'
@@ -50,6 +51,7 @@ export function AppRoutes() {
             <Route element={<GroupTabsLayout />}>
               <Route index element={<ExpenseListScreen />} />
               <Route path="balances" element={<BalancesScreen />} />
+              <Route path="insights" element={<InsightsScreen />} />
               <Route path="members" element={<MembersScreen />} />
             </Route>
 

@@ -34,7 +34,7 @@ touch the same file.
 | 6. Recurring & automation | 4 | 0 | ✅ complete |
 | 7. Payments (Bit / PayBox) | 0 | 3 | ⬜ not started |
 | 8. AI chat assistant / RAG | 0 | 4 | ⬜ not started |
-| 9. Frontend | 8 | 4 | 🔨 the app works end to end |
+| 9. Frontend | 9 | 3 | 🔨 the app works end to end |
 | 10. Deployment | 0 | 6 | ⬜ not started |
 | 11. Academic deliverables | 1 | 4 | started |
 | **Total** | **38** | **40** | |
@@ -305,18 +305,17 @@ with no interface is hard to demo whatever the API does.
 | 9.5 | Expense list with filters + pagination | M | #3 | ✅ |
 | 9.6 | Add / edit expense, all four split types | L | #3 | ✅ |
 | 9.7 | Balances screen + settle-up plan | M | #3 | ✅ |
-| 9.8 | Charts: category pie, monthly trend, per-member bars | L | #3 | ⬜ |
+| 9.8 | Charts: category pie, monthly trend, per-member bars | L | #3 | ✅ |
 | 9.9 | "Ask" screen for natural-language questions | M | #3 | ⬜ |
 | 9.10 | Anomaly alerts surfaced in the UI | S | #3 | ⬜ |
 | 9.11 | PWA: manifest, service worker, iOS install | M | #3 | ✅ |
 | 9.12 | Android APK wrapper | M | #3 | ⬜ |
 
-> **8 of 12 done.** You can sign in, create a flat, add flatmates and weights,
+> **9 of 12 done.** You can sign in, create a flat, add flatmates and weights,
 > add an expense in any of the four split modes, see balances, settle up,
-> comment, attach a receipt, read your alerts, and install it to an iOS home
-> screen. What is left is charts (9.8), the natural-language Ask screen (9.9),
-> anomaly alerts (9.10) and the APK (9.12) — all additions on top of a working
-> app rather than parts of one.
+> comment, attach a receipt, read your alerts, see where the money goes, and
+> install it to an iOS home screen. What is left is the natural-language Ask
+> screen (9.9), anomaly alerts (9.10) and the APK (9.12).
 >
 > Start from `frontend/README.md`. The visual identity is deliberately a
 > placeholder: every colour and typeface lives in `src/styles/theme.css` and a
