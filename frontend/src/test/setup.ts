@@ -1,11 +1,19 @@
 import '@testing-library/jest-dom/vitest'
 
 import { cleanup } from '@testing-library/react'
-import { afterEach, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, vi } from 'vitest'
 
+import { server } from './server'
+
+// `error` rather than `warn`: an unhandled request means a test is silently
+// hitting a URL nobody stubbed, and passing anyway is worse than failing.
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => {
+  server.resetHandlers()
   cleanup()
+  window.localStorage.clear()
 })
+afterAll(() => server.close())
 
 // jsdom implements neither of these, and the app shell uses both: `matchMedia`
 // for the mobile/desktop chrome switch and `IntersectionObserver` for the

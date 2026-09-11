@@ -55,8 +55,14 @@ export default tseslint.config(
     },
   },
   {
-    // The one module allowed to touch storage: it *is* the seam.
-    files: ['src/features/auth/authStore.ts'],
+    // The modules that ARE the storage seam, plus tests -- which have to read
+    // storage to assert that a token was kept or cleared.
+    files: [
+      'src/features/auth/authStore.ts',
+      'src/lib/prefs.ts',
+      'src/test/**',
+      '**/*.test.{ts,tsx}',
+    ],
     rules: { 'no-restricted-globals': 'off', 'no-restricted-properties': 'off' },
   },
   {
