@@ -1,9 +1,10 @@
 import { QueryClientProvider } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BrowserRouter } from 'react-router'
 
 import { createQueryClient } from '@/api/queryClient'
 import { AuthProvider } from '@/features/auth/AuthProvider'
+import { registerReceiptCleanup } from '@/features/receipts/api'
 
 import { AppRoutes } from './routes'
 
@@ -21,6 +22,10 @@ import { AppRoutes } from './routes'
  */
 export function App() {
   const [queryClient] = useState(createQueryClient)
+
+  // Revoke receipt object URLs when their cache entry is dropped, so a session
+  // spent looking at photos does not hold every one of them in memory.
+  useEffect(() => registerReceiptCleanup(queryClient), [queryClient])
 
   return (
     <QueryClientProvider client={queryClient}>

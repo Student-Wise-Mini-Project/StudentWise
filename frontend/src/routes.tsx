@@ -16,6 +16,7 @@ import { GroupListScreen } from '@/features/groups/GroupListScreen'
 import { HomeScreen } from '@/features/activity/HomeScreen'
 import { BalancesScreen } from '@/features/balances/BalancesScreen'
 import { MembersScreen } from '@/features/groups/MembersScreen'
+import { NotificationsScreen } from '@/features/notifications/NotificationsScreen'
 import { env } from '@/lib/env'
 
 /**
@@ -58,7 +59,7 @@ export function AppRoutes() {
           </Route>
 
           <Route path="expenses/:expenseId" element={<ExpenseRedirect />} />
-          <Route path="notifications" element={<Placeholder title="Alerts" />} />
+          <Route path="notifications" element={<NotificationsScreen />} />
           <Route path="settings" element={<SettingsScreen />} />
 
           {/* Dev only. `env.DEV` is statically false in a production build, so
@@ -69,18 +70,6 @@ export function AppRoutes() {
         </Route>
       </Route>
     </Routes>
-  )
-}
-
-function Placeholder({ title }: { title: string }) {
-  return (
-    <Page width="narrow">
-      <EmptyState
-        title={title}
-        body="This screen is not built yet."
-        action={env.DEV ? { label: 'See the components', to: '/__kitchen-sink' } : undefined}
-      />
-    </Page>
   )
 }
 

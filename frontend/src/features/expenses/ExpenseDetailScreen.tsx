@@ -13,7 +13,9 @@ import { Sheet } from '@/components/Sheet'
 import { Spinner } from '@/components/Spinner'
 import { ErrorState } from '@/components/feedback'
 import { Page, Stack } from '@/components/layout'
+import { CommentThread } from '@/features/comments/CommentThread'
 import { useGroupScope } from '@/features/groups/groupContext'
+import { ReceiptSection } from '@/features/receipts/ReceiptSection'
 import { formatDay, formatRelative } from '@/lib/dates'
 import { categoryLabelOf, sourceLabel, splitTypeLabel } from '@/lib/labels'
 
@@ -110,6 +112,14 @@ export function ExpenseDetailScreen() {
               <p className="text-base whitespace-pre-wrap">{expense.notes}</p>
             </div>
           )}
+
+          <ReceiptSection
+            groupId={groupId}
+            expenseId={expense.id}
+            hasReceipt={expense.receipt_url !== null}
+          />
+
+          <CommentThread expenseId={expense.id} />
 
           <p className="text-muted px-4 text-xs">
             Added {formatRelative(expense.created_at)}
