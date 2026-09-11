@@ -1,10 +1,12 @@
 import { isPluralForms } from '../format'
 import type { FlatCatalogue, Flatten, Locale, Widen } from '../types'
 
+import authEn from './en/auth.json'
 import balancesEn from './en/balances.json'
 import commonEn from './en/common.json'
 import expensesEn from './en/expenses.json'
 import groupsEn from './en/groups.json'
+import authHe from './he/auth.json'
 import balancesHe from './he/balances.json'
 import commonHe from './he/common.json'
 import expensesHe from './he/expenses.json'
@@ -18,6 +20,7 @@ import groupsHe from './he/groups.json'
  * to three different screens.
  */
 export const en = {
+  auth: authEn,
   balances: balancesEn,
   common: commonEn,
   expenses: expensesEn,
@@ -29,6 +32,7 @@ export const en = {
  * the same key set as English, no fewer and no extras.
  */
 export const he: Widen<typeof en> = {
+  auth: authHe,
   balances: balancesHe,
   common: commonHe,
   expenses: expensesHe,
