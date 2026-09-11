@@ -34,6 +34,22 @@ Paged: `/groups/{id}/expenses`, `/groups/{id}/settlements`,
 `/expenses/{id}/comments`, `/activity`, `/groups/{id}/activity`,
 `/notifications`.
 
+### Generating a client from `/openapi.json`
+
+The frontend does this and commits the result; CI regenerates it and fails on a
+diff. Two things to know before you do the same:
+
+- **Fields with a server-side default come out *required*.** `currency`,
+  `source`, `default_split_weight` and `apply_split_rule` all have defaults, and
+  `openapi-typescript` (with `--default-non-nullable`, which is on by default)
+  marks them required in request bodies. The API accepts a body without them;
+  the generated type does not. Send them explicitly rather than turning the flag
+  off -- doing that would also make them optional in *responses*, where they are
+  always present.
+- **`openapi-fetch` needs an absolute `baseUrl`.** It builds a `new URL()`
+  internally, and an empty base throws `Invalid URL` rather than falling back to
+  a relative request.
+
 ### Retrying safely: `Idempotency-Key`
 
 `POST /groups/{id}/expenses` and `POST /groups/{id}/settlements` accept an
@@ -187,6 +203,7 @@ changing an amount will not spread the expense across the whole group.
 Expense = {
   id, group_id, payer: User, title, total_amount, category, expense_date,
   split_type, source, notes, receipt_url, ai_metadata,
+  split_rule: SplitRuleSummary | null,
   created_by, created_at, updated_at,
   splits: [{ user: User, owed_amount, share_value }]
 }
@@ -501,6 +518,13 @@ appears while their net is non-zero, and drops off once they are square.
 
 ```
 SettlementPlan = { group_id, currency, transfers: [{ from_user, to_user, amount }] }
+```
+
+```
+Settlement = {
+  id, group_id, from_user: User, to_user: User, amount, method, note,
+  settled_at, created_by, created_at
+}
 ```
 
 **The plan is a suggestion — it writes nothing.** To record that a transfer

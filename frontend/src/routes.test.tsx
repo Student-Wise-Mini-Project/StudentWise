@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 
 import { createQueryClient } from '@/api/queryClient'
 import { AuthProvider } from '@/features/auth/AuthProvider'
+import { resetRunTracking } from '@/features/recurring/api'
 import { apiUrl } from '@/test/apiUrl'
 import { server } from '@/test/server'
 
@@ -58,6 +59,7 @@ const EXPENSE = {
 }
 
 function renderAt(path: string) {
+  resetRunTracking()
   window.localStorage.setItem('sw.token', 'tok')
   server.use(
     http.get(apiUrl('/api/auth/me'), () => HttpResponse.json(GAL)),
@@ -66,6 +68,36 @@ function renderAt(path: string) {
     http.get(apiUrl('/api/expenses/e1'), () => HttpResponse.json(EXPENSE)),
     http.get(apiUrl('/api/groups/g1/expenses'), () =>
       HttpResponse.json({ items: [EXPENSE], total: 1, limit: 20, offset: 0, has_more: false }),
+    ),
+    http.get(apiUrl('/api/notifications'), () =>
+      HttpResponse.json({ items: [], total: 0, limit: 20, offset: 0, has_more: false }),
+    ),
+    http.get(apiUrl('/api/notifications/unread-count'), () => HttpResponse.json({ unread: 0 })),
+    http.get(apiUrl('/api/groups/g1/balances'), () =>
+      HttpResponse.json({
+        group_id: 'g1',
+        currency: 'ILS',
+        balances: [
+          {
+            user: GAL,
+            paid: '0.00',
+            owed: '0.00',
+            settlements_sent: '0.00',
+            settlements_received: '0.00',
+            net: '0.00',
+          },
+        ],
+      }),
+    ),
+    http.get(apiUrl('/api/groups/g1/settlement-plan'), () =>
+      HttpResponse.json({ group_id: 'g1', currency: 'ILS', transfers: [] }),
+    ),
+    http.get(apiUrl('/api/expenses/e1/comments'), () =>
+      HttpResponse.json({ items: [], total: 0, limit: 50, offset: 0, has_more: false }),
+    ),
+    // Opening a group posts any bills that are due -- see features/recurring.
+    http.post(apiUrl('/api/groups/g1/recurring-bills/run'), () =>
+      HttpResponse.json({ generated: [], awaiting_amount: [], reminded: [] }),
     ),
   )
   return render(

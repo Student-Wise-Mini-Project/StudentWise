@@ -117,7 +117,7 @@ backend/app/
   models/        the database tables.
   domain/        pure maths: numbers in, numbers out. No database, no FastAPI.
   schemas/       what requests and responses look like (Pydantic).
-frontend/        empty, waiting for mission 9.1
+frontend/        the React PWA -- see frontend/README.md
 docs/
   roadmap.md     every epic and mission, and what is done
   api-contract.md  the endpoint contract — read this before building UI
@@ -141,24 +141,29 @@ for Claude. The rules that bite hardest:
 
 Pick it up from `docs/roadmap.md` — it lists every mission with an owner.
 
-**Dana — frontend (Epic 9).** Start with 9.1 (React + Vite + Tailwind + router),
-then 9.2 (API client from the OpenAPI schema) and 9.3 (auth screens). You are not
-blocked by anything: every endpoint you need already exists, and
-`docs/api-contract.md` plus `/docs` describe all of them.
-
-To generate a typed client instead of hand-writing one:
+**Dana — frontend (Epic 9).** 9.1–9.7 and 9.11 are built: the app runs end to
+end. Read `frontend/README.md` first, then pick up **9.8** (charts), **9.9** (the
+natural-language Ask screen) or **9.10** (anomaly alerts). All three are new
+screens against endpoints that already exist.
 
 ```powershell
-# with the API running
-curl http://localhost:8000/openapi.json -o openapi.json
+cd frontend
+npm install
+npm run gen:api        # regenerate the API types (the backend must be running)
+npm run dev            # http://localhost:5173
 ```
 
-Two things about the contract that will bite if you miss them:
+Sign in as `gal@studentwise.dev` / `password123`. `/__kitchen-sink` shows every
+shared component in every variant — build from those rather than new markup.
 
-- **Money is a string.** `"33.34"`, not `33.34`. Parse with a decimal library —
-  a JavaScript rounding bug in the UI will contradict the balances screen.
-- **List endpoints return `{items, total, limit, offset, has_more}`**, not a bare
-  array.
+Four things that will bite if you miss them:
+
+- **Money is a string.** `"33.34"`, not `33.34`. Use `lib/money.ts`, and note
+  that it deliberately has no function that divides a total between people: the
+  server allocates the cents and the client must never guess.
+- **Only `src/styles/` may name a colour or a font.** A test fails otherwise.
+- **`ms-`/`me-`, never `ml-`/`mr-`.** Another test. The app goes Hebrew later.
+- **Never edit `src/api/schema.d.ts`** — it is generated from the backend.
 
 **Hila — AI and ingestion (Epic 5).** Start with 5.1 and 5.2 (the
 `expense_items` / `item_splits` tables and the per-item split API). They are

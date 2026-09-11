@@ -34,7 +34,7 @@ touch the same file.
 | 6. Recurring & automation | 4 | 0 | ✅ complete |
 | 7. Payments (Bit / PayBox) | 0 | 3 | ⬜ not started |
 | 8. AI chat assistant / RAG | 0 | 4 | ⬜ not started |
-| 9. Frontend | 0 | 12 | ⬜ not started |
+| 9. Frontend | 8 | 4 | 🔨 the app works end to end |
 | 10. Deployment | 0 | 6 | ⬜ not started |
 | 11. Academic deliverables | 1 | 4 | started |
 | **Total** | **38** | **40** | |
@@ -291,28 +291,37 @@ from an image that is already on the server.**
 
 ---
 
-## Epic 9 — Frontend ⬜
+## Epic 9 — Frontend 🔨
 
 **This is the critical path.** The backend is far ahead of the UI, and a project
 with no interface is hard to demo whatever the API does.
 
 | # | Mission | Size | Owner | Status |
 |---|---|---|---|---|
-| 9.1 | Scaffold: React + Vite + Tailwind + router | M | #3 | ⬜ |
-| 9.2 | API client + typed models generated from OpenAPI | M | #3 | ⬜ |
-| 9.3 | Auth screens + token storage + protected routes | M | #3 | ⬜ |
-| 9.4 | Groups: list, create, members, weights | M | #3 | ⬜ |
-| 9.5 | Expense list with filters + pagination | M | #3 | ⬜ |
-| 9.6 | Add / edit expense, all four split types | L | #3 | ⬜ |
-| 9.7 | Balances screen + settle-up plan | M | #3 | ⬜ |
+| 9.1 | Scaffold: React + Vite + Tailwind + router | M | #3 | ✅ |
+| 9.2 | API client + typed models generated from OpenAPI | M | #3 | ✅ |
+| 9.3 | Auth screens + token storage + protected routes | M | #3 | ✅ |
+| 9.4 | Groups: list, create, members, weights | M | #3 | ✅ |
+| 9.5 | Expense list with filters + pagination | M | #3 | ✅ |
+| 9.6 | Add / edit expense, all four split types | L | #3 | ✅ |
+| 9.7 | Balances screen + settle-up plan | M | #3 | ✅ |
 | 9.8 | Charts: category pie, monthly trend, per-member bars | L | #3 | ⬜ |
 | 9.9 | "Ask" screen for natural-language questions | M | #3 | ⬜ |
 | 9.10 | Anomaly alerts surfaced in the UI | S | #3 | ⬜ |
-| 9.11 | PWA: manifest, service worker, iOS install | M | #3 | ⬜ |
+| 9.11 | PWA: manifest, service worker, iOS install | M | #3 | ✅ |
 | 9.12 | Android APK wrapper | M | #3 | ⬜ |
 
-> `docs/api-contract.md` and `/docs` already describe every endpoint, so 9.1–9.3
-> can start today with no further backend work.
+> **8 of 12 done.** You can sign in, create a flat, add flatmates and weights,
+> add an expense in any of the four split modes, see balances, settle up,
+> comment, attach a receipt, read your alerts, and install it to an iOS home
+> screen. What is left is charts (9.8), the natural-language Ask screen (9.9),
+> anomaly alerts (9.10) and the APK (9.12) — all additions on top of a working
+> app rather than parts of one.
+>
+> Start from `frontend/README.md`. The visual identity is deliberately a
+> placeholder: every colour and typeface lives in `src/styles/theme.css` and a
+> test fails if one appears anywhere else, so applying the Claude Design output
+> (`docs/design-brief.md`) is a one-file edit.
 >
 > **Money is a string in every response.** Parse with a decimal library —
 > JavaScript numbers cannot hold these values exactly, and a rounding bug in the
