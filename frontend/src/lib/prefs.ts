@@ -28,3 +28,23 @@ export function applyTheme(theme: Theme): void {
     /* A browser blocking site data is not a reason to fail. */
   }
 }
+
+const IOS_HINT_KEY = 'sw.iosInstallHintDismissed'
+
+/** Whether the "Add to Home Screen" hint has already been dismissed. */
+export function iosHintDismissed(): boolean {
+  try {
+    return window.localStorage.getItem(IOS_HINT_KEY) === '1'
+  } catch {
+    // A browser blocking site data just means the hint shows again.
+    return false
+  }
+}
+
+export function dismissIosHint(): void {
+  try {
+    window.localStorage.setItem(IOS_HINT_KEY, '1')
+  } catch {
+    /* ignore */
+  }
+}
