@@ -27,23 +27,23 @@ in production.
 
 ## Commands
 
-| Command | What it does |
-|---|---|
-| `npm run dev` | Dev server on 5173 |
-| `npm run build` | Typecheck then production build |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm test` | Vitest once |
-| `npm run test:watch` | Vitest in watch mode |
-| `npm run format` | Prettier |
-| `npm run gen:api` | Regenerate `src/api/schema.d.ts` from the backend |
+| Command              | What it does                                      |
+| -------------------- | ------------------------------------------------- |
+| `npm run dev`        | Dev server on 5173                                |
+| `npm run build`      | Typecheck then production build                   |
+| `npm run lint`       | ESLint                                            |
+| `npm run typecheck`  | `tsc --noEmit`                                    |
+| `npm test`           | Vitest once                                       |
+| `npm run test:watch` | Vitest in watch mode                              |
+| `npm run format`     | Prettier                                          |
+| `npm run gen:api`    | Regenerate `src/api/schema.d.ts` from the backend |
 
 ## Three rules that are enforced, not just documented
 
 **1. Money is a string, and the client never divides it.**
 Every amount arrives as `"33.34"`. `src/lib/money.ts` formats and validates; it
 exposes nothing that splits a total between people. The API contract says
-*"never re-derive splits on the client"* and it means it — the backend uses
+_"never re-derive splits on the client"_ and it means it — the backend uses
 largest-remainder rounding, and a second implementation in TypeScript would
 disagree by a cent and make the balances screen argue with the expense list.
 Where the UI must preview an equal split it shows `≈`, and `divideForDisplay()`
