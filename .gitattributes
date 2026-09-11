@@ -1,0 +1,14 @@
+# Normalise line endings so the same file is byte-identical on three laptops and
+# in CI. Without this the generated API client checks out as CRLF on Windows and
+# is regenerated as LF, which reads as "the whole file changed" and makes the
+# contract check impossible to trust.
+* text=auto eol=lf
+
+# Generated: do not let it clutter a diff, and never let anyone edit it by hand.
+frontend/src/api/schema.d.ts linguist-generated=true
+frontend/package-lock.json   linguist-generated=true
+
+*.png binary
+*.jpg binary
+*.webp binary
+*.ico binary
