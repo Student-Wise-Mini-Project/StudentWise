@@ -36,6 +36,15 @@
     />
   </head>
   <body>
+    <script>
+      // Runs before the first paint. Without this the page renders in the OS
+      // theme for a frame and then snaps to the chosen one -- a white flash on
+      // every cold start for anyone who picked dark.
+      try {
+        var t = localStorage.getItem('sw.theme')
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t
+      } catch (e) {}
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

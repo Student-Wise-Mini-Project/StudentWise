@@ -32,7 +32,19 @@ const unauthorizedMiddleware: Middleware = {
   },
 }
 
-export const api = createClient<paths>({ baseUrl: env.API_URL })
+export const api = createClient<paths>({
+  baseUrl: env.API_URL,
+  // Resolve `fetch` per call rather than letting openapi-fetch capture
+  // `globalThis.fetch` when this module is first imported.
+  //
+  // The capture happens at client creation, which is import time -- earlier than
+  // anything that replaces `fetch` afterwards. In tests that is MSW, whose
+  // interception then silently does not apply to this client while still working
+  // for every plain `fetch` call, which makes the symptom look like a bad handler
+  // pattern rather than a stale reference. The same trap would catch any runtime
+  // instrumentation of `fetch` in the browser.
+  fetch: (request) => globalThis.fetch(request),
+})
 api.use(authMiddleware)
 api.use(unauthorizedMiddleware)
 
