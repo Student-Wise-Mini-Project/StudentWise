@@ -33,7 +33,10 @@ export function Field({ label, children, hint, error, required, className }: Fie
 
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
-      <label htmlFor={id} className="text-ink text-sm font-semibold">
+      <label
+        htmlFor={id}
+        className="text-muted font-display text-2xs font-extrabold tracking-[0.08em] uppercase"
+      >
         {label}
         {required && (
           <span className="text-muted ms-1 font-normal" aria-hidden="true">

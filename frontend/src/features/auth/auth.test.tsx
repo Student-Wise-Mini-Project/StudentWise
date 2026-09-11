@@ -63,7 +63,7 @@ describe('signing in', () => {
     const { user } = renderApp()
     await user.type(screen.getByLabelText(/^Email/), 'gal@studentwise.dev')
     await user.type(screen.getByLabelText(/^Password/), 'password123')
-    await user.click(screen.getByRole('button', { name: 'Sign in' }))
+    await user.click(screen.getByRole('button', { name: 'Log in' }))
 
     await waitFor(() => expect(contentType).toContain('application/x-www-form-urlencoded'))
 
@@ -85,7 +85,7 @@ describe('signing in', () => {
     const { user } = renderApp()
     await user.type(screen.getByLabelText(/^Email/), 'gal@studentwise.dev')
     await user.type(screen.getByLabelText(/^Password/), 'password123')
-    await user.click(screen.getByRole('button', { name: 'Sign in' }))
+    await user.click(screen.getByRole('button', { name: 'Log in' }))
 
     expect(await screen.findByRole('heading', { name: 'Home' })).toBeInTheDocument()
     expect(window.localStorage.getItem('sw.token')).toBe('tok-123')
@@ -104,7 +104,7 @@ describe('signing in', () => {
     const { user } = renderApp()
     await user.type(screen.getByLabelText(/^Email/), 'gal@studentwise.dev')
     await user.type(screen.getByLabelText(/^Password/), 'wrong-password')
-    await user.click(screen.getByRole('button', { name: 'Sign in' }))
+    await user.click(screen.getByRole('button', { name: 'Log in' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Incorrect email or password.')
     expect(screen.getByLabelText(/^Email/)).toBeInTheDocument()
@@ -114,7 +114,9 @@ describe('signing in', () => {
 describe('protected routes', () => {
   it('sends an anonymous visitor to the login screen, remembering where they were going', async () => {
     renderApp('/groups')
-    expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: /Nobody\s*has to ask\./ }),
+    ).toBeInTheDocument()
   })
 
   it('does not flash the login screen while a stored token is being resolved', async () => {
@@ -125,7 +127,7 @@ describe('protected routes', () => {
     server.use(http.get(apiUrl('/api/auth/me'), () => HttpResponse.json(GAL)))
 
     renderApp('/groups')
-    expect(screen.queryByRole('heading', { name: 'Welcome back' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /Nobody\s*has to ask\./ })).not.toBeInTheDocument()
     expect(await screen.findByRole('heading', { name: 'Groups' })).toBeInTheDocument()
   })
 
@@ -138,7 +140,9 @@ describe('protected routes', () => {
     )
 
     renderApp('/groups')
-    expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: /Nobody\s*has to ask\./ }),
+    ).toBeInTheDocument()
     await waitFor(() => expect(window.localStorage.getItem('sw.token')).toBeNull())
   })
 })
