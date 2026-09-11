@@ -30,7 +30,7 @@ export function CommentThread({ expenseId }: { expenseId: string }) {
 
   return (
     <section className="flex flex-col gap-3 px-4">
-      <h2 className="text-muted text-xs font-semibold tracking-wide uppercase">
+      <h2 className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
         {thread.total > 0 ? `Comments (${thread.total})` : 'Comments'}
       </h2>
 
@@ -54,31 +54,40 @@ export function CommentThread({ expenseId }: { expenseId: string }) {
         </Button>
       )}
 
-      <Stack gap={2} className="pt-1">
-        <Textarea
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          placeholder="Add a comment"
-          maxLength={MAX}
-          aria-label="Add a comment"
-          rows={2}
-        />
+      {/* Sticky, so "why am I on this one?" can be asked while the split list
+       * that prompted it is still on screen. It clears the tab bar and the
+       * home indicator the same way the FAB bar does. */}
+      <div
+        className="bg-ground border-line sticky z-10 -mx-4 mt-1 border-t px-4 pt-2.5 pb-3"
+        style={{
+          insetBlockEnd: 'calc(var(--sw-tabbar-height) + var(--sw-safe-block-end))',
+        }}
+      >
+        <Stack direction="row" gap={2} className="items-start">
+          <Textarea
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            placeholder="Add a comment"
+            maxLength={MAX}
+            aria-label="Add a comment"
+            rows={1}
+            className="min-h-12"
+          />
+          <Button
+            loading={add.isPending}
+            // The API rejects a whitespace-only body, so the button says so first.
+            disabled={trimmed.length === 0}
+            onClick={() => add.mutate(trimmed, { onSuccess: () => setDraft('') })}
+          >
+            Send
+          </Button>
+        </Stack>
         {add.isError && (
-          <p role="alert" className="text-danger text-xs">
+          <p role="alert" className="text-danger mt-1.5 text-xs">
             {detailOf(add.error)}
           </p>
         )}
-        <Button
-          size="sm"
-          className="self-end"
-          loading={add.isPending}
-          // The API rejects a whitespace-only body, so the button says so first.
-          disabled={trimmed.length === 0}
-          onClick={() => add.mutate(trimmed, { onSuccess: () => setDraft('') })}
-        >
-          Post
-        </Button>
-      </Stack>
+      </div>
     </section>
   )
 }

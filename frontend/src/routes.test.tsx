@@ -175,7 +175,9 @@ describe('routes resolve', () => {
     // The activity feed and notifications link to an expense without knowing
     // which group it belongs to, so the flat path has to resolve itself.
     renderAt('/expenses/e1')
-    expect(await screen.findByText('Who owes what (1)')).toBeInTheDocument()
+    // The per-person list is what proves it landed on the detail screen and
+    // not on a redirect stub -- the heading names the split and the headcount.
+    expect(await screen.findByText('Equally between 1')).toBeInTheDocument()
   })
 
   it('an unknown path still says so', async () => {

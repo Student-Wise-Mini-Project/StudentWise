@@ -30,10 +30,12 @@ export function ReceiptSection({
 
   return (
     <section className="flex flex-col gap-3 px-4">
-      <h2 className="text-muted text-xs font-semibold tracking-wide uppercase">Receipt</h2>
+      <h2 className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
+        Receipt
+      </h2>
 
       {receipt.status === 'loading' && (
-        <div className="bg-sunken flex h-40 items-center justify-center rounded-xl">
+        <div className="bg-sunken flex h-40 items-center justify-center rounded-sm">
           <Spinner label="Loading the receipt" />
         </div>
       )}
@@ -42,7 +44,7 @@ export function ReceiptSection({
         <img
           src={receipt.url}
           alt="The receipt for this expense"
-          className="border-line max-h-96 w-full rounded-xl border object-contain"
+          className="border-line max-h-96 w-full rounded-sm border object-contain"
         />
       )}
 
