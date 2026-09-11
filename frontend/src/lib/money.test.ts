@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 import {
   addAll,
@@ -13,6 +13,7 @@ import {
   sumEquals,
   sumEqualsHundred,
 } from './money'
+import { setFormattingLocale } from './locale'
 
 describe('arithmetic is exact', () => {
   it('does not lose the cent that floats lose', () => {
@@ -160,5 +161,23 @@ describe('formatting', () => {
 
   it('does not blank the screen on an unknown currency code', () => {
     expect(formatMoney('10.00', 'XYZ')).toContain('10.00')
+  })
+})
+
+describe('locale awareness', () => {
+  afterEach(() => setFormattingLocale('en'))
+
+  it('still formats the same digits in Hebrew', () => {
+    setFormattingLocale('he')
+    expect(formatMoney('412.60', 'ILS')).toMatch(/412\.60/)
+  })
+
+  it('caches a formatter per locale rather than reusing the first one', () => {
+    setFormattingLocale('en')
+    const english = formatMoney('412.60', 'ILS')
+    setFormattingLocale('he')
+    const hebrew = formatMoney('412.60', 'ILS')
+    expect(english).toMatch(/412\.60/)
+    expect(hebrew).toMatch(/412\.60/)
   })
 })

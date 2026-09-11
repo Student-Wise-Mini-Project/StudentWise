@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
-import { formatDay, formatMonth } from './dates'
+import { formatDay, formatDayHeader, formatMonth } from './dates'
+import { setFormattingLocale } from './locale'
 
 describe('calendar dates never become instants', () => {
   it('formats a day as the day that was written', () => {
@@ -31,5 +32,24 @@ describe('calendar dates never become instants', () => {
   it('returns the input rather than "Invalid Date" for nonsense', () => {
     expect(formatDay('not-a-date')).toBe('not-a-date')
     expect(formatMonth('nope')).toBe('nope')
+  })
+})
+
+describe('locale awareness', () => {
+  afterEach(() => setFormattingLocale('en'))
+
+  it('formats a day in Hebrew when the locale is Hebrew', () => {
+    setFormattingLocale('he')
+    // Not asserting the exact string: Intl's Hebrew month names are the
+    // platform's business, not ours. What matters is that it is not English.
+    expect(formatDay('2026-09-11')).not.toMatch(/Sep/)
+  })
+
+  it('says Today in the active language', () => {
+    const now = new Date('2026-09-11T12:00:00Z')
+    setFormattingLocale('he')
+    expect(formatDayHeader('2026-09-11T10:00:00Z', now)).toBe('היום')
+    setFormattingLocale('en')
+    expect(formatDayHeader('2026-09-11T10:00:00Z', now)).toBe('Today')
   })
 })

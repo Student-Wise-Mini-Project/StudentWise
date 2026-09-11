@@ -1,5 +1,9 @@
 import Decimal from 'decimal.js-light'
 
+import type { Locale } from '@/i18n/types'
+
+import { currentLocale } from './locale'
+
 /**
  * Money, as the API speaks it: a decimal **string** like `"33.34"`.
  *
@@ -176,14 +180,18 @@ export function divideForDisplay(total: string, people: number): ApproximateAmou
 
 const formatters = new Map<string, Intl.NumberFormat>()
 
+/** Both are `-IL`: the region decides grouping and the currency's own symbol. */
+const TAGS: Record<Locale, string> = { en: 'en-IL', he: 'he-IL' }
+
 function formatter(currency: string, signDisplay: 'auto' | 'never' | 'always'): Intl.NumberFormat {
-  const key = `${currency}:${signDisplay}`
+  const locale = currentLocale()
+  const key = `${locale}:${currency}:${signDisplay}`
   const cached = formatters.get(key)
   if (cached) return cached
 
   let made: Intl.NumberFormat
   try {
-    made = new Intl.NumberFormat('en-IL', {
+    made = new Intl.NumberFormat(TAGS[locale], {
       style: 'currency',
       currency,
       currencyDisplay: 'narrowSymbol',
@@ -191,7 +199,7 @@ function formatter(currency: string, signDisplay: 'auto' | 'never' | 'always'): 
     })
   } catch {
     // An unknown currency code should not blank out every amount on screen.
-    made = new Intl.NumberFormat('en-IL', { minimumFractionDigits: 2, signDisplay })
+    made = new Intl.NumberFormat(TAGS[locale], { minimumFractionDigits: 2, signDisplay })
   }
   formatters.set(key, made)
   return made
