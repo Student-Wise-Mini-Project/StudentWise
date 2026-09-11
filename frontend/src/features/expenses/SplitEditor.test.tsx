@@ -120,7 +120,9 @@ describe('validation', () => {
       await user.tab()
     }
 
-    expect(screen.getByRole('status')).toHaveTextContent('0.01 still to allocate')
+    // The header line is a live reading of the form, not a scolding: it says
+    // what is left, in the currency, and only turns red once it is wrong.
+    expect(screen.getByRole('status')).toHaveTextContent('0.01 left to assign')
   })
 
   it('offers to hand the remainder to one person', async () => {
@@ -147,7 +149,7 @@ describe('validation', () => {
       await user.type(screen.getByLabelText(`${name}'s percentage`), '33')
     }
 
-    expect(screen.getByRole('status')).toHaveTextContent('Adds up to 99.00%, not 100%')
+    expect(screen.getByRole('status')).toHaveTextContent('99% of 100%')
   })
 
   it('asks for at least one person', async () => {

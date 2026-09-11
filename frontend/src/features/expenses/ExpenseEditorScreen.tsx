@@ -1,17 +1,24 @@
-import { useMemo, useRef, useState } from 'react'
+import { type ReactNode, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 
 import { detailOf } from '@/api/errors'
-import { EXPENSE_CATEGORIES, type ExpenseCategory, type SplitType } from '@/api/types'
+import {
+  EXPENSE_CATEGORIES,
+  type ExpenseCategory,
+  type GroupMember,
+  type SplitType,
+} from '@/api/types'
 import { AppBar } from '@/app/layouts/AppBar'
+import { Avatar } from '@/components/Avatar'
 import { Button } from '@/components/Button'
-import { Field } from '@/components/Field'
-import { Input, Select, Textarea } from '@/components/Input'
 import { MoneyInput } from '@/components/MoneyInput'
+import { Sheet } from '@/components/Sheet'
 import { Spinner } from '@/components/Spinner'
 import { ErrorState } from '@/components/feedback'
-import { Page, Stack } from '@/components/layout'
+import { CheckIcon, ChevronEnd } from '@/components/icons'
+import { Page } from '@/components/layout'
 import { useGroupScope } from '@/features/groups/groupContext'
+import { cn } from '@/lib/cn'
 import { today } from '@/lib/dates'
 import { createIdempotencyTracker } from '@/lib/idempotency'
 import { categoryLabel } from '@/lib/labels'
@@ -124,6 +131,16 @@ type FormState = {
   participants: ParticipantDraft[]
 }
 
+/**
+ * "₪212.30, split equally between all three", in about four taps.
+ *
+ * The amount is the screen: it comes first, centred, at 44px over a rule with
+ * no box around it, because it is the one thing that is always typed and
+ * everything else has a sensible default. Under it the rest of the expense is
+ * a band of label/value rows rather than a stack of captioned boxes — a form
+ * with six framed fields reads as six decisions, and five of these are already
+ * made.
+ */
 function ExpenseForm({
   mode,
   members,
@@ -135,7 +152,7 @@ function ExpenseForm({
   onCancel,
 }: {
   mode: 'create' | 'edit'
-  members: ReturnType<typeof useGroupScope>['activeMembers']
+  members: GroupMember[]
   currency: string
   initial?: FormState
   pending: boolean
@@ -152,6 +169,7 @@ function ExpenseForm({
   }) => void
   onCancel: () => void
 }) {
+  const { group } = useGroupScope()
   const me = members[0]
   const [form, setForm] = useState<FormState>(
     initial ?? {
@@ -166,6 +184,7 @@ function ExpenseForm({
       participants: members.map((member) => ({ userId: member.user.id, shareValue: '' })),
     },
   )
+  const [payerSheetOpen, setPayerSheetOpen] = useState(false)
 
   const patch = (next: Partial<FormState>) => setForm((current) => ({ ...current, ...next }))
 
@@ -175,134 +194,174 @@ function ExpenseForm({
     [form.splitType, form.participants, form.amount],
   )
   const canSave = form.title.trim().length > 0 && amountOk && Boolean(form.payerId) && split.valid
+  const payer = members.find((member) => member.user.id === form.payerId)
 
   return (
     <>
       <AppBar
-        title={mode === 'create' ? 'Add an expense' : 'Edit expense'}
-        back
-        actions={
-          <Button size="sm" loading={pending} disabled={!canSave} onClick={submit}>
-            Save
+        variant="modal"
+        title={mode === 'create' ? 'New expense' : 'Edit expense'}
+        leading={
+          <Button variant="ghost" size="sm" onClick={onCancel}>
+            Cancel
           </Button>
         }
       />
 
       <Page width="narrow">
-        <Stack gap={5} className="px-4 py-4">
-          {Boolean(error) && (
-            <p role="alert" className="bg-danger-soft text-danger rounded-lg px-3 py-2.5 text-sm">
-              {detailOf(error)}
-            </p>
-          )}
-
-          <Field label="What was it?" required>
-            {(props) => (
-              <Input
-                {...props}
-                value={form.title}
-                onChange={(event) => patch({ title: event.target.value })}
-                maxLength={200}
-                autoFocus={mode === 'create'}
-              />
-            )}
-          </Field>
-
-          <Field
-            label="How much?"
-            required
-            error={form.amount !== '' && !amountOk ? 'Has to be more than zero.' : undefined}
+        {Boolean(error) && (
+          <p
+            role="alert"
+            className="bg-danger-soft text-danger mx-4 mt-4 rounded-sm px-3 py-2.5 text-sm"
+            dir="auto"
           >
-            {(props) => (
-              <MoneyInput
-                {...props}
-                value={form.amount}
-                onValueChange={(amount) => patch({ amount })}
-                currencySymbol={currency === 'ILS' ? '₪' : ''}
-              />
-            )}
-          </Field>
+            {detailOf(error)}
+          </p>
+        )}
 
-          <Field label="Who paid?" required>
-            {(props) => (
-              <Select
-                {...props}
-                value={form.payerId}
-                onChange={(event) => patch({ payerId: event.target.value })}
-              >
-                {members.map((member) => (
-                  <option key={member.user.id} value={member.user.id}>
-                    {member.user.name}
-                  </option>
-                ))}
-              </Select>
+        {/* The amount, first and largest. No box: a 44px number inside a
+         * bordered field looks like a mistake, and there is nothing to
+         * disambiguate it from at this size anyway. */}
+        <div className="px-4 pt-3 pb-4 text-center">
+          <MoneyInput
+            size="hero"
+            value={form.amount}
+            onValueChange={(amount) => patch({ amount })}
+            currencySymbol={currency === 'ILS' ? '₪' : currency}
+            aria-label="Amount"
+            placeholder="0.00"
+            autoFocus={mode === 'create'}
+            className="w-40 text-center"
+          />
+          <p className="text-muted mt-2.5 text-xs" dir="auto">
+            {group.name} · {currency}
+            {form.amount !== '' && !amountOk && (
+              <span className="text-danger"> · has to be more than zero</span>
             )}
-          </Field>
+          </p>
+        </div>
 
-          <Field label="When?" required>
-            {(props) => (
-              <Input
-                {...props}
-                type="date"
-                value={form.date}
-                onChange={(event) => patch({ date: event.target.value })}
-              />
-            )}
-          </Field>
-
-          <Field label="Category" hint="Leaving this blank is fine; the charts call it Other.">
-            {(props) => (
-              <Select
-                {...props}
-                value={form.category}
-                onChange={(event) =>
-                  patch({ category: event.target.value as ExpenseCategory | '' })
-                }
-              >
-                <option value="">No category</option>
-                {EXPENSE_CATEGORIES.map((category) => (
-                  <option key={category} value={category}>
-                    {categoryLabel[category]}
-                  </option>
-                ))}
-              </Select>
-            )}
-          </Field>
-
-          <div className="flex flex-col gap-2">
-            <span className="text-ink text-sm font-semibold">Split between</span>
-            <SplitEditor
-              members={members}
-              splitType={form.splitType}
-              onSplitTypeChange={(splitType) => patch({ splitType })}
-              participants={form.participants}
-              onParticipantsChange={(participants) => patch({ participants })}
-              total={amountOk ? form.amount : '0.00'}
-              currency={currency}
+        <div className="bg-surface border-line divide-line divide-y border-y">
+          <LabelRow label="What">
+            <input
+              value={form.title}
+              onChange={(event) => patch({ title: event.target.value })}
+              maxLength={200}
+              aria-label="What was it?"
+              placeholder="Supermarket"
+              className="placeholder:text-faint w-full border-0 bg-transparent text-base font-semibold outline-none"
             />
+          </LabelRow>
+
+          <LabelRow label="Paid by" onClick={() => setPayerSheetOpen(true)}>
+            <span className="flex items-center gap-2">
+              {payer && <Avatar user={payer.user} size="xs" />}
+              <span className="text-base font-semibold">{payer?.user.name ?? 'Pick someone'}</span>
+            </span>
+          </LabelRow>
+
+          <LabelRow label="When">
+            <input
+              type="date"
+              value={form.date}
+              onChange={(event) => patch({ date: event.target.value })}
+              aria-label="When?"
+              className="tnum w-full border-0 bg-transparent text-base font-semibold outline-none"
+            />
+          </LabelRow>
+
+          <LabelRow label="Note">
+            <input
+              value={form.notes}
+              onChange={(event) => patch({ notes: event.target.value })}
+              aria-label="Notes"
+              placeholder="Optional"
+              className="placeholder:text-faint w-full border-0 bg-transparent text-base outline-none"
+            />
+          </LabelRow>
+
+          {/* Chips rather than a dropdown: there are seven of these, they are
+           * all one word, and a category is chosen by recognition rather than
+           * by reading a list. */}
+          <div className="px-4 py-3">
+            <span
+              id="category-label"
+              className="text-muted font-display text-2xs block font-extrabold tracking-[0.08em] uppercase"
+            >
+              Category
+            </span>
+            <div
+              role="group"
+              aria-labelledby="category-label"
+              className="mt-2.5 flex flex-wrap gap-2"
+            >
+              {EXPENSE_CATEGORIES.map((category) => {
+                const on = form.category === category
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => patch({ category: on ? '' : category })}
+                    className={cn(
+                      'font-display h-8 rounded-sm border px-3 text-sm font-bold transition-colors',
+                      on
+                        ? 'border-accent bg-accent-soft text-accent'
+                        : 'border-line text-muted hover:text-ink',
+                    )}
+                  >
+                    {categoryLabel[category]}
+                  </button>
+                )
+              })}
+            </div>
           </div>
+        </div>
 
-          <Field label="Notes">
-            {(props) => (
-              <Textarea
-                {...props}
-                value={form.notes}
-                onChange={(event) => patch({ notes: event.target.value })}
-                placeholder="Optional"
-              />
-            )}
-          </Field>
+        <SplitEditor
+          members={members}
+          splitType={form.splitType}
+          onSplitTypeChange={(splitType) => patch({ splitType })}
+          participants={form.participants}
+          onParticipantsChange={(participants) => patch({ participants })}
+          total={amountOk ? form.amount : '0.00'}
+          currency={currency}
+        />
 
-          <Stack direction="row" gap={2}>
-            <Button variant="secondary" fullWidth onClick={onCancel}>
-              Cancel
-            </Button>
-            <Button fullWidth size="lg" loading={pending} disabled={!canSave} onClick={submit}>
-              {mode === 'create' ? 'Add it' : 'Save'}
-            </Button>
-          </Stack>
-        </Stack>
+        <div className="px-4 pt-6">
+          <Button fullWidth size="lg" loading={pending} disabled={!canSave} onClick={submit}>
+            {mode === 'create' ? 'Save expense' : 'Save changes'}
+          </Button>
+        </div>
       </Page>
+
+      <Sheet
+        open={payerSheetOpen}
+        onClose={() => setPayerSheetOpen(false)}
+        title="Who paid?"
+        className="sm:max-w-sm"
+      >
+        <div className="divide-line -my-1 divide-y">
+          {members.map((member) => {
+            const chosen = member.user.id === form.payerId
+            return (
+              <button
+                key={member.user.id}
+                type="button"
+                onClick={() => {
+                  patch({ payerId: member.user.id })
+                  setPayerSheetOpen(false)
+                }}
+                className="flex w-full items-center gap-3 py-2.5 text-start"
+              >
+                <Avatar user={member.user} size="sm" />
+                <span className="flex-1 truncate text-base font-semibold">{member.user.name}</span>
+                {chosen && <CheckIcon className="text-accent size-5 shrink-0" />}
+              </button>
+            )
+          })}
+        </div>
+      </Sheet>
     </>
   )
 
@@ -324,4 +383,42 @@ function ExpenseForm({
       notes: form.notes.trim() === '' ? null : form.notes.trim(),
     })
   }
+}
+
+/**
+ * One row of the details band: a fixed-width eyebrow and a value that fills the
+ * rest. The labels share a column so the values line up, which is what makes
+ * four rows read as one object rather than four fields.
+ */
+function LabelRow({
+  label,
+  onClick,
+  children,
+}: {
+  label: string
+  onClick?: () => void
+  children: ReactNode
+}) {
+  const body = (
+    <>
+      <span className="text-muted font-display text-2xs w-[4.5rem] shrink-0 font-extrabold tracking-[0.08em] uppercase">
+        {label}
+      </span>
+      <span className="min-w-0 flex-1">{children}</span>
+      {onClick && <ChevronEnd className="text-faint size-5 shrink-0" />}
+    </>
+  )
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="hover:bg-sunken flex w-full items-center gap-3 px-4 py-3 text-start transition-colors"
+      >
+        {body}
+      </button>
+    )
+  }
+  return <div className="flex items-center gap-3 px-4 py-3">{body}</div>
 }
