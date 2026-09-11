@@ -16,7 +16,8 @@
     "test:watch": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "gen:api": "node scripts/gen-api.mjs"
+    "gen:api": "node scripts/gen-api.mjs",
+    "gen:icons": "node scripts/make-icons.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.102.8",
@@ -49,6 +50,7 @@
     "openapi-typescript": "^7.13.0",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "sharp": "^0.35.4",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.20.0",
