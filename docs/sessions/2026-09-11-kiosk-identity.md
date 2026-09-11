@@ -117,6 +117,8 @@ neutering it turned a silent visual regression into six compiler errors.
 
 ## Not done
 
+*(Both of these were closed the same day — see the addendum at the end.)*
+
 - **Inputs are 15px, and the spec says 16px minimum** because iOS zooms the page
   on focus below that. Pre-existing, not introduced here, and the type scale has
   no 16px step — fixing it properly means a token decision rather than an
