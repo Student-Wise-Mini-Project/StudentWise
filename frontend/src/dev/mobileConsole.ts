@@ -62,6 +62,12 @@ export async function startMobileConsole(): Promise<void> {
     console.error('Unhandled promise rejection:', event.reason)
   })
 
+  // Horizontal overflow is invisible on the machine this was written on and
+  // obvious on the phone it was designed for, which is exactly the class of bug
+  // this console exists for.
+  const { startOverflowProbe } = await import('./overflowProbe')
+  startOverflowProbe()
+
   console.info(
     '%cStudentWise debug console',
     'font-weight:bold',

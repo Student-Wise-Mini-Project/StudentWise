@@ -10,10 +10,13 @@ import { cn } from '@/lib/cn'
  * 48px clears Apple's 44px minimum comfortable touch target with room to spare.
  * This app is operated with one thumb in a supermarket queue, so that is a
  * floor, not a suggestion.
+ *
+ * `text-control` is 16px and must stay at or above it: iOS Safari zooms the
+ * page in when a smaller field takes focus and never zooms back out.
  */
 export const inputClasses = cn(
   'bg-surface border-line-strong text-ink placeholder:text-faint w-full rounded-md border',
-  'h-12 px-3.5 text-base transition-colors',
+  'h-12 px-3.5 text-control transition-colors',
   'focus:border-accent focus:outline-none',
   'aria-[invalid]:border-danger aria-[invalid]:bg-danger-soft',
   'disabled:bg-sunken disabled:text-muted disabled:cursor-not-allowed',

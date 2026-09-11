@@ -9,10 +9,10 @@ through the service layer, so the seeded data obeys the same invariants the API
 enforces (splits summing exactly to totals, participants being group members).
 """
 
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
 
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 
 from app.db import SessionLocal
 from app.domain.recurrence import RecurrenceFrequency
@@ -69,6 +69,43 @@ def wipe(db) -> None:
         User,
     ):
         db.execute(delete(model))
+    db.commit()
+
+
+def backdate(db) -> None:
+    """Make six weeks of seeded history actually look like six weeks.
+
+    `created_at` defaults to `clock_timestamp()`, which is right for the app and
+    wrong for a seed: one run stamps every row with the moment the script was
+    executed. Anything ordered or grouped by `created_at` -- the activity feed,
+    and the day headings on the home screen -- then collapses into a single
+    "Today", which is the opposite of what this data exists to demonstrate.
+
+    So each row is pushed back onto its own event date once everything is
+    written: an expense to its `expense_date`, a settlement to its `settled_at`.
+    Rows sharing a date keep the order they were inserted in, a minute apart, so
+    the feed's tiebreaker still has something real to break ties with.
+
+    `updated_at` moves with it. Leaving it at "now" would make every seeded
+    expense report itself as edited, because the detail screen decides that by
+    comparing the two.
+    """
+    minute_of = {}
+
+    for expense in db.scalars(select(Expense).order_by(Expense.created_at)).all():
+        seen = minute_of.get(expense.expense_date, 0)
+        minute_of[expense.expense_date] = seen + 1
+        # Early evening: the hour a flat actually enters the shopping.
+        stamp = datetime.combine(
+            expense.expense_date, time(18, 0), tzinfo=UTC
+        ) + timedelta(minutes=seen)
+        expense.created_at = stamp
+        expense.updated_at = stamp
+
+    for settlement in db.scalars(select(Settlement)).all():
+        settlement.created_at = settlement.settled_at
+        settlement.updated_at = settlement.settled_at
+
     db.commit()
 
 
@@ -699,6 +736,9 @@ def main() -> None:
             when=date(2026, 9, 3),
             category=ExpenseCategory.UTILITIES,
         )
+
+        # Everything is written; now make the history look like history.
+        backdate(db)
 
         print("Seeded:")
         print(f"  flat    : {flat.name} ({flat.id})")

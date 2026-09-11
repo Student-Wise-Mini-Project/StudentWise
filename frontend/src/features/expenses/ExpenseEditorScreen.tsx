@@ -249,7 +249,7 @@ function ExpenseForm({
               maxLength={200}
               aria-label="What was it?"
               placeholder="Supermarket"
-              className="placeholder:text-faint w-full border-0 bg-transparent text-base font-semibold outline-none"
+              className="placeholder:text-faint text-control w-full border-0 bg-transparent font-semibold outline-none"
             />
           </LabelRow>
 
@@ -266,7 +266,7 @@ function ExpenseForm({
               value={form.date}
               onChange={(event) => patch({ date: event.target.value })}
               aria-label="When?"
-              className="tnum w-full border-0 bg-transparent text-base font-semibold outline-none"
+              className="tnum text-control w-full border-0 bg-transparent font-semibold outline-none"
             />
           </LabelRow>
 
@@ -276,7 +276,7 @@ function ExpenseForm({
               onChange={(event) => patch({ notes: event.target.value })}
               aria-label="Notes"
               placeholder="Optional"
-              className="placeholder:text-faint w-full border-0 bg-transparent text-base outline-none"
+              className="placeholder:text-faint text-control w-full border-0 bg-transparent outline-none"
             />
           </LabelRow>
 

@@ -144,7 +144,7 @@ export function SplitEditor({
                     value={draft.shareValue}
                     onValueChange={(value) => setValue(member.user.id, value)}
                     aria-label={`${member.user.name}'s amount`}
-                    className="h-10 text-base"
+                    className="text-control h-10"
                   />
                 )}
 

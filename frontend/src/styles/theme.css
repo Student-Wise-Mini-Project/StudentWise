@@ -90,6 +90,16 @@
   --text-base--line-height: 1.375rem;
   --text-lg: 1.0625rem; /* 17 */
   --text-lg--line-height: 1.5rem;
+
+  /* 16px, and never less, for anything you can type into.
+   *
+   * Not a taste decision: iOS Safari zooms the whole page in when a field with
+   * a font smaller than 16px takes focus, and it does not zoom back out. One
+   * tap on the login form and every screen after it is magnified until the user
+   * pinches out by hand. `--text-base` is 15px because 15px is right for a list
+   * row; a control is the one place that cannot afford it. */
+  --text-control: 1rem; /* 16 */
+  --text-control--line-height: 1.5rem;
   --text-xl: 1.25rem; /* 20 */
   --text-xl--line-height: 1.625rem;
   --text-2xl: 1.5rem; /* 24 */
