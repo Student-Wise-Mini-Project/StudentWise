@@ -2,6 +2,7 @@ import { Link, Outlet } from 'react-router'
 
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { PlusIcon } from '@/components/icons'
+import { useUnreadCount } from '@/features/notifications/api'
 import { IosInstallHint, UpdatePrompt } from '@/pwa/PwaPrompts'
 
 import { SideNav } from './SideNav'
@@ -15,7 +16,12 @@ import { TabBar } from './TabBar'
  * a separate mobile route tree would double every screen's mount logic and
  * guarantee the two drift apart.
  */
-export function AppShell({ unreadCount = 0 }: { unreadCount?: number }) {
+export function AppShell() {
+  // Fetched here, once, and shared by both navigations. Fetching it inside each
+  // of them would double the request and let the two disagree mid-refresh.
+  const unread = useUnreadCount()
+  const unreadCount = unread.data?.unread ?? 0
+
   return (
     <div className="min-h-dvh lg:ps-60">
       <OfflineBanner />
