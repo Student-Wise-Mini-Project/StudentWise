@@ -25,7 +25,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = resolve(ROOT, 'public/icons')
 
 // Kept in step with src/styles/theme.css by hand: an SVG cannot read a CSS token.
-const ACCENT = '#2440c9'
+const ACCENT = '#1442f5'
 const INK = '#ffffff'
 
 /** The mark: three ledger lines, the last one short — a split that is not equal. */
