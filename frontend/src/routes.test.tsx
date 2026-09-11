@@ -92,6 +92,34 @@ function renderAt(path: string) {
     http.get(apiUrl('/api/groups/g1/settlement-plan'), () =>
       HttpResponse.json({ group_id: 'g1', currency: 'ILS', transfers: [] }),
     ),
+    http.get(apiUrl('/api/groups/g1/analytics/summary'), () =>
+      HttpResponse.json({
+        group_id: 'g1',
+        currency: 'ILS',
+        scope: 'group',
+        total_spent: '0.00',
+        expense_count: 0,
+        average_expense: '0.00',
+        largest_expense: null,
+        first_expense_date: null,
+        last_expense_date: null,
+      }),
+    ),
+    http.get(apiUrl('/api/groups/g1/analytics/by-category'), () =>
+      HttpResponse.json({
+        group_id: 'g1',
+        currency: 'ILS',
+        scope: 'group',
+        total: '0.00',
+        categories: [],
+      }),
+    ),
+    http.get(apiUrl('/api/groups/g1/analytics/by-month'), () =>
+      HttpResponse.json({ group_id: 'g1', currency: 'ILS', scope: 'group', months: [] }),
+    ),
+    http.get(apiUrl('/api/groups/g1/analytics/by-member'), () =>
+      HttpResponse.json({ group_id: 'g1', currency: 'ILS', members: [] }),
+    ),
     http.get(apiUrl('/api/expenses/e1/comments'), () =>
       HttpResponse.json({ items: [], total: 0, limit: 50, offset: 0, has_more: false }),
     ),
@@ -124,6 +152,7 @@ describe('routes resolve', () => {
     '/groups',
     '/groups/g1',
     '/groups/g1/balances',
+    '/groups/g1/insights',
     '/groups/g1/members',
     '/groups/g1/expenses/new',
     '/groups/g1/expenses/e1',

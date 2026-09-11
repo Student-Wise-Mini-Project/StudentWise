@@ -72,3 +72,20 @@ export function formatTimestamp(isoTimestamp: string): string {
   const value = new Date(isoTimestamp)
   return Number.isNaN(value.getTime()) ? '' : timeFormat.format(value)
 }
+
+const monthFormat = new Intl.DateTimeFormat('en-GB', { month: 'short' })
+const monthYearFormat = new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' })
+
+/**
+ * `"2026-09"` to `"Sep"`, or `"September 2026"`.
+ *
+ * Built from the parts rather than parsed as a date, for the same reason
+ * `formatDay` is: `new Date("2026-09")` is an *instant* at UTC midnight, which is
+ * August the 31st for anyone west of Greenwich.
+ */
+export function formatMonth(month: string, style: 'short' | 'long' = 'short'): string {
+  const [year, index] = month.split('-').map(Number)
+  if (!year || !index) return month
+  const value = new Date(year, index - 1, 15, 12)
+  return (style === 'short' ? monthFormat : monthYearFormat).format(value)
+}

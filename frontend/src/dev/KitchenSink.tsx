@@ -12,6 +12,7 @@ import { ListRow, ListSection } from '@/components/ListRow'
 import { Money } from '@/components/Money'
 import { MoneyInput } from '@/components/MoneyInput'
 import { SegmentedControl } from '@/components/SegmentedControl'
+import { DonutChart, PairedBars, TrendChart } from '@/components/charts'
 import { Sheet } from '@/components/Sheet'
 import { Spinner } from '@/components/Spinner'
 import { EmptyState, ErrorState, ListRowSkeleton, Skeleton } from '@/components/feedback'
@@ -234,6 +235,79 @@ export function KitchenSink() {
               </Field>
             </Stack>
           </Sheet>
+        </Section>
+
+        <Section title="Charts">
+          <Card>
+            <DonutChart
+              totalLabel="Total"
+              total="₪5,303.20"
+              slices={[
+                {
+                  key: 'u',
+                  label: 'Utilities',
+                  share: 87.8,
+                  amount: '₪4,657.90',
+                  caption: '87.8%',
+                },
+                { key: 'g', label: 'Groceries', share: 7.6, amount: '₪401.80', caption: '7.6%' },
+                {
+                  key: 'e',
+                  label: 'Entertainment',
+                  share: 2.7,
+                  amount: '₪143.50',
+                  caption: '2.7%',
+                },
+                { key: 'o', label: 'Other', share: 1.9, amount: '₪100.00', caption: '1.9%' },
+              ]}
+            />
+          </Card>
+          <Card>
+            <TrendChart
+              peakLabel="August 2026 · ₪1,397.20"
+              points={[
+                { key: '3', label: 'Mar', value: 530, amount: '₪530.00' },
+                { key: '4', label: 'Apr', value: 556.8, amount: '₪556.80' },
+                { key: '5', label: 'May', value: 515.1, amount: '₪515.10' },
+                { key: '6', label: 'Jun', value: 581.3, amount: '₪581.30' },
+                { key: '7', label: 'Jul', value: 545.5, amount: '₪545.50' },
+                { key: '8', label: 'Aug', value: 1397.2, amount: '₪1,397.20' },
+                { key: '9', label: 'Sept', value: 1177.3, amount: '₪1,177.30' },
+              ]}
+            />
+          </Card>
+          <Card>
+            <PairedBars
+              aName="Paid out"
+              bName="Used up"
+              rows={[
+                {
+                  key: 'm',
+                  label: 'Maya',
+                  a: 3757.4,
+                  b: 1800.62,
+                  aLabel: '₪3,757.40',
+                  bLabel: '₪1,800.62',
+                },
+                {
+                  key: 'g',
+                  label: 'Gal',
+                  a: 401.8,
+                  b: 1776.56,
+                  aLabel: '₪401.80',
+                  bLabel: '₪1,776.56',
+                },
+                {
+                  key: 'n',
+                  label: 'Noa',
+                  a: 1144,
+                  b: 1726.02,
+                  aLabel: '₪1,144.00',
+                  bLabel: '₪1,726.02',
+                },
+              ]}
+            />
+          </Card>
         </Section>
 
         <Section title="Loading, empty and failed">
