@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest'
+import { setFormattingLocale } from '@/lib/locale'
+import { afterEach, describe, expect, it } from 'vitest'
 
 import { ApiError, detailOf, isApiError, parseDetail } from './errors'
 
@@ -46,5 +47,23 @@ describe('unpacking an API failure', () => {
   it('gives a fallback for a thrown value that is not an ApiError', () => {
     expect(detailOf(new TypeError('Failed to fetch'))).toBe('Failed to fetch')
     expect(detailOf(undefined)).toBe('Something went wrong.')
+  })
+})
+
+describe('the active language', () => {
+  afterEach(() => setFormattingLocale('en'))
+
+  it('answers a status the server sent no detail for in the active language', () => {
+    setFormattingLocale('he')
+    expect(parseDetail({}, 404)).toBe('זה לא קיים.')
+  })
+
+  it('still prefers the server detail, even when it is English', () => {
+    // A visible seam, and the right one: an unknown error in the server own
+    // words beats a confident Hebrew sentence that says the wrong thing.
+    setFormattingLocale('he')
+    expect(parseDetail({ detail: 'Nobody owes you anything in this group' }, 400)).toBe(
+      'Nobody owes you anything in this group',
+    )
   })
 })

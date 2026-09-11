@@ -6,6 +6,7 @@ import analyticsEn from './en/analytics.json'
 import authEn from './en/auth.json'
 import balancesEn from './en/balances.json'
 import commonEn from './en/common.json'
+import errorsEn from './en/errors.json'
 import expensesEn from './en/expenses.json'
 import groupsEn from './en/groups.json'
 import notificationsEn from './en/notifications.json'
@@ -15,6 +16,7 @@ import analyticsHe from './he/analytics.json'
 import authHe from './he/auth.json'
 import balancesHe from './he/balances.json'
 import commonHe from './he/common.json'
+import errorsHe from './he/errors.json'
 import expensesHe from './he/expenses.json'
 import groupsHe from './he/groups.json'
 import notificationsHe from './he/notifications.json'
@@ -33,6 +35,7 @@ export const en = {
   auth: authEn,
   balances: balancesEn,
   common: commonEn,
+  errors: errorsEn,
   expenses: expensesEn,
   groups: groupsEn,
   notifications: notificationsEn,
@@ -49,6 +52,7 @@ export const he: Widen<typeof en> = {
   auth: authHe,
   balances: balancesHe,
   common: commonHe,
+  errors: errorsHe,
   expenses: expensesHe,
   groups: groupsHe,
   notifications: notificationsHe,
