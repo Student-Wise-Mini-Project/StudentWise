@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn'
+import { useT } from '@/i18n/i18nContext'
 
 /**
  * Small, hand-drawn charts.
@@ -59,6 +60,7 @@ export function DonutChart({
   totalLabel: string
   className?: string
 }) {
+  const t = useT()
   const size = 180
   const centre = size / 2
   const radius = 74
@@ -94,7 +96,7 @@ export function DonutChart({
           viewBox={`0 0 ${size} ${size}`}
           className="size-44"
           role="img"
-          aria-label={`Spending by category. Total ${total}.`}
+          aria-label={t('analytics.chart.ariaCategory', { total })}
         >
           {arcs.map(({ slice, path, fill }) => (
             <path key={slice.key} d={path} className={fill} />
@@ -182,6 +184,7 @@ export function TrendChart({
   peakLabel: string
   className?: string
 }) {
+  const t = useT()
   if (points.length === 0) return null
 
   const max = Math.max(...points.map((point) => point.value), 1)
@@ -193,7 +196,7 @@ export function TrendChart({
   return (
     <div className={cn('flex flex-col gap-2', className)}>
       <div className="text-muted flex items-baseline justify-between text-xs">
-        <span className="font-semibold tracking-wide uppercase">Peak</span>
+        <span className="font-semibold tracking-wide uppercase">{t('analytics.chart.peak')}</span>
         <span className="tnum" dir="auto">
           {peakLabel}
         </span>
@@ -204,7 +207,7 @@ export function TrendChart({
         className="h-36 w-full"
         preserveAspectRatio="none"
         role="img"
-        aria-label={`Spending per month. Highest: ${peakLabel}.`}
+        aria-label={t('analytics.chart.ariaMonthly', { peak: peakLabel })}
       >
         {/* The line the tallest bar reaches, so the heights mean something. */}
         <line
@@ -243,8 +246,8 @@ export function TrendChart({
       </div>
 
       <ChartTable
-        caption="Spending per month"
-        columns={['Month', 'Total']}
+        caption={t('analytics.chart.captionMonthly')}
+        columns={[t('analytics.chart.month'), t('analytics.chart.total')]}
         rows={points.map((point) => [point.label, point.amount])}
       />
     </div>
@@ -280,6 +283,7 @@ export function PairedBars({
   bName: string
   className?: string
 }) {
+  const t = useT()
   const max = Math.max(...rows.flatMap((row) => [row.a, row.b]), 1)
 
   return (
@@ -312,8 +316,8 @@ export function PairedBars({
       ))}
 
       <ChartTable
-        caption="Paid and consumed per person"
-        columns={['Person', aName, bName]}
+        caption={t('analytics.chart.captionPerPerson')}
+        columns={[t('analytics.chart.person'), aName, bName]}
         rows={rows.map((row) => [row.label, row.aLabel, row.bLabel])}
       />
     </div>

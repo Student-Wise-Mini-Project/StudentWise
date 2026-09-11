@@ -1,12 +1,16 @@
 import { isPluralForms } from '../format'
 import type { FlatCatalogue, Flatten, Locale, Widen } from '../types'
 
+import activityEn from './en/activity.json'
+import analyticsEn from './en/analytics.json'
 import authEn from './en/auth.json'
 import balancesEn from './en/balances.json'
 import commonEn from './en/common.json'
 import expensesEn from './en/expenses.json'
 import groupsEn from './en/groups.json'
 import settingsEn from './en/settings.json'
+import activityHe from './he/activity.json'
+import analyticsHe from './he/analytics.json'
 import authHe from './he/auth.json'
 import balancesHe from './he/balances.json'
 import commonHe from './he/common.json'
@@ -22,6 +26,8 @@ import settingsHe from './he/settings.json'
  * to three different screens.
  */
 export const en = {
+  activity: activityEn,
+  analytics: analyticsEn,
   auth: authEn,
   balances: balancesEn,
   common: commonEn,
@@ -35,6 +41,8 @@ export const en = {
  * the same key set as English, no fewer and no extras.
  */
 export const he: Widen<typeof en> = {
+  activity: activityHe,
+  analytics: analyticsHe,
   auth: authHe,
   balances: balancesHe,
   common: commonHe,

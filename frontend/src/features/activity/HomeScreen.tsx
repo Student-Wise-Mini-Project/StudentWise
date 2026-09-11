@@ -32,11 +32,15 @@ export function HomeScreen() {
   return (
     <>
       <AppBar
-        title={<span className="text-2xl font-black tracking-[-0.02em]">Activity</span>}
+        title={
+          <span className="text-2xl font-black tracking-[-0.02em]">{t('activity.title')}</span>
+        }
         actions={
           <Link
             to="/notifications"
-            aria-label={unread > 0 ? `Alerts, ${unread} unread` : 'Alerts'}
+            aria-label={
+              unread > 0 ? t('activity.alertsUnread', { count: unread }) : t('activity.alerts')
+            }
             className="text-ink hover:bg-sunken relative rounded-md p-2 transition-colors"
           >
             <BellIcon className="size-6" />
@@ -60,7 +64,7 @@ export function HomeScreen() {
             <Position loading={position.loading || groups.isLoading} perGroup={position.perGroup} />
             {(groups.data?.length ?? 0) > 0 && (
               <div className="hidden lg:block">
-                <ListSection header="Your groups">
+                <ListSection header={t('activity.yourGroups')}>
                   {(groups.data ?? []).map((group) => (
                     <ListRow
                       key={group.id}
@@ -81,9 +85,9 @@ export function HomeScreen() {
           {groups.data?.length === 0 ? (
             <EmptyState
               icon={<GroupsIcon className="size-5" />}
-              title="Nothing here yet"
-              body="Start with a group — a flat, a trip, or the two of you."
-              action={{ label: 'Create a group', to: '/groups' }}
+              title={t('activity.emptyNoGroupsTitle')}
+              body={t('activity.emptyNoGroupsBody')}
+              action={{ label: t('activity.emptyNoGroupsAction'), to: '/groups' }}
             />
           ) : (
             <InfiniteList
@@ -116,8 +120,8 @@ export function HomeScreen() {
               }}
               empty={
                 <EmptyState
-                  title="Nothing has happened yet"
-                  body="Add an expense and it will show up here."
+                  title={t('activity.emptyFeedTitle')}
+                  body={t('activity.emptyFeedBody')}
                   size="inline"
                 />
               }
@@ -145,9 +149,11 @@ function Position({
   loading: boolean
   perGroup: { groupId: string; name: string; currency: string; net: string }[]
 }) {
+  const t = useT()
+
   if (loading) {
     return (
-      <Slab eyebrow="Overall">
+      <Slab eyebrow={t('activity.slab.overall')}>
         <Skeleton className="mt-2 h-11 w-48" />
         <div className="mt-4 grid grid-cols-2 gap-2">
           <Skeleton className="h-12" rounded="md" />
@@ -172,11 +178,11 @@ function Position({
 
   if (!headline) {
     return (
-      <Slab eyebrow="Overall">
+      <Slab eyebrow={t('activity.slab.overall')}>
         <p className="font-display mt-1.5 text-4xl font-black tracking-[-0.03em]">
-          Everyone is square.
+          {t('activity.slab.squareTitle')}
         </p>
-        <p className="text-faint mt-2 text-sm">Nothing owed either way.</p>
+        <p className="text-faint mt-2 text-sm">{t('activity.slab.squareBody')}</p>
       </Slab>
     )
   }
@@ -189,7 +195,11 @@ function Position({
     .slice(0, 4)
 
   return (
-    <Slab eyebrow={isPositive(headline.net) ? "Overall you're owed" : 'Overall you owe'}>
+    <Slab
+      eyebrow={
+        isPositive(headline.net) ? t('activity.slab.overallOwed') : t('activity.slab.overallOwe')
+      }
+    >
       <p className="mt-1.5">
         <Money
           amount={headline.net}
@@ -216,8 +226,7 @@ function Position({
 
       {totals.length > 1 && (
         <p className="text-faint mt-3 text-xs" dir="auto">
-          {totals.length - 1} other {totals.length === 2 ? 'currency is' : 'currencies are'} not
-          added in — they are shown per group.
+          {t('activity.slab.otherCurrencies', { count: totals.length - 1 })}
         </p>
       )}
     </Slab>
@@ -234,6 +243,8 @@ function Position({
  * be told apart before either is read.
  */
 function ActivityRow({ item, meId }: { item: ActivityItem; meId: string | undefined }) {
+  const t = useT()
+
   if (item.kind === 'EXPENSE_ADDED' && item.expense) {
     const expense = item.expense
     const iPaid = expense.payer.id === meId
@@ -243,8 +254,11 @@ function ActivityRow({ item, meId }: { item: ActivityItem; meId: string | undefi
     // If I paid, I am out the whole bill less my own share of it.
     const position = mine
       ? iPaid
-        ? { word: 'you lent', amount: subtract(expense.total_amount, mine.owed_amount) }
-        : { word: 'you owe', amount: mine.owed_amount }
+        ? {
+            key: 'activity.row.youLent' as const,
+            amount: subtract(expense.total_amount, mine.owed_amount),
+          }
+        : { key: 'activity.row.youOwe' as const, amount: mine.owed_amount }
       : null
 
     return (
@@ -252,12 +266,16 @@ function ActivityRow({ item, meId }: { item: ActivityItem; meId: string | undefi
         to={`/groups/${item.group_id}/expenses/${expense.id}`}
         leading={<Avatar user={expense.payer} />}
         title={expense.title}
-        subtitle={`${iPaid ? 'You' : expense.payer.name} paid · ${item.group_name}`}
+        subtitle={
+          iPaid
+            ? t('activity.row.paidSelf', { group: item.group_name })
+            : t('activity.row.paidOther', { name: expense.payer.name, group: item.group_name })
+        }
         meta={<Money amount={expense.total_amount} currency={item.currency} size="lg" />}
         metaSubtitle={
           position ? (
             <span className={cn('text-xs font-semibold', iPaid ? 'text-credit' : 'text-debt')}>
-              {position.word}{' '}
+              {t(position.key)}{' '}
               <Money
                 amount={position.amount}
                 currency={item.currency}
@@ -266,7 +284,7 @@ function ActivityRow({ item, meId }: { item: ActivityItem; meId: string | undefi
               />
             </span>
           ) : (
-            'not on this one'
+            t('activity.row.notOnThis')
           )
         }
       />
@@ -275,8 +293,27 @@ function ActivityRow({ item, meId }: { item: ActivityItem; meId: string | undefi
 
   if (item.kind === 'SETTLEMENT_RECORDED' && item.settlement) {
     const settlement = item.settlement
-    const from = settlement.from_user.id === meId ? 'You' : settlement.from_user.name
-    const to = settlement.to_user.id === meId ? 'you' : settlement.to_user.name
+
+    // Three cases, three keys, not one template with two names swapped in: the
+    // neutral Hebrew for "you paid X" is a verb (שילמת), for "X paid you" a
+    // passive (התקבל תשלום), and for two other people a noun phrase. They are
+    // different sentences, not one sentence with different nouns.
+    const sentence =
+      settlement.from_user.id === meId
+        ? t('activity.row.settledSelfPaid', {
+            to: settlement.to_user.name,
+            group: item.group_name,
+          })
+        : settlement.to_user.id === meId
+          ? t('activity.row.settledPaidYou', {
+              from: settlement.from_user.name,
+              group: item.group_name,
+            })
+          : t('activity.row.settledOther', {
+              from: settlement.from_user.name,
+              to: settlement.to_user.name,
+              group: item.group_name,
+            })
 
     return (
       <div className="text-credit flex items-center gap-2.5 px-4 py-2.5">
@@ -284,7 +321,7 @@ function ActivityRow({ item, meId }: { item: ActivityItem; meId: string | undefi
         {/* dir="auto" keeps an English sentence's full stop at its own end when
          * the shell around it is right-to-left. */}
         <p className="min-w-0 flex-1 truncate text-sm" dir="auto">
-          {from} paid {to} · {item.group_name}
+          {sentence}
         </p>
         <Money amount={settlement.amount} currency={item.currency} size="sm" tone="credit" />
       </div>

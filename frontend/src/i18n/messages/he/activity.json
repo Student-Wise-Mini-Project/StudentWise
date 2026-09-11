@@ -1,0 +1,34 @@
+{
+  "title": "פעילות",
+  "alerts": "התראות",
+  "alertsUnread": "התראות, {count} שלא נקראו",
+  "yourGroups": "הקבוצות שלך",
+  "emptyNoGroupsTitle": "אין כאן עדיין כלום",
+  "emptyNoGroupsBody": "מתחילים מקבוצה — דירה, טיול, או שני אנשים.",
+  "emptyNoGroupsAction": "יצירת קבוצה",
+  "emptyFeedTitle": "עוד לא קרה כלום",
+  "emptyFeedBody": "מוסיפים הוצאה והיא תופיע כאן.",
+  "slab": {
+    "overall": "סך הכול",
+    "overallOwed": "סך הכול מגיע לך",
+    "overallOwe": "סך הכול החוב שלך",
+    "squareTitle": "כולם מאוזנים.",
+    "squareBody": "אין חוב לאף כיוון.",
+    "otherCurrencies": {
+      "one": "מטבע נוסף אחד לא נכלל בסכום — הוא מוצג לפי קבוצה.",
+      "two": "שני מטבעות נוספים לא נכללים בסכום — הם מוצגים לפי קבוצה.",
+      "many": "{count} מטבעות נוספים לא נכללים בסכום — הם מוצגים לפי קבוצה.",
+      "other": "{count} מטבעות נוספים לא נכללים בסכום — הם מוצגים לפי קבוצה."
+    }
+  },
+  "row": {
+    "youLent": "הלווית",
+    "youOwe": "החוב שלך",
+    "notOnThis": "לא בהוצאה הזו",
+    "paidSelf": "שילמת · {group}",
+    "paidOther": "בתשלום {name} · {group}",
+    "settledSelfPaid": "שילמת ל{to} · {group}",
+    "settledPaidYou": "התקבל תשלום מ{from} · {group}",
+    "settledOther": "התשלום של {from} ל{to} · {group}"
+  }
+}

@@ -63,18 +63,16 @@ export function InsightsScreen() {
     <Stack gap={5} className="py-4">
       <div className="px-4">
         <SegmentedControl
-          name="Whose spending"
+          name={t('analytics.scopeName')}
           value={scope}
           onChange={setScope}
           segments={[
-            { value: 'group', label: 'Whole group' },
-            { value: 'me', label: 'Just me' },
+            { value: 'group', label: t('analytics.scopeGroup') },
+            { value: 'me', label: t('analytics.scopeMe') },
           ]}
         />
         <p className="text-muted mt-2 text-xs">
-          {scope === 'group'
-            ? 'What the group spent in total, whoever paid.'
-            : 'Your share of each expense — what you actually used, not what you paid out.'}
+          {scope === 'group' ? t('analytics.scopeGroupHint') : t('analytics.scopeMeHint')}
         </p>
       </div>
 
@@ -83,8 +81,8 @@ export function InsightsScreen() {
       {nothingYet && (
         <EmptyState
           icon={<ReceiptIcon className="size-10" />}
-          title="Nothing to chart yet"
-          body="Add a few expenses and this fills in."
+          title={t('analytics.emptyTitle')}
+          body={t('analytics.emptyBody')}
           size="inline"
         />
       )}
@@ -95,25 +93,31 @@ export function InsightsScreen() {
             <Stack gap={3}>
               <Stack gap={1} className="items-center text-center">
                 <p className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
-                  {scope === 'group' ? 'Total spent' : 'Your share'}
+                  {scope === 'group' ? t('analytics.totalSpent') : t('analytics.yourShare')}
                 </p>
                 <Money amount={summary.data.total_spent} currency={currency} size="display" />
                 <p className="text-muted text-xs">
                   {/* The count is the number of expenses touched, not a number of
                       shares -- it does not change between scopes, so the wording
                       has to make clear it is not "18 of your expenses". */}
-                  {scope === 'group' ? '' : 'across '}
-                  {summary.data.expense_count}{' '}
-                  {summary.data.expense_count === 1 ? 'expense' : 'expenses'}
+                  {scope === 'group'
+                    ? t('analytics.expenseCountGroup', { count: summary.data.expense_count })
+                    : t('analytics.expenseCountMine', { count: summary.data.expense_count })}
                   {summary.data.first_expense_date &&
-                    ` · since ${formatDay(summary.data.first_expense_date, 'short')}`}
+                    t('analytics.since', {
+                      date: formatDay(summary.data.first_expense_date, 'short'),
+                    })}
                 </p>
               </Stack>
 
               <div className="border-line grid grid-cols-2 gap-3 border-t pt-3">
-                <Stat label="Average" value={summary.data.average_expense} currency={currency} />
                 <Stat
-                  label="Biggest"
+                  label={t('analytics.average')}
+                  value={summary.data.average_expense}
+                  currency={currency}
+                />
+                <Stat
+                  label={t('analytics.biggest')}
                   value={summary.data.largest_expense?.total_amount ?? '0.00'}
                   currency={currency}
                   caption={summary.data.largest_expense?.title ?? undefined}
@@ -123,10 +127,10 @@ export function InsightsScreen() {
           </Card>
 
           {byCategory.data && byCategory.data.categories.length > 0 && (
-            <Section title="Where it goes">
+            <Section title={t('analytics.whereItGoes')}>
               <Card>
                 <DonutChart
-                  totalLabel="Total"
+                  totalLabel={t('analytics.chart.total')}
                   total={formatMoney(byCategory.data.total, currency)}
                   slices={byCategory.data.categories
                     // A zero slice has no arc to draw and would render a
@@ -145,7 +149,7 @@ export function InsightsScreen() {
           )}
 
           {byMonth.data && byMonth.data.months.length > 0 && (
-            <Section title="Month by month">
+            <Section title={t('analytics.monthByMonth')}>
               <Card>
                 <TrendChart
                   points={byMonth.data.months.map((point) => ({
@@ -157,22 +161,22 @@ export function InsightsScreen() {
                   peakLabel={peakOf(byMonth.data.months, currency)}
                 />
               </Card>
-              <p className="text-muted px-1 text-xs">
-                Empty months are shown as zero rather than skipped, so a gap reads as a gap.
-              </p>
+              <p className="text-muted px-1 text-xs">{t('analytics.emptyMonths')}</p>
             </Section>
           )}
 
           {byMember.data && byMember.data.members.length > 0 && (
-            <Section title="Who pays, who uses">
+            <Section title={t('analytics.whoPaysWhoUses')}>
               <Card>
                 <PairedBars
-                  aName="Paid out"
-                  bName="Used up"
+                  aName={t('analytics.chart.paidOut')}
+                  bName={t('analytics.chart.usedUp')}
                   rows={byMember.data.members.map((member) => ({
                     key: member.user.id,
                     label:
-                      member.user.id === user?.id ? `${member.user.name} (you)` : member.user.name,
+                      member.user.id === user?.id
+                        ? `${member.user.name}${t('common.state.youMarker')}`
+                        : member.user.name,
                     a: Number(member.paid),
                     b: Number(member.consumed),
                     aLabel: formatMoney(member.paid, currency),
@@ -181,15 +185,15 @@ export function InsightsScreen() {
                 />
               </Card>
               <p className="text-muted px-1 text-xs">
-                This is spending, not debt. Someone who pays a lot and uses a little is not
-                necessarily owed that difference — settlements are not counted here. The{' '}
-                <strong>Balances</strong> tab is the one that says who owes whom.
+                {t('analytics.spendingNotDebt')}
+                <strong>{t('analytics.balancesTab')}</strong>
+                {t('analytics.balancesNote')}
               </p>
             </Section>
           )}
 
           {summary.data.largest_expense && (
-            <Section title="Biggest single expense">
+            <Section title={t('analytics.biggestSingle')}>
               <ListRow
                 to={`/groups/${groupId}/expenses/${summary.data.largest_expense.id}`}
                 leading={

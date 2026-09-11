@@ -1,0 +1,46 @@
+{
+  "scopeName": "הוצאות של מי",
+  "scopeGroup": "כל הקבוצה",
+  "scopeMe": "רק שלי",
+  "scopeGroupHint": "כמה הקבוצה הוציאה בסך הכול, בלי קשר למי שילם.",
+  "scopeMeHint": "החלק שלך בכל הוצאה — מה שבאמת נצרך, לא מה ששולם.",
+  "emptyTitle": "אין עדיין מה להציג",
+  "emptyBody": "מוסיפים כמה הוצאות וזה מתמלא.",
+  "totalSpent": "סך ההוצאות",
+  "yourShare": "החלק שלך",
+  "average": "ממוצע",
+  "biggest": "הגדולה ביותר",
+  "whereItGoes": "לאן זה הולך",
+  "monthByMonth": "חודש אחר חודש",
+  "whoPaysWhoUses": "מי משלם ומי צורך",
+  "biggestSingle": "ההוצאה הגדולה ביותר",
+  "balancesTab": "יתרות",
+  "balancesNote": " היא זו שאומרת מי חייב למי.",
+  "chart": {
+    "total": "סך הכול",
+    "paidOut": "שולם",
+    "usedUp": "נצרך",
+    "peak": "שיא",
+    "month": "חודש",
+    "person": "אדם",
+    "captionMonthly": "הוצאות לפי חודש",
+    "captionPerPerson": "תשלום וצריכה לפי אדם",
+    "ariaCategory": "הוצאות לפי קטגוריה. סך הכול {total}.",
+    "ariaMonthly": "הוצאות לפי חודש. הגבוה ביותר: {peak}."
+  },
+  "expenseCountGroup": {
+    "one": "הוצאה אחת",
+    "two": "שתי הוצאות",
+    "many": "{count} הוצאות",
+    "other": "{count} הוצאות"
+  },
+  "expenseCountMine": {
+    "one": "בהוצאה אחת",
+    "two": "בשתי הוצאות",
+    "many": "ב{count} הוצאות",
+    "other": "ב{count} הוצאות"
+  },
+  "since": " · מאז {date}",
+  "emptyMonths": "חודשים ריקים מוצגים כאפס ולא מושמטים, כדי שפער ייראה כפער.",
+  "spendingNotDebt": "זו הוצאה, לא חוב. מי שמשלם הרבה וצורך מעט לא בהכרח זכאי להפרש — הסדרי תשלום לא נכללים כאן. לשונית "
+}

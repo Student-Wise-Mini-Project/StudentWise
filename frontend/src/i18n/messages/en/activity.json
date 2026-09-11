@@ -1,0 +1,32 @@
+{
+  "title": "Activity",
+  "alerts": "Alerts",
+  "alertsUnread": "Alerts, {count} unread",
+  "yourGroups": "Your groups",
+  "emptyNoGroupsTitle": "Nothing here yet",
+  "emptyNoGroupsBody": "Start with a group — a flat, a trip, or the two of you.",
+  "emptyNoGroupsAction": "Create a group",
+  "emptyFeedTitle": "Nothing has happened yet",
+  "emptyFeedBody": "Add an expense and it will show up here.",
+  "slab": {
+    "overall": "Overall",
+    "overallOwed": "Overall you're owed",
+    "overallOwe": "Overall you owe",
+    "squareTitle": "Everyone is square.",
+    "squareBody": "Nothing owed either way.",
+    "otherCurrencies": {
+      "one": "{count} other currency is not added in — it is shown per group.",
+      "other": "{count} other currencies are not added in — they are shown per group."
+    }
+  },
+  "row": {
+    "youLent": "you lent",
+    "youOwe": "you owe",
+    "notOnThis": "not on this one",
+    "paidSelf": "You paid · {group}",
+    "paidOther": "{name} paid · {group}",
+    "settledSelfPaid": "You paid {to} · {group}",
+    "settledPaidYou": "{from} paid you · {group}",
+    "settledOther": "{from} paid {to} · {group}"
+  }
+}

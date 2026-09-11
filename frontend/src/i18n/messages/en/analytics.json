@@ -1,0 +1,42 @@
+{
+  "scopeName": "Whose spending",
+  "scopeGroup": "Whole group",
+  "scopeMe": "Just me",
+  "scopeGroupHint": "What the group spent in total, whoever paid.",
+  "scopeMeHint": "Your share of each expense — what you actually used, not what you paid out.",
+  "emptyTitle": "Nothing to chart yet",
+  "emptyBody": "Add a few expenses and this fills in.",
+  "totalSpent": "Total spent",
+  "yourShare": "Your share",
+  "average": "Average",
+  "biggest": "Biggest",
+  "whereItGoes": "Where it goes",
+  "monthByMonth": "Month by month",
+  "whoPaysWhoUses": "Who pays, who uses",
+  "biggestSingle": "Biggest single expense",
+  "balancesTab": "Balances",
+  "balancesNote": " tab is the one that says who owes whom.",
+  "chart": {
+    "total": "Total",
+    "paidOut": "Paid out",
+    "usedUp": "Used up",
+    "peak": "Peak",
+    "month": "Month",
+    "person": "Person",
+    "captionMonthly": "Spending per month",
+    "captionPerPerson": "Paid and consumed per person",
+    "ariaCategory": "Spending by category. Total {total}.",
+    "ariaMonthly": "Spending per month. Highest: {peak}."
+  },
+  "expenseCountGroup": {
+    "one": "{count} expense",
+    "other": "{count} expenses"
+  },
+  "expenseCountMine": {
+    "one": "across {count} expense",
+    "other": "across {count} expenses"
+  },
+  "since": " · since {date}",
+  "emptyMonths": "Empty months are shown as zero rather than skipped, so a gap reads as a gap.",
+  "spendingNotDebt": "This is spending, not debt. Someone who pays a lot and uses a little is not necessarily owed that difference — settlements are not counted here. The "
+}
