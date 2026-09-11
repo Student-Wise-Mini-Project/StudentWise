@@ -167,8 +167,10 @@ function FilterChip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        'shrink-0 rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors',
-        active ? 'bg-accent text-on-accent' : 'bg-sunken text-muted hover:text-ink',
+        'font-display shrink-0 rounded-sm border px-3 py-1.5 text-sm font-bold whitespace-nowrap transition-colors',
+        active
+          ? 'border-accent bg-accent-soft text-accent'
+          : 'border-line text-muted hover:text-ink',
       )}
     >
       {label}

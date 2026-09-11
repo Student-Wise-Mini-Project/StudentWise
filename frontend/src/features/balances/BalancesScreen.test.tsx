@@ -116,30 +116,39 @@ function renderScreen(as = GAL) {
 }
 
 describe('balances', () => {
-  it('leads with the only question anyone opens the app for', async () => {
+  it('leads with the action, not just a number', async () => {
+    // The slab carries the transfer the viewer can actually do something
+    // about -- Gal owes Maya, so that is the one with the button on it.
     renderScreen(GAL)
-    expect(await screen.findByText('You owe')).toBeInTheDocument()
+    expect(await screen.findByText(/You pay Maya\./)).toBeInTheDocument()
     expect(screen.getAllByText(/1,474\.76/).length).toBeGreaterThan(0)
+    expect(screen.getByRole('button', { name: 'Record that this happened' })).toBeInTheDocument()
   })
 
-  it('says "you are owed" for a creditor, not a negative number', async () => {
+  it("falls back to the biggest transfer when none of them is the viewer's", async () => {
+    // Maya is nobody's payer: she is owed by both. The slab falls back to the
+    // biggest transfer rather than showing her a button she cannot press.
     renderScreen(MAYA)
-    expect(await screen.findByText('You are owed')).toBeInTheDocument()
-    expect(screen.queryByText('You owe')).not.toBeInTheDocument()
+    expect(await screen.findByText(/Gal pays you\./)).toBeInTheDocument()
+  })
+
+  it('derives the transfer count rather than hardcoding it', async () => {
+    renderScreen(GAL)
+    expect(await screen.findByText(/2 transfers clear it/)).toBeInTheDocument()
   })
 
   it('shows the whole group, sorted richest creditor first', async () => {
     renderScreen(GAL)
-    await screen.findByText('Everyone')
-    const rows = screen.getAllByText(/Is owed by the group|Owes the group/)
+    await screen.findByText('Who is up, who is down')
+    const rows = screen.getAllByText(/^is owed$|^owes$|^square$/)
     expect(rows).toHaveLength(3)
     // Maya is the creditor and the API sorts her first.
-    expect(rows[0]).toHaveTextContent('Is owed by the group')
+    expect(rows[0]).toHaveTextContent('is owed')
   })
 
   it('calls the plan a suggestion, because recording a payment is what moves money', async () => {
     renderScreen(GAL)
-    expect(await screen.findByText('Settle up in 2')).toBeInTheDocument()
+    await screen.findByText('Who is up, who is down')
     expect(screen.getByText(/only a suggestion/)).toBeInTheDocument()
     expect(screen.getByText(/nothing changes until you record a payment/)).toBeInTheDocument()
   })
@@ -148,16 +157,14 @@ describe('balances', () => {
     // "You pays Maya" is what the first version said. A test that only asserts
     // the names would have kept saying it.
     renderScreen(GAL)
-    expect(await screen.findByText(/You pay Maya/)).toBeInTheDocument()
+    expect(await screen.findByText(/Noa pays Maya/)).toBeInTheDocument()
     expect(screen.queryByText(/You pays/)).not.toBeInTheDocument()
-    expect(screen.getByText(/Noa pays Maya/)).toBeInTheDocument()
   })
 
   it('prefills the plan amount but lets it be edited, because part payments happen', async () => {
     const person = userEvent.setup()
     renderScreen(GAL)
-    const buttons = await screen.findAllByRole('button', { name: 'Record' })
-    await person.click(buttons[0]!)
+    await person.click(await screen.findByRole('button', { name: 'Record that this happened' }))
 
     expect(await screen.findByRole('heading', { name: 'Record a payment' })).toBeInTheDocument()
     expect(screen.getByLabelText(/How much/)).toHaveValue('1474.76')
@@ -167,7 +174,7 @@ describe('balances', () => {
     // The API refuses a reminder to anyone who does not owe you, so the button
     // must not appear where it would only produce a 400.
     renderScreen(GAL)
-    await screen.findByText('Everyone')
+    await screen.findByText('Who is up, who is down')
     expect(screen.queryByRole('button', { name: /Nudge/ })).not.toBeInTheDocument()
 
     renderScreen(MAYA)
@@ -225,7 +232,7 @@ describe('when everyone is square', () => {
       </QueryClientProvider>,
     )
 
-    expect(await screen.findByText('You are square')).toBeInTheDocument()
-    expect(await screen.findByText('Everyone is square')).toBeInTheDocument()
+    expect(await screen.findByText('Everyone is square.')).toBeInTheDocument()
+    expect(screen.getByText('square')).toBeInTheDocument()
   })
 })

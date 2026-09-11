@@ -191,7 +191,7 @@ export function InsightsScreen() {
               <ListRow
                 to={`/groups/${groupId}/expenses/${summary.data.largest_expense.id}`}
                 leading={
-                  <span className="bg-sunken text-muted flex size-10 items-center justify-center rounded-full">
+                  <span className="bg-sunken text-muted flex size-10 items-center justify-center rounded-md">
                     <ReceiptIcon className="size-5" />
                   </span>
                 }

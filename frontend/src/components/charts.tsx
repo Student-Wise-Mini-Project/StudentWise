@@ -115,7 +115,7 @@ export function DonutChart({
             <span
               aria-hidden="true"
               className={cn(
-                'size-2.5 shrink-0 rounded-full',
+                'size-2.5 shrink-0 rounded-sm',
                 SLICE_SWATCHES[index % SLICE_SWATCHES.length],
               )}
             />
@@ -284,11 +284,11 @@ export function PairedBars({
     <div className={cn('flex flex-col gap-4', className)}>
       <div className="text-muted flex items-center gap-4 text-xs">
         <span className="flex items-center gap-1.5">
-          <span aria-hidden="true" className="bg-accent size-2.5 rounded-full" />
+          <span aria-hidden="true" className="bg-accent size-2.5 rounded-sm" />
           {aName}
         </span>
         <span className="flex items-center gap-1.5">
-          <span aria-hidden="true" className="bg-accent-soft size-2.5 rounded-full" />
+          <span aria-hidden="true" className="bg-accent-soft size-2.5 rounded-sm" />
           {bName}
         </span>
       </div>
@@ -320,13 +320,13 @@ export function PairedBars({
 function Bar({ share, tone, label }: { share: number; tone: 'strong' | 'soft'; label: string }) {
   return (
     <span
-      className="bg-sunken block h-2 w-full overflow-hidden rounded-full"
+      className="bg-sunken block h-1.5 w-full overflow-hidden rounded-sm"
       role="img"
       aria-label={label}
     >
       <span
         className={cn(
-          'block h-full rounded-full',
+          'block h-full rounded-sm',
           tone === 'strong' ? 'bg-accent' : 'bg-accent-soft',
         )}
         style={{ inlineSize: `${Math.max(share * 100, 1)}%` }}

@@ -106,7 +106,7 @@ function NotificationRow({ item, onOpen }: { item: Notification; onOpen: () => v
           <Avatar user={item.actor} />
         ) : (
           // Budget and bill notifications have no actor: nobody did them.
-          <span className="bg-sunken text-muted flex size-10 items-center justify-center rounded-full">
+          <span className="bg-sunken text-muted flex size-10 items-center justify-center rounded-md">
             <BellIcon className="size-5" />
           </span>
         )
@@ -114,7 +114,7 @@ function NotificationRow({ item, onOpen }: { item: Notification; onOpen: () => v
       title={
         <span className={unread ? 'font-semibold' : undefined}>
           {item.title}
-          {unread && <span className="bg-accent ms-2 inline-block size-2 rounded-full" />}
+          {unread && <span className="bg-accent ms-2 inline-block size-2 rounded-sm" />}
         </span>
       }
       subtitle={item.body}
