@@ -169,14 +169,21 @@ function ExpenseForm({
   }) => void
   onCancel: () => void
 }) {
-  const { group } = useGroupScope()
-  const me = members[0]
+  const { group, me } = useGroupScope()
+  // The signed-in member, and only if they are still in the group -- the API
+  // rejects a payer who has left. `members[0]` used to stand in for this, and
+  // the membership list arrives in no particular order, so the form quietly
+  // offered to record your shopping as a flatmate's.
+  const defaultPayer = members.find((member) => member.user.id === me?.user.id)
   const [form, setForm] = useState<FormState>(
     initial ?? {
       title: '',
       amount: '',
       date: today(),
-      payerId: me?.user.id ?? '',
+      // Empty leaves the row reading "Pick someone" and the save button
+      // disabled, which is the honest state: better an extra tap than an
+      // expense silently attributed to whoever the database listed first.
+      payerId: defaultPayer?.user.id ?? '',
       category: '',
       notes: '',
       splitType: 'EQUAL',
