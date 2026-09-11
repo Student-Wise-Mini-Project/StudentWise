@@ -1,6 +1,8 @@
 import { Link, Outlet } from 'react-router'
 
+import { OfflineBanner } from '@/components/OfflineBanner'
 import { PlusIcon } from '@/components/icons'
+import { IosInstallHint, UpdatePrompt } from '@/pwa/PwaPrompts'
 
 import { SideNav } from './SideNav'
 import { TabBar } from './TabBar'
@@ -16,6 +18,7 @@ import { TabBar } from './TabBar'
 export function AppShell({ unreadCount = 0 }: { unreadCount?: number }) {
   return (
     <div className="min-h-dvh lg:ps-60">
+      <OfflineBanner />
       <SideNav unreadCount={unreadCount} />
 
       <main
@@ -39,6 +42,9 @@ export function AppShell({ unreadCount = 0 }: { unreadCount?: number }) {
       </Link>
 
       <TabBar unreadCount={unreadCount} />
+
+      <UpdatePrompt />
+      <IosInstallHint />
     </div>
   )
 }

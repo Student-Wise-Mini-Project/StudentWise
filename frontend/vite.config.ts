@@ -7,8 +7,8 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // The one unavoidable duplicate of a design token: the manifest is JSON, so it
 // cannot read `src/styles/theme.css`. Keep these two in step by hand.
-const THEME_COLOR = '#0f1720'
-const BACKGROUND_COLOR = '#f7f5f2'
+const THEME_COLOR = '#f7f5f2' // --sw-ground, light
+const BACKGROUND_COLOR = '#f7f5f2' // the splash screen behind a cold start
 
 export default defineConfig({
   plugins: [
