@@ -84,7 +84,12 @@ export default defineConfig({
     proxy: {
       // Same-origin in development, so the service worker's /api rules and the
       // cookie-free Bearer setup behave exactly as they will in production.
-      '/api': { target: 'http://localhost:8000', changeOrigin: true },
+      //
+      // 127.0.0.1 rather than `localhost` on purpose. Node resolves `localhost`
+      // to ::1 first, and uvicorn binds to 127.0.0.1 unless told otherwise -- so
+      // the proxy connects to nothing and every /api call comes back 500 while
+      // the backend is demonstrably up and answering on the same port.
+      '/api': { target: 'http://127.0.0.1:8000', changeOrigin: true },
     },
   },
 })
