@@ -7,11 +7,14 @@ import { Card } from '@/components/Card'
 import { ListRow, ListSection } from '@/components/ListRow'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { Page, Stack } from '@/components/layout'
+import { useLocale, useT } from '@/i18n/i18nContext'
 import { applyTheme, readStoredTheme, type Theme } from '@/lib/prefs'
 
 import { useAuth } from './authContext'
 
 export function SettingsScreen() {
+  const t = useT()
+  const { locale, setLocale } = useLocale()
   const { user, signOut } = useAuth()
   const [theme, setTheme] = useState<Theme>(readStoredTheme)
 
@@ -21,7 +24,7 @@ export function SettingsScreen() {
 
   return (
     <>
-      <AppBar title="You" />
+      <AppBar title={t('settings.title')} />
 
       <Page width="narrow">
         <Stack gap={5} className="pt-4">
@@ -39,35 +42,48 @@ export function SettingsScreen() {
 
           <div className="px-4">
             <p className="text-muted font-display text-2xs mb-2 font-extrabold tracking-[0.1em] uppercase">
-              Appearance
+              {t('settings.appearance')}
             </p>
             <SegmentedControl
               name="theme"
               value={theme}
               onChange={setTheme}
               segments={[
-                { value: 'system', label: 'System' },
-                { value: 'light', label: 'Light' },
-                { value: 'dark', label: 'Dark' },
+                { value: 'system', label: t('settings.theme.system') },
+                { value: 'light', label: t('settings.theme.light') },
+                { value: 'dark', label: t('settings.theme.dark') },
               ]}
             />
           </div>
 
-          <ListSection header="About">
-            <ListRow title="StudentWise" subtitle="Splitting expenses without the awkwardness" />
-            <ListRow
-              title="API"
-              subtitle="Every amount you see comes from the server, never recalculated here"
+          {/* Mirrors the Appearance block exactly, because it is the same kind
+           * of thing: a property of this phone, stored beside the theme, and
+           * kept when you sign out. */}
+          <div className="px-4">
+            <p className="text-muted font-display text-2xs mb-2 font-extrabold tracking-[0.1em] uppercase">
+              {t('settings.language')}
+            </p>
+            <SegmentedControl
+              name={t('settings.language')}
+              value={locale}
+              onChange={setLocale}
+              segments={[
+                { value: 'he', label: t('settings.locales.he') },
+                { value: 'en', label: t('settings.locales.en') },
+              ]}
             />
+          </div>
+
+          <ListSection header={t('settings.about')}>
+            <ListRow title={t('common.appName')} subtitle={t('settings.aboutApp')} />
+            <ListRow title={t('settings.aboutApiTitle')} subtitle={t('settings.aboutApi')} />
           </ListSection>
 
           <div className="px-4 pt-2">
             <Button variant="danger" fullWidth onClick={signOut}>
-              Sign out
+              {t('settings.signOut')}
             </Button>
-            <p className="text-muted mt-2 text-center text-xs">
-              Signing out also clears the data this device kept for offline use.
-            </p>
+            <p className="text-muted mt-2 text-center text-xs">{t('settings.signOutNote')}</p>
           </div>
         </Stack>
       </Page>

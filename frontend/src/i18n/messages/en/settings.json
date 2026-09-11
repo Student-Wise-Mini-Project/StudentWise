@@ -1,0 +1,13 @@
+{
+  "title": "You",
+  "appearance": "Appearance",
+  "theme": { "system": "System", "light": "Light", "dark": "Dark" },
+  "language": "Language",
+  "locales": { "he": "עברית", "en": "English" },
+  "about": "About",
+  "aboutApp": "Splitting expenses without the awkwardness",
+  "aboutApiTitle": "API",
+  "aboutApi": "Every amount you see comes from the server, never recalculated here",
+  "signOut": "Sign out",
+  "signOutNote": "Signing out also clears the data this device kept for offline use."
+}

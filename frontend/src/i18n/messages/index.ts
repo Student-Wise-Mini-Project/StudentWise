@@ -6,11 +6,13 @@ import balancesEn from './en/balances.json'
 import commonEn from './en/common.json'
 import expensesEn from './en/expenses.json'
 import groupsEn from './en/groups.json'
+import settingsEn from './en/settings.json'
 import authHe from './he/auth.json'
 import balancesHe from './he/balances.json'
 import commonHe from './he/common.json'
 import expensesHe from './he/expenses.json'
 import groupsHe from './he/groups.json'
+import settingsHe from './he/settings.json'
 
 /**
  * The English catalogue is the source of truth for keys.
@@ -25,6 +27,7 @@ export const en = {
   common: commonEn,
   expenses: expensesEn,
   groups: groupsEn,
+  settings: settingsEn,
 } as const
 
 /**
@@ -37,6 +40,7 @@ export const he: Widen<typeof en> = {
   common: commonHe,
   expenses: expensesHe,
   groups: groupsHe,
+  settings: settingsHe,
 }
 
 export type MessageKey = Flatten<typeof en>
