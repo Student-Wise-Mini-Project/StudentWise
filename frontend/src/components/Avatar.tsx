@@ -29,11 +29,24 @@ function tokenFor(id: string): string {
   return AVATAR_TOKENS[hash % AVATAR_TOKENS.length] ?? AVATAR_TOKENS[0]
 }
 
+/**
+ * One letter for one name, two for two.
+ *
+ * "Gal" as "GA" reads as a word that ran out of room; as "G" it reads as a
+ * monogram, which is what a chip in a ledger is. Most people in this app are
+ * entered under a single first name, so the one-word case is the common one,
+ * not the edge case.
+ */
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
   if (parts.length === 0) return '?'
-  if (parts.length === 1) return (parts[0] ?? '').slice(0, 2).toUpperCase()
-  return `${parts[0]?.[0] ?? ''}${parts.at(-1)?.[0] ?? ''}`.toUpperCase()
+  const first = firstLetter(parts[0])
+  return parts.length === 1 ? first : `${first}${firstLetter(parts.at(-1))}`
+}
+
+/** Code points, not characters: `[0]` alone can split a surrogate pair in half. */
+function firstLetter(part: string | undefined): string {
+  return part ? ([...part][0] ?? '').toUpperCase() : ''
 }
 
 export type AvatarProps = {

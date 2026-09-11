@@ -44,7 +44,7 @@ export function AppShell() {
        * `+` is its own flex child so it stays on the leading edge under `rtl`
        * rather than being swept to the end of the text run. */}
       <div
-        className="from-ground pointer-events-none fixed inset-x-0 z-30 bg-linear-to-t from-60% to-transparent px-4 pt-6 pb-2 lg:hidden"
+        className="from-ground pointer-events-none fixed inset-x-0 z-30 bg-linear-to-t from-45% to-transparent px-4 pt-12 pb-2 lg:hidden"
         style={{ insetBlockEnd: 'calc(var(--sw-tabbar-height) + var(--sw-safe-block-end))' }}
       >
         <Link

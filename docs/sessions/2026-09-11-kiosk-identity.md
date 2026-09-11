@@ -131,3 +131,63 @@ Epic 9 still wants the Ask screen (9.9), anomaly alerts (9.10) and the APK
 (9.12). The roadmap's Epic 9 note and the published `roadmap.html` both said the
 identity was a placeholder awaiting Claude Design; both now say it has landed,
 and the "run the design brief" blocker is gone from the published page.
+
+---
+
+## Addendum — what a real phone found
+
+Two bugs came back from an iPhone 14 within minutes of the branch being looked
+at. Both are worth recording, because neither was visible from the desk it was
+written at and one of them was not the bug it appeared to be.
+
+### The activity feed showed one day, not many
+
+Reported as "the home page does not divide by dates". The grouping code was
+correct; the **data** was wrong. `created_at` defaults to `clock_timestamp()`,
+which is right for the app and wrong for a seed — one run stamps six weeks of
+history with the moment the script executed. The feed orders and groups by
+`created_at`, so every row landed under a single "Today".
+
+`seed.py` now has a `backdate()` pass that pushes each row onto its own event
+date once everything is written. `updated_at` moves with it, or every seeded
+expense reports itself as edited — the detail screen decides that by comparing
+the two.
+
+**The lesson is about seed data, not about the feed.** Any view ordered by
+insert time is degenerate against a seed that inserts everything at once, and
+that includes the pagination the whole activity API is built on. A seed that
+does not look like history is not exercising the thing it exists to exercise.
+
+### "The home page does not fit my iPhone 14"
+
+This one nearly became a wrong fix. The obvious reading is horizontal overflow,
+and the obvious response is to go hunting through CSS for the element that is
+too wide.
+
+Measuring first said otherwise: `scrollWidth === clientWidth === 390` on all
+nine screens. There was no overflow and there never had been.
+
+It was iOS Safari's auto-zoom. It fires when a field with a font smaller than
+16px takes focus, and it does not zoom back out — one tap on the login form and
+every screen after it stays magnified until the user pinches out by hand. The
+symptom names the *page you noticed it on*, not the control that caused it,
+which is why the report pointed at Home and the bug was on `/login`.
+
+Login's inputs measured 15px. `--text-control` is now a 16px token used by every
+typeable control. This was the exact item this session's "Not done" list had
+flagged and deferred, with the spec's own reasoning quoted — it took about a day
+to bite.
+
+### What changed in how we debug
+
+`frontend/src/dev/overflowProbe.ts`, wired into the existing `?debug` console:
+it asks the browser which element sticks out past the viewport, innermost first,
+instead of making the next person read CSS and guess. The design-tokens guard
+caught a hex colour in the probe's own console styling on its first run.
+
+More usefully: Playwright is already in the local cache, and driving a real
+Chromium at `devices['iPhone 14']` against the running dev server answered both
+questions in minutes — computed font sizes per control, `scrollWidth` per
+screen, and a screenshot. That is now the cheapest way to check a layout claim
+about a phone, and it is what turned "the layout is broken" into "the layout is
+fine, the keyboard zoomed you".
