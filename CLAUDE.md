@@ -154,6 +154,12 @@ npm run gen:icons                     # PWA icons, from one SVG
 Write a summary to `docs/sessions/YYYY-MM-DD-<topic>.md`: what was built, what
 decisions were made and why, what's next, anything that surprised us.
 
+Then tick the missions off in `docs/roadmap.md`, mirror them in
+`docs/roadmap.html`, and run `node scripts/check-roadmap-sync.mjs` — it fails if
+the two disagree. `roadmap.html` is the page people outside the repo actually
+look at, and a status page that is quietly three weeks stale is worse than no
+status page.
+
 ## Domain notes
 
 - `expense_splits` is how "only some of the group is on this expense" works — a row

@@ -1,0 +1,948 @@
+<title>StudentWise Roadmap</title>
+<!--
+  The published version of docs/roadmap.md.
+
+  This file is the source of the artifact at
+  https://claude.ai/code/artifact/30c5e8d0-ac69-43ed-8ef2-66a71fad9242
+
+  It lives in the repo so the published page has a history and a diff like
+  everything else, rather than existing only as a URL somebody published once
+  and then forgot. docs/roadmap.md stays the source of truth for status;
+  `node scripts/check-roadmap-sync.mjs` fails if the two disagree, which is the
+  only thing that keeps this page honest as the work moves.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    /* Ledger paper: neutrals carry a green bias toward the accent. */
+    --ground: #f6f8f6;
+    --surface: #ffffff;
+    --surface-sunk: #eef2ef;
+    --line: #dde4df;
+    --line-strong: #c3cec7;
+    --ink: #16201b;
+    --ink-soft: #4a574f;
+    --ink-faint: #78857c;
+    --accent: #1f6f5c;
+    --accent-soft: #e2f0eb;
+    --on-accent: #ffffff;
+    --blocked: #a8402f;
+    --blocked-soft: #f6e5e1;
+    --wip: #8a6410;
+    --wip-soft: #f6eeda;
+    --todo: #8a948d;
+
+    --display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+    --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", "Consolas", ui-monospace, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0f1512;
+      --surface: #161d19;
+      --surface-sunk: #1c2420;
+      --line: #27312c;
+      --line-strong: #3a463f;
+      --ink: #e7ede9;
+      --ink-soft: #a9b5ae;
+      --ink-faint: #7d8a83;
+      --accent: #55b899;
+      --accent-soft: #17332b;
+      --on-accent: #0f1512;
+      --blocked: #e0806e;
+      --blocked-soft: #33201b;
+      --wip: #d6a44a;
+      --wip-soft: #2e2716;
+      --todo: #6f7c74;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0f1512;
+    --surface: #161d19;
+    --surface-sunk: #1c2420;
+    --line: #27312c;
+    --line-strong: #3a463f;
+    --ink: #e7ede9;
+    --ink-soft: #a9b5ae;
+    --ink-faint: #7d8a83;
+    --accent: #55b899;
+    --accent-soft: #17332b;
+    --on-accent: #0f1512;
+    --blocked: #e0806e;
+    --blocked-soft: #33201b;
+    --wip: #d6a44a;
+    --wip-soft: #2e2716;
+    --todo: #6f7c74;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding-inline: 20px;
+    padding-block: 40px 72px;
+  }
+
+  /* ---------- masthead ---------- */
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 14px;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(2.4rem, 7vw, 3.9rem);
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .standfirst {
+    max-width: 62ch;
+    color: var(--ink-soft);
+    font-size: 1.02rem;
+    margin: 14px 0 0;
+  }
+
+  /* ---------- figures ---------- */
+
+  .figures {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 34px;
+  }
+
+  .figure {
+    background: var(--surface);
+    padding: 16px 18px;
+  }
+
+  .figure dt {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .figure dd {
+    margin: 6px 0 0;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.75rem;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .figure dd small {
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--ink-faint);
+  }
+
+  /* ---------- read ---------- */
+
+  .read {
+    margin-top: 34px;
+    padding: 20px 22px;
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .read p { margin: 0; max-width: 68ch; }
+  .read p + p { margin-top: 12px; }
+  .read strong { font-weight: 600; }
+
+  /* ---------- blockers ---------- */
+
+  .blockers {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .blocker {
+    background: var(--surface);
+    padding: 15px 17px;
+  }
+
+  .blocker h4 {
+    font-family: var(--body);
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 5px;
+  }
+
+  .blocker p { margin: 0; font-size: 13px; color: var(--ink-soft); }
+
+  .blocker .who {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--blocked);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  /* ---------- section headings ---------- */
+
+  h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.45rem;
+    letter-spacing: -0.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .section-head {
+    margin-top: 56px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  .section-head p {
+    margin: 6px 0 0;
+    color: var(--ink-soft);
+    max-width: 66ch;
+  }
+
+  /* ---------- epic progress chart ---------- */
+
+  .chart { margin-top: 22px; display: flex; flex-direction: column; gap: 3px; }
+
+  .bar-row {
+    display: grid;
+    grid-template-columns: minmax(0, 190px) 1fr 72px;
+    align-items: center;
+    gap: 14px;
+    padding: 7px 0;
+  }
+
+  .bar-label {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .bar-label b { color: var(--ink); font-weight: 600; }
+
+  .track {
+    height: 9px;
+    background: var(--surface-sunk);
+    border-radius: 1px;
+    overflow: hidden;
+    display: flex;
+  }
+
+  .fill { background: var(--accent); }
+  .fill-blocked { background: var(--blocked); }
+  .fill-wip { background: var(--wip); }
+
+  .bar-count {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- filters ---------- */
+
+  .filters {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 40px;
+    padding: 12px 0;
+    background: var(--ground);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .filters-label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-right: 2px;
+  }
+
+  .chip {
+    font-family: var(--body);
+    font-size: 13px;
+    color: var(--ink-soft);
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 100px;
+    padding: 5px 13px;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  }
+
+  .chip:hover { border-color: var(--accent); color: var(--ink); }
+
+  .chip[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+    font-weight: 500;
+  }
+
+  .chip:focus-visible,
+  .toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .spacer { flex: 1 1 auto; }
+
+  .toggle {
+    font-family: var(--body);
+    font-size: 13px;
+    color: var(--ink-soft);
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 100px;
+    padding: 5px 11px;
+    cursor: pointer;
+  }
+  .toggle:hover { color: var(--ink); border-color: var(--line-strong); }
+
+  /* ---------- epics ---------- */
+
+  .epic { margin-top: 40px; }
+
+  .epic-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .epic-num {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+
+  .epic-head h3 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.16rem;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  .epic-progress {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .epic-note {
+    margin: 10px 0 0;
+    padding: 12px 15px;
+    background: var(--surface-sunk);
+    border-radius: 3px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    max-width: 74ch;
+  }
+
+  .epic-note strong { color: var(--ink); font-weight: 600; }
+
+  .missions {
+    margin-top: 14px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .mission {
+    display: grid;
+    grid-template-columns: 46px 1fr auto auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-top: 1px solid var(--line);
+    border-left: 3px solid transparent;
+  }
+
+  .mission:first-child { border-top: none; }
+  .mission.is-done { border-left-color: var(--accent); }
+  .mission.is-blocked { border-left-color: var(--blocked); }
+  .mission.is-wip { border-left-color: var(--wip); }
+
+  .m-id {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .m-name { font-size: 14px; min-width: 0; }
+  .mission.is-done .m-name { color: var(--ink-soft); }
+
+  .m-size,
+  .m-owner {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    color: var(--ink-faint);
+    border: 1px solid var(--line-strong);
+    border-radius: 2px;
+    padding: 1px 6px;
+    white-space: nowrap;
+  }
+
+  .m-status {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 9px;
+    border-radius: 100px;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  .s-done { background: var(--accent-soft); color: var(--accent); }
+  .s-todo { background: var(--surface-sunk); color: var(--todo); }
+  .s-blocked { background: var(--blocked-soft); color: var(--blocked); }
+  .s-wip { background: var(--wip-soft); color: var(--wip); }
+
+  .empty {
+    padding: 26px 16px;
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 14px;
+  }
+
+  /* ---------- sequence ---------- */
+
+  .weeks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 22px;
+    margin-top: 24px;
+  }
+
+  .week {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 20px 22px;
+  }
+
+  .week h3 {
+    font-family: var(--display);
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+
+  .week > p {
+    margin: 0 0 14px;
+    font-size: 13px;
+    color: var(--ink-faint);
+  }
+
+  .week ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+  }
+
+  .week li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    gap: 11px;
+    font-size: 14px;
+    align-items: baseline;
+  }
+
+  .week li::before {
+    content: counter(step);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 100px;
+    width: 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+    align-self: start;
+  }
+
+  .week li span { color: var(--ink-faint); font-size: 12.5px; display: block; }
+
+  .deferred {
+    margin-top: 22px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    max-width: 74ch;
+  }
+
+  footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+  }
+
+  footer code {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 640px) {
+    .mission {
+      grid-template-columns: 44px 1fr auto;
+      grid-template-areas: "id name status" ". meta meta";
+      row-gap: 6px;
+    }
+    .m-id { grid-area: id; }
+    .m-name { grid-area: name; }
+    .m-status { grid-area: status; }
+    .m-size { grid-area: meta; justify-self: start; }
+    .m-owner { grid-area: meta; justify-self: start; margin-left: 44px; }
+    .bar-row { grid-template-columns: 1fr 64px; grid-template-areas: "label count" "track track"; row-gap: 5px; }
+    .bar-label { grid-area: label; }
+    .track { grid-area: track; }
+    .bar-count { grid-area: count; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">University project · 3 people · Backend first</p>
+    <h1>StudentWise Roadmap</h1>
+    <p class="standfirst">
+      Every epic and mission for a Splitwise-style expense splitter for Israeli
+      student flatshares — shared apartments, couples and trips, with AI layered
+      on top. Missions are sized so one person can finish and merge one.
+    </p>
+
+    <dl class="figures">
+      <div class="figure"><dt>Missions done</dt><dd>47<small> / 78</small></dd></div>
+      <div class="figure"><dt>Endpoints</dt><dd>60</dd></div>
+      <div class="figure"><dt>Backend tests</dt><dd>646</dd></div>
+      <div class="figure"><dt>Frontend tests</dt><dd>148</dd></div>
+      <div class="figure"><dt>Tables</dt><dd>14</dd></div>
+      <div class="figure"><dt>Migrations</dt><dd>9</dd></div>
+    </dl>
+
+    <div class="read">
+      <p>
+        <strong>The honest read.</strong> A week ago the problem was that a
+        substantial API had no interface. That is no longer true: Epic&nbsp;9 went
+        from nothing to <strong>nine of twelve missions</strong> — scaffold, typed
+        client, auth, groups, expenses, the split editor, balances, settle-up,
+        charts and the PWA. You can log in, add an expense split four different
+        ways, watch the balances move, record a payment, and install the whole
+        thing to an iOS home screen.
+      </p>
+      <p>
+        <strong>The backend is finished and has been for days.</strong> Epics
+        1,&nbsp;2,&nbsp;3 and&nbsp;6 are complete; Epic&nbsp;4 has one mission
+        left and it is blocked on a key. What remains is
+        <em>somebody&nbsp;else&rsquo;s</em> — the AI ingestion module — or is
+        waiting on a person rather than on code.
+      </p>
+      <p>
+        <strong>Which is now the real constraint.</strong> Three things are
+        blocked on a human decision, not on engineering time, and none of them
+        takes more than a few minutes to unblock.
+      </p>
+    </div>
+
+    <div class="blockers">
+      <div class="blocker">
+        <span class="who">Expires 17 September</span>
+        <h4>Four repository invitations, still pending</h4>
+        <p>
+          Sent, never accepted. Two of three people still cannot see any code —
+          and with nobody able to approve a pull request, every branch is being
+          merged by its own author.
+        </p>
+      </div>
+      <div class="blocker">
+        <span class="who">Nobody else can do this</span>
+        <h4>The design brief has not been run</h4>
+        <p>
+          <code>docs/design-brief.md</code> is written and ready to paste into
+          Claude Design. Applying what comes back is a token edit, not a rebuild:
+          two guard tests fail the build if a colour is named outside the theme
+          file.
+        </p>
+      </div>
+      <div class="blocker">
+        <span class="who">Gates six missions</span>
+        <h4>One question to the lecturer about hosting</h4>
+        <p>
+          Mission 10.1. Allowed? Any budget? Every deployment mission waits
+          behind the answer, and a live link is worth more in a demo than a
+          localhost screenshot.
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="section-head">
+      <h2>Where the work sits</h2>
+      <p>Each bar is one epic, drawn to the same scale: filled to the share of its missions that are merged.</p>
+    </div>
+    <div class="chart" id="chart"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Epics and missions</h2>
+      <p>S = half a day · M = 1–2 days · L = 3–5 days · XL = a week or more. Owners match the file ownership already written into <code>CLAUDE.md</code>, so two people rarely touch the same file.</p>
+    </div>
+
+    <div class="filters">
+      <span class="filters-label">Owner</span>
+      <button class="chip" data-owner="all" aria-pressed="true" type="button">Everyone</button>
+      <button class="chip" data-owner="Gal" aria-pressed="false" type="button">Gal</button>
+      <button class="chip" data-owner="#2" aria-pressed="false" type="button">#2 · AI</button>
+      <button class="chip" data-owner="#3" aria-pressed="false" type="button">#3 · Frontend</button>
+      <span class="spacer"></span>
+      <button class="toggle" id="hide-done" aria-pressed="false" type="button">Hide done</button>
+    </div>
+
+    <div id="epics"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>The next two weeks</h2>
+      <p>The engineering is no longer the bottleneck, so the ordering has changed: the first three items are all messages to people rather than commits.</p>
+    </div>
+
+    <div class="weeks">
+      <article class="week">
+        <h3>Week 1 — unblock the humans</h3>
+        <p>Every item here is minutes of work that something larger is waiting behind.</p>
+        <ol>
+          <li><div>Chase the four invitations before they expire<span>0.5 · 17 September, and until then nobody can review a PR</span></div></li>
+          <li><div>Run <code>docs/design-brief.md</code> through Claude Design<span>the app works and looks like a wireframe; this is the only piece nobody else can do</span></div></li>
+          <li><div>Ask the lecturer about hosting<span>10.1 · one question, gates all six deployment missions</span></div></li>
+          <li><div>Finish Epic 9 bar the APK<span>9.9 + 9.10 · the Ask screen needs an API key; anomalies work today</span></div></li>
+          <li><div>Item tables and per-item splits<span>5.1 + 5.2 · #2 starts on pure backend, no AI yet</span></div></li>
+        </ol>
+      </article>
+
+      <article class="week">
+        <h3>Week 2 — make it real</h3>
+        <p>Turn a working app on a laptop into something a marker can open.</p>
+        <ol>
+          <li><div>Apply the design tokens<span>one commit touching <code>theme.css</code>; if it touches a screen, the token system failed</span></div></li>
+          <li><div>Deploy the database, API and frontend<span>10.2–10.4 · a link beats a screenshot, and it fixes phone testing too</span></div></li>
+          <li><div>Receipt OCR and review-and-confirm<span>5.4 + 5.5 · the headline demo moment; upload already works</span></div></li>
+          <li><div>Measure Text-to-SQL quality<span>4.4 · ~20 real questions with expected answers</span></div></li>
+          <li><div>Architecture diagrams and the demo script<span>11.2 + 11.4 · both are easier now the app exists to screenshot</span></div></li>
+        </ol>
+      </article>
+    </div>
+
+    <p class="deferred">
+      <strong>Deliberately deferred:</strong> RAG and the chat assistant (Epic 8),
+      the Android APK (9.12) and Bit/PayBox deep links (Epic 7). All are real
+      features from the spec; none is on the path to a working demo, and saying
+      so out loud is cheaper than discovering it in week four.
+    </p>
+  </section>
+
+  <footer>
+    <span>Source of truth: <code>docs/roadmap.md</code></span>
+    <span>This page: <code>docs/roadmap.html</code></span>
+    <span>Contract: <code>docs/api-contract.md</code></span>
+    <span>Rules: <code>CLAUDE.md</code></span>
+    <span>Status as of 11 Sep 2026</span>
+  </footer>
+</div>
+
+<script>
+  const EPICS = [
+    { n: 0, name: "Ways of working",
+      note: "<strong>0.5 — invitations are sent, and none has been accepted.</strong> Four are pending and they <strong>expire on 17 September</strong>. An invitation grants nothing until the person clicks the link GitHub emailed them, so two of three people still cannot see the code — and with no collaborator able to approve a pull request, every branch so far has been merged by its own author. <br><br><strong>0.6 needs a paid plan:</strong> branch protection and rulesets are both refused on a private repo on the Free plan. The rule is written and committed as <code>.github/ruleset-main.json</code>, so turning it on is one command. The GitHub Student Developer Pack gives free Pro and both .ac.il addresses qualify.",
+      missions: [
+        ["0.1", "Git repo, main branch, monorepo layout", "S", "Gal", "done"],
+        ["0.2", "CLAUDE.md — stack, layering rule, code standards", "S", "Gal", "done"],
+        ["0.3", "End-of-session summaries in docs/sessions/", "S", "Gal", "done"],
+        ["0.4", "CI: ruff + alembic check + pytest on every push", "S", "Gal", "done"],
+        ["0.5", "Add teammates as GitHub collaborators", "S", "Gal", "wip"],
+        ["0.6", "Protect main: require PR + 1 review + green CI", "S", "Gal", "blocked"],
+        ["0.7", "Onboarding doc: clone to running app in 10 minutes", "S", "Gal", "done"],
+      ]},
+    { n: 1, name: "Backend foundation", note: null,
+      missions: [
+        ["1.1", "FastAPI + SQLAlchemy 2.0 (sync) scaffold, ruff config", "M", "Gal", "done"],
+        ["1.2", "Postgres 16 via Docker Compose (host port 5434)", "S", "Gal", "done"],
+        ["1.3", "Alembic migrations, wired to app settings", "S", "Gal", "done"],
+        ["1.4", "JWT auth: register / login / me, Argon2id hashing", "M", "Gal", "done"],
+        ["1.5", "Test harness: per-test transaction rollback, fixtures", "M", "Gal", "done"],
+      ]},
+    { n: 2, name: "Core domain — Splitwise parity",
+      note: "<strong>Complete — Splitwise parity is done.</strong> Decisions worth keeping: list endpoints return a page, not a bare array, and the page and its <code>total</code> are built from the same filter helper. <code>created_at</code> now defaults to <code>clock_timestamp()</code> rather than <code>now()</code>, which is the transaction start time and gave every row written together an identical timestamp. Notifications store no wording — kind plus a payload of facts, rendered at read time, so Hebrew is a branch in one function rather than a migration. A reminder can only reach someone who owes <em>you</em>, for the amount the settlement plan says.",
+      missions: [
+        ["2.1", "Users and user search by email", "S", "Gal", "done"],
+        ["2.2", "Groups and members, roles, left_at history", "M", "Gal", "done"],
+        ["2.3", "Expenses CRUD, filters, membership authorization", "L", "Gal", "done"],
+        ["2.4", "Splitting: EQUAL / EXACT / PERCENTAGE / WEIGHT, exact-cent", "L", "Gal", "done"],
+        ["2.5", "Subset participants — only some of the group on an expense", "M", "Gal", "done"],
+        ["2.6", "Settlements — recording repayments", "M", "Gal", "done"],
+        ["2.7", "ExpenseCategory enum with a CHECK constraint", "S", "Gal", "done"],
+        ["2.8", "Seed script with realistic demo data", "S", "Gal", "done"],
+        ["2.9", "Pagination metadata (total) on list endpoints", "S", "Gal", "done"],
+        ["2.10", "Cross-group activity feed for a home screen", "M", "Gal", "done"],
+        ["2.11", "Receipt image upload and storage", "M", "Gal", "done"],
+        ["2.12", "Comments thread on an expense", "M", "Gal", "done"],
+        ["2.13", "In-app notifications and reminders", "L", "Gal", "done"],
+      ]},
+    { n: 3, name: "Algorithms",
+      note: "<strong>Complete.</strong> 3.4 was the one part of the spec's <em>מחשבון שקלול הוצאות דינמי</em> that WEIGHT splits did not cover: rules applying <strong>automatically</strong> to future expenses. Weights, not percentages — square metres and nights stayed are numbers people already have. Precedence in one line: <strong>whoever names participants wins</strong>, so an expense that says who is on it is never quietly re-split. A rule whose members have partly left reweights the rest; one nobody is left in is ignored rather than fatal, because falling back to an equal split beats refusing to record rent.",
+      missions: [
+        ["3.1", "Balances: paid − owed + sent − received, sums to zero", "M", "Gal", "done"],
+        ["3.2", "Min-cash-flow — provably minimal up to 14 people", "L", "Gal", "done"],
+        ["3.3", "Dynamic weighting via default_split_weight", "S", "Gal", "done"],
+        ["3.4", "Rule engine: rent by room size, cost by nights stayed", "L", "Gal", "done"],
+      ]},
+    { n: 4, name: "Analytics and intelligence",
+      note: "<strong>4.4 is the only mission left, and it is blocked on an API key.</strong> Everything downstream of Claude is tested with a stub, so the quality of the generated SQL is unmeasured — build ~20 real questions with expected answers and measure it. <br><br>4.5 shipped as two things, because <em>did we pay this twice?</em> has two halves: an <code>Idempotency-Key</code> header stops the network kind (a phone that loses a reply and retries), and <code>analytics/duplicates</code> finds the human kind. The three-day window is what keeps January rent from being flagged against February rent. 4.6&rsquo;s alerts fire <strong>once per budget per month per level</strong> — otherwise the twelfth expense over the line raises a twelfth notification and everyone stops reading them.",
+      missions: [
+        ["4.1", "Analytics: summary, by-category, by-month, by-member", "L", "Gal", "done"],
+        ["4.2", "Anomaly detection (median + MAD, no AI)", "M", "Gal", "done"],
+        ["4.3", "Text-to-SQL with a sandboxed executor", "XL", "Gal", "done"],
+        ["4.4", "Verify the Text-to-SQL prompt against the real model", "M", "Gal", "blocked"],
+        ["4.5", "Duplicate-payment detection, plus idempotency keys", "M", "Gal", "done"],
+        ["4.6", "Budgets per category with over-budget alerts", "M", "Gal", "done"],
+      ]},
+    { n: 5, name: "AI ingestion — Module 1",
+      note: "<strong>Now the largest block of unstarted work, and it belongs to #2.</strong> Load-bearing constraint: items and their splits must compute and write ordinary <code>expense_splits</code> rows. Balances, settlement and analytics must never learn that items exist — break this and every algorithm in Epics 3 and 4 needs reworking. Start with 5.1 → 5.2: pure backend, no AI, and everything else here writes through them.",
+      missions: [
+        ["5.1", "expense_items + item_splits tables and migration", "M", "#2", "todo"],
+        ["5.2", "Per-item split API, writing into expense_splits", "L", "#2", "todo"],
+        ["5.3", "Receipt upload and storage — delivered as mission 2.11", "M", "#2", "done"],
+        ["5.4", "Vision OCR: receipt image to items and amounts", "L", "#2", "todo"],
+        ["5.5", "Review-and-confirm flow for extracted receipts", "M", "#2", "todo"],
+        ["5.6", "Speech-to-text: audio to transcript", "M", "#2", "todo"],
+        ["5.7", "Voice NLP: “85₪ cleaning stuff, everyone except Yossi”", "L", "#2", "todo"],
+        ["5.8", "Gmail OAuth and read-only inbox access", "L", "#2", "todo"],
+        ["5.9", "Bill extraction from Gmail, including PDF attachments", "L", "#2", "todo"],
+      ]},
+    { n: 6, name: "Recurring bills and automation",
+      note: "<strong>Complete.</strong> The distinction the epic turns on: a bill&rsquo;s amount may be <em>null</em>. Rent is 3600 every month and posts itself; electricity is whatever the meter says, so that bill reminds somebody and never invents a number. <br><br><strong>Nothing runs on a scheduler</strong> &mdash; no Celery, no APScheduler, which would be a service to keep alive for the sake of a loop. The work is idempotent and triggered instead: the app calls <code>run</code> on load, and <code>run_due_bills.py</code> is there for a real cron. A bill months overdue posts one expense per period it missed. <br><br>A bill due on the 31st stays on the 31st: February clamps to the 28th and March goes back, rather than the bill walking backwards through the year. Anomaly detection already groups by title, so recurring bills feed it for free &mdash; confirmed, no rework needed.",
+      missions: [
+        ["6.1", "recurring_bills table and migration", "S", "Gal", "done"],
+        ["6.2", "Recurring bills CRUD — monthly / every 2 months / yearly", "M", "Gal", "done"],
+        ["6.3", "Generate the next expense when a bill falls due", "M", "Gal", "done"],
+        ["6.4", "Due-date reminders", "M", "Gal", "done"],
+      ]},
+    { n: 7, name: "Payments — Bit and PayBox",
+      note: "<strong>Investigate before planning around this.</strong> Neither Bit nor PayBox publishes a documented deep-link API. Spend an hour finding out what actually works on a real phone; the fallback is a copy-paste amount plus phone number, which still closes the loop. <code>users.phone_number</code> and the BIT/PAYBOX methods are already in the schema either way.",
+      missions: [
+        ["7.1", "Deep-link builder from a settlement-plan transfer", "M", "Gal", "todo"],
+        ["7.2", "“I paid” confirmation writes a settlements row", "S", "Gal", "todo"],
+        ["7.3", "Phone-number capture and IL-format validation", "S", "Gal", "todo"],
+      ]},
+    { n: 8, name: "AI chat assistant and RAG",
+      note: "<strong>Scope this honestly.</strong> Text-to-SQL already answers numerical questions better than RAG would. FAISS earns its place only for fuzzy recall over free text — titles and notes — where exact SQL cannot help. Say that distinction in the report rather than building RAG twice over.",
+      missions: [
+        ["8.1", "Chat endpoint with conversation history", "M", "#2", "todo"],
+        ["8.2", "Tool-use: assistant calls the analytics endpoints", "L", "#2", "todo"],
+        ["8.3", "FAISS vector store over expense text", "M", "#2", "todo"],
+        ["8.4", "RAG: “that Italian place in October”", "L", "#2", "todo"],
+      ]},
+    { n: 9, name: "Frontend",
+      note: "<strong>Nine of twelve, in one push.</strong> Three decisions are doing most of the work. <strong>The API types are generated</strong> from <code>/openapi.json</code> and never hand-written; a <code>contract</code> CI job regenerates them and fails on a diff, which is the frontend's <code>alembic check</code>. <strong>The client never divides money</strong> — the backend allocates cents by largest remainder, and a second implementation would disagree by one, so <code>divideForDisplay</code> returns a wrapped value that only <code>&lt;Money approximate/&gt;</code> can render and the <code>≈</code> is enforced by the type system. And <strong>only the theme file may name a colour or a typeface</strong>, so applying the design brief is a token edit rather than a pass over every screen — two guard tests fail the build on a stray hex or a physical <code>ml-</code>, the second because the app is English now and Hebrew later and nobody here would notice a mirrored layout. <br><br>Left: 9.9 needs <code>ANTHROPIC_API_KEY</code> and returns 503 without one; 9.10 works today; 9.12 is deferred.",
+      missions: [
+        ["9.1", "Scaffold: React + Vite + Tailwind + router", "M", "#3", "done"],
+        ["9.2", "API client and typed models generated from OpenAPI", "M", "#3", "done"],
+        ["9.3", "Auth screens, token storage, protected routes", "M", "#3", "done"],
+        ["9.4", "Groups: list, create, members, weights", "M", "#3", "done"],
+        ["9.5", "Expense list with filters and pagination", "M", "#3", "done"],
+        ["9.6", "Add and edit expense, all four split types", "L", "#3", "done"],
+        ["9.7", "Balances screen and settle-up plan", "M", "#3", "done"],
+        ["9.8", "Charts: category pie, monthly trend, per-member bars", "L", "#3", "done"],
+        ["9.9", "“Ask” screen for natural-language questions", "M", "#3", "todo"],
+        ["9.10", "Anomaly alerts surfaced in the UI", "S", "#3", "todo"],
+        ["9.11", "PWA: manifest, service worker, iOS install", "M", "#3", "done"],
+        ["9.12", "Android APK wrapper", "M", "#3", "todo"],
+      ]},
+    { n: 10, name: "Deployment",
+      note: "10.1 gates the rest and is one question — ask it this week. It has also stopped being purely academic: testing on a phone currently means a dev server on the Wi-Fi, and a deployed URL over HTTPS is the only way the PWA's service worker and the iOS install actually run. <strong>Do not deploy with the dev JWT secret:</strong> it is committed in <code>.env.example</code>, so anyone reading the repo could forge a token for any account.",
+      missions: [
+        ["10.1", "Ask the lecturer: hosting allowed? budget?", "S", "Gal", "todo"],
+        ["10.2", "Managed Postgres (Neon / Supabase free tier)", "S", "Gal", "todo"],
+        ["10.3", "Deploy the API (Railway / Render / Fly)", "M", "Gal", "todo"],
+        ["10.4", "Deploy the frontend (Vercel / Netlify)", "S", "#3", "todo"],
+        ["10.5", "Production secrets: real JWT_SECRET, API keys", "S", "Gal", "todo"],
+        ["10.6", "CORS, HTTPS and production settings review", "S", "Gal", "todo"],
+      ]},
+    { n: 11, name: "Academic deliverables",
+      note: "Already worth writing up, with evidence: min-cash-flow is <strong>provably minimal</strong>, measured 0% suboptimal across 48,000 cases after replacing a heuristic that was 23.7% suboptimal at ten people; <code>100/3</code> splits to <code>33.34 / 33.33 / 33.33</code>, verified across every total from 0.01 to 4.00; and the Text-to-SQL sandbox found <strong>two real holes</strong> when probed beyond its own test suite — a better story than “all tests passed”. Every mission has been merged as its own commit precisely so 11.1 can be written from the commit messages rather than from memory.",
+      missions: [
+        ["11.1", "Design decisions recorded as we go (docs/sessions/)", "S", "Gal", "done"],
+        ["11.2", "Architecture diagrams: layers, ERD, data flow", "M", "all", "todo"],
+        ["11.3", "Written report", "L", "all", "todo"],
+        ["11.4", "Demo script and seeded demo data", "M", "all", "todo"],
+        ["11.5", "Presentation slides", "M", "all", "todo"],
+      ]},
+  ];
+
+  const STATUS_LABEL = { done: "Done", todo: "To do", wip: "In progress", blocked: "Blocked" };
+  const state = { owner: "all", hideDone: false };
+
+  try {
+    const saved = JSON.parse(localStorage.getItem("sw-roadmap-filters") || "{}");
+    if (saved.owner) state.owner = saved.owner;
+    if (typeof saved.hideDone === "boolean") state.hideDone = saved.hideDone;
+  } catch (e) { /* private mode, blocked storage — defaults are fine */ }
+
+  function save() {
+    try {
+      localStorage.setItem("sw-roadmap-filters", JSON.stringify(state));
+    } catch (e) { /* nothing to do */ }
+  }
+
+  function matches(m) {
+    const [, , , owner, status] = m;
+    if (state.hideDone && status === "done") return false;
+    if (state.owner !== "all" && owner !== state.owner && owner !== "all") return false;
+    return true;
+  }
+
+  function renderChart() {
+    const max = Math.max(...EPICS.map((e) => e.missions.length));
+    document.getElementById("chart").innerHTML = EPICS.map((e) => {
+      const total = e.missions.length;
+      const done = e.missions.filter((m) => m[4] === "done").length;
+      const blocked = e.missions.filter((m) => m[4] === "blocked").length;
+      const wip = e.missions.filter((m) => m[4] === "wip").length;
+      // Widths are shares of the largest epic, so bars compare across rows.
+      const scale = (n) => ((n / max) * 100).toFixed(2);
+      return `<div class="bar-row">
+        <div class="bar-label"><b>${e.n}.</b> ${e.name}</div>
+        <div class="track" role="img" aria-label="${done} of ${total} missions done">
+          <div class="fill" style="width:${scale(done)}%"></div>
+          <div class="fill-wip" style="width:${scale(wip)}%"></div>
+          <div class="fill-blocked" style="width:${scale(blocked)}%"></div>
+          <div style="width:${scale(total - done - blocked - wip)}%"></div>
+        </div>
+        <div class="bar-count">${done}/${total}</div>
+      </div>`;
+    }).join("");
+  }
+
+  function renderEpics() {
+    document.getElementById("epics").innerHTML = EPICS.map((e) => {
+      const shown = e.missions.filter(matches);
+      const done = e.missions.filter((m) => m[4] === "done").length;
+      const rows = shown.length
+        ? shown.map(([id, name, size, owner, status]) => `
+            <div class="mission is-${status}">
+              <span class="m-id">${id}</span>
+              <span class="m-name">${name}</span>
+              <span class="m-size">${size}</span>
+              <span class="m-owner">${owner}</span>
+              <span class="m-status s-${status}">${STATUS_LABEL[status]}</span>
+            </div>`).join("")
+        : `<p class="empty">No missions here match the current filter.</p>`;
+
+      return `<article class="epic">
+        <div class="epic-head">
+          <span class="epic-num">EPIC ${e.n}</span>
+          <h3>${e.name}</h3>
+          <span class="epic-progress">${done}/${e.missions.length} done</span>
+        </div>
+        ${e.note ? `<p class="epic-note">${e.note}</p>` : ""}
+        <div class="missions">${rows}</div>
+      </article>`;
+    }).join("");
+  }
+
+  function syncControls() {
+    document.querySelectorAll("[data-owner]").forEach((b) => {
+      b.setAttribute("aria-pressed", String(b.dataset.owner === state.owner));
+    });
+    const t = document.getElementById("hide-done");
+    t.setAttribute("aria-pressed", String(state.hideDone));
+    t.textContent = state.hideDone ? "Show done" : "Hide done";
+  }
+
+  document.querySelectorAll("[data-owner]").forEach((b) => {
+    b.addEventListener("click", () => {
+      state.owner = b.dataset.owner;
+      save(); syncControls(); renderEpics();
+    });
+  });
+
+  document.getElementById("hide-done").addEventListener("click", () => {
+    state.hideDone = !state.hideDone;
+    save(); syncControls(); renderEpics();
+  });
+
+  renderChart();
+  syncControls();
+  renderEpics();
+</script>

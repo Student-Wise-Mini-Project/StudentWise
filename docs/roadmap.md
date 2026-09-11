@@ -3,8 +3,15 @@
 Everything the project needs, A to Z, split into **epics** (features) and
 **missions** (a task one person can finish and merge).
 
-**Status as of 2026-09-10:** 60 endpoints · 14 tables · 646 tests · 9 migrations ·
-CI green.
+**Status as of 2026-09-11:** 60 endpoints · 14 tables · 646 backend tests ·
+148 frontend tests · 9 migrations · CI green.
+
+**This file is the source of truth for status.** It is also published as a page —
+`docs/roadmap.html`, live at
+<https://claude.ai/code/artifact/30c5e8d0-ac69-43ed-8ef2-66a71fad9242>. Change a
+status here, mirror it there, and run `node scripts/check-roadmap-sync.mjs`,
+which fails if the two disagree. A status page nobody has updated in three weeks
+is worse than none, because it is confidently wrong.
 
 | Marker | Meaning |
 |---|---|
