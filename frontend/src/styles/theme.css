@@ -1,0 +1,228 @@
+/* ---------------------------------------------------------------------------
+ * StudentWise design tokens — THE ONLY FILE IN THE APP THAT MAY NAME A COLOUR.
+ *
+ * `src/test/guards/design-tokens.test.ts` fails the build if a hex value, an
+ * `rgb(`, a `font-family` or a Tailwind arbitrary-colour class appears anywhere
+ * else. That guard is what makes the retheme promise real rather than hoped for:
+ * applying a new visual identity is editing this file plus `src/components/`.
+ *
+ * ---------------------------------------------------------------------------
+ * The starting direction, so the next person knows what they are replacing.
+ *
+ * "White City" — Tel Aviv's Bauhaus render bleached by Mediterranean sun. A warm
+ * off-white ground, cool deep ink, and a single saturated ultramarine for
+ * actions. Ultramarine is chosen partly because it sits a long way from both
+ * money colours: green for credit and clay-red for debt never compete with a
+ * button for meaning.
+ *
+ * Typefaces are Rubik (display) and Assistant (body) — picked because both ship
+ * full Hebrew alongside Latin. The app is English today and right-to-left Hebrew
+ * later; choosing a Latin-only face now would mean choosing again then.
+ *
+ * Colour is never the only carrier of meaning. Every credit or debt amount also
+ * carries a sign and a word, because red/green is the most common colour-vision
+ * deficiency there is.
+ * ------------------------------------------------------------------------- */
+
+/* `inline` matters: it makes the generated utilities point at the custom
+ * property rather than copying its value, so redefining a token below actually
+ * re-themes the running app. Without it, dark mode would not work. */
+@theme inline {
+  --color-ground: var(--sw-ground);
+  --color-surface: var(--sw-surface);
+  --color-sunken: var(--sw-sunken);
+  --color-overlay: var(--sw-overlay);
+
+  --color-ink: var(--sw-ink);
+  --color-muted: var(--sw-muted);
+  --color-faint: var(--sw-faint);
+  --color-line: var(--sw-line);
+  --color-line-strong: var(--sw-line-strong);
+
+  --color-accent: var(--sw-accent);
+  --color-accent-hover: var(--sw-accent-hover);
+  --color-accent-soft: var(--sw-accent-soft);
+  --color-on-accent: var(--sw-on-accent);
+
+  --color-credit: var(--sw-credit);
+  --color-credit-soft: var(--sw-credit-soft);
+  --color-debt: var(--sw-debt);
+  --color-debt-soft: var(--sw-debt-soft);
+  --color-warn: var(--sw-warn);
+  --color-warn-soft: var(--sw-warn-soft);
+  --color-danger: var(--sw-danger);
+  --color-danger-soft: var(--sw-danger-soft);
+
+  /* Avatars pick one of these by hashing a user id, so no component ever names
+   * a colour to draw a person. */
+  --color-avatar-1: var(--sw-avatar-1);
+  --color-avatar-2: var(--sw-avatar-2);
+  --color-avatar-3: var(--sw-avatar-3);
+  --color-avatar-4: var(--sw-avatar-4);
+  --color-avatar-5: var(--sw-avatar-5);
+  --color-avatar-6: var(--sw-avatar-6);
+
+  --font-display: 'Rubik', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  --font-body: 'Assistant', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', 'Cascadia Mono', monospace;
+
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.125rem;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1.4rem;
+  --text-lg: 1.0625rem;
+  --text-lg--line-height: 1.5rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.6rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.85rem;
+  --text-3xl: 1.9375rem;
+  --text-3xl--line-height: 2.2rem;
+  --text-4xl: 2.5rem;
+  --text-4xl--line-height: 2.7rem;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.125rem;
+  --radius-2xl: 1.5rem;
+
+  --shadow-raised: 0 1px 2px var(--sw-shadow-weak), 0 1px 3px var(--sw-shadow-weak);
+  --shadow-float: 0 4px 12px var(--sw-shadow-weak), 0 2px 4px var(--sw-shadow-weak);
+  --shadow-sheet: 0 -8px 32px var(--sw-shadow-strong);
+
+  --ease-out-soft: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* --- Light: the complete palette. Every token is defined here first, so none
+ * of them can go missing in the un-stamped "system" state. ------------------ */
+:root {
+  --sw-ground: #f7f5f2;
+  --sw-surface: #ffffff;
+  --sw-sunken: #ece8e2;
+  --sw-overlay: color-mix(in oklab, #14181c 45%, transparent);
+
+  --sw-ink: #14181c;
+  --sw-muted: #59636d;
+  --sw-faint: #8b949d;
+  --sw-line: #e2ddd5;
+  --sw-line-strong: #cdc6bc;
+
+  --sw-accent: #2440c9;
+  --sw-accent-hover: #1c33a3;
+  --sw-accent-soft: #e6e9fb;
+  --sw-on-accent: #ffffff;
+
+  --sw-credit: #0f7a45;
+  --sw-credit-soft: #e0f2e7;
+  --sw-debt: #c13b22;
+  --sw-debt-soft: #fbe7e2;
+  --sw-warn: #8a6410;
+  --sw-warn-soft: #f7efdb;
+  --sw-danger: #b3261e;
+  --sw-danger-soft: #fbe5e3;
+
+  --sw-avatar-1: #2440c9;
+  --sw-avatar-2: #0f7a45;
+  --sw-avatar-3: #a34b12;
+  --sw-avatar-4: #7a2f8f;
+  --sw-avatar-5: #0b6d7d;
+  --sw-avatar-6: #9b1c52;
+
+  --sw-shadow-weak: color-mix(in oklab, #14181c 8%, transparent);
+  --sw-shadow-strong: color-mix(in oklab, #14181c 22%, transparent);
+
+  /* Chrome heights, so the FAB and toasts can clear the tab bar without any of
+   * them hardcoding a number. */
+  --sw-appbar-height: 3.25rem;
+  --sw-tabbar-height: 3.5rem;
+
+  color-scheme: light;
+}
+
+/* --- Dark: designed, not inverted. The ground goes cool and the text goes warm,
+ * which is the reverse of the light theme and keeps it from reading as grey. -- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --sw-ground: #0f1418;
+    --sw-surface: #171e24;
+    --sw-sunken: #0a0e11;
+    --sw-overlay: color-mix(in oklab, #000000 60%, transparent);
+
+    --sw-ink: #eceae5;
+    --sw-muted: #9aa4ae;
+    --sw-faint: #6b7681;
+    --sw-line: #27313a;
+    --sw-line-strong: #3a4651;
+
+    --sw-accent: #8298ff;
+    --sw-accent-hover: #9dadff;
+    --sw-accent-soft: #1b2440;
+    --sw-on-accent: #0b1020;
+
+    --sw-credit: #4fbf82;
+    --sw-credit-soft: #11291e;
+    --sw-debt: #ff8b6f;
+    --sw-debt-soft: #2e1a15;
+    --sw-warn: #d6a44a;
+    --sw-warn-soft: #2a2316;
+    --sw-danger: #ff7a70;
+    --sw-danger-soft: #2e1715;
+
+    --sw-avatar-1: #8298ff;
+    --sw-avatar-2: #4fbf82;
+    --sw-avatar-3: #e0925a;
+    --sw-avatar-4: #c48ad6;
+    --sw-avatar-5: #5bb8cc;
+    --sw-avatar-6: #e87fa8;
+
+    --sw-shadow-weak: color-mix(in oklab, #000000 45%, transparent);
+    --sw-shadow-strong: color-mix(in oklab, #000000 65%, transparent);
+
+    color-scheme: dark;
+  }
+}
+
+/* An explicit choice wins over the OS in both directions. */
+:root[data-theme='dark'] {
+  --sw-ground: #0f1418;
+  --sw-surface: #171e24;
+  --sw-sunken: #0a0e11;
+  --sw-overlay: color-mix(in oklab, #000000 60%, transparent);
+
+  --sw-ink: #eceae5;
+  --sw-muted: #9aa4ae;
+  --sw-faint: #6b7681;
+  --sw-line: #27313a;
+  --sw-line-strong: #3a4651;
+
+  --sw-accent: #8298ff;
+  --sw-accent-hover: #9dadff;
+  --sw-accent-soft: #1b2440;
+  --sw-on-accent: #0b1020;
+
+  --sw-credit: #4fbf82;
+  --sw-credit-soft: #11291e;
+  --sw-debt: #ff8b6f;
+  --sw-debt-soft: #2e1a15;
+  --sw-warn: #d6a44a;
+  --sw-warn-soft: #2a2316;
+  --sw-danger: #ff7a70;
+  --sw-danger-soft: #2e1715;
+
+  --sw-avatar-1: #8298ff;
+  --sw-avatar-2: #4fbf82;
+  --sw-avatar-3: #e0925a;
+  --sw-avatar-4: #c48ad6;
+  --sw-avatar-5: #5bb8cc;
+  --sw-avatar-6: #e87fa8;
+
+  --sw-shadow-weak: color-mix(in oklab, #000000 45%, transparent);
+  --sw-shadow-strong: color-mix(in oklab, #000000 65%, transparent);
+
+  color-scheme: dark;
+}

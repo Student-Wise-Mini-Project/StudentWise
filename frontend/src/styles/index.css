@@ -1,0 +1,18 @@
+@import 'tailwindcss';
+
+@import './theme.css';
+@import './base.css';
+
+/* Manual theme switching has to beat the OS preference in both directions, so
+ * `dark:` matches either an explicit choice or an un-stamped system preference.
+ * Tailwind's built-in variant only does the latter. */
+@custom-variant dark {
+  &:where([data-theme='dark'], [data-theme='dark'] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme='light']) *, :root:not([data-theme='light'])) {
+      @slot;
+    }
+  }
+}
