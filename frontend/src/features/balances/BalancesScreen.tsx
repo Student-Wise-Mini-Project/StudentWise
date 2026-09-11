@@ -16,16 +16,19 @@ import { ErrorState, ListRowSkeleton } from '@/components/feedback'
 import { Stack } from '@/components/layout'
 import { useAuth } from '@/features/auth/authContext'
 import { useGroupScope } from '@/features/groups/groupContext'
+import { useT } from '@/i18n/i18nContext'
+import type { MessageKey } from '@/i18n/messages'
+import type { Vars } from '@/i18n/types'
 import { cn } from '@/lib/cn'
 import { today } from '@/lib/dates'
 import { createIdempotencyTracker } from '@/lib/idempotency'
-import { useT } from '@/i18n/i18nContext'
 import { settlementMethodLabel } from '@/lib/labels'
 import { isPositive, isValidAmount, isZero } from '@/lib/money'
 
 import { useBalances, useRecordSettlement, useSendReminders, useSettlementPlan } from './api'
 
 export function BalancesScreen() {
+  const t = useT()
   const { groupId, group, currency } = useGroupScope()
   const { user } = useAuth()
   const balances = useBalances(groupId)
@@ -55,14 +58,12 @@ export function BalancesScreen() {
     <>
       {plan.isError ? (
         <ErrorState
-          title="Cannot work out a plan"
+          title={t('balances.planError')}
           error={plan.error}
           onRetry={() => void plan.refetch()}
         />
       ) : headline ? (
-        <Slab
-          eyebrow={`${group.name} · ${transfers.length === 1 ? 'one transfer clears it' : `${transfers.length} transfers clear it`}`}
-        >
+        <Slab eyebrow={t('balances.slab.eyebrow', { group: group.name, count: transfers.length })}>
           {/* The payer→payee pair is bidi-isolated as one left-to-right run.
            * Left to the document's direction it inverts under `dir="rtl"` and
            * quietly says the opposite of what happened. The sentence under it
@@ -83,20 +84,20 @@ export function BalancesScreen() {
           </div>
 
           <p className="text-faint mt-2 text-sm" dir="auto">
-            {sentenceFor(headline, user?.id)}
-            {rest.length > 0 && ` ${restSentence(rest, user?.id)}`}
+            {sentenceFor(t, headline, user?.id)}
+            {rest.length > 0 && restSentence(t, rest, user?.id)}
           </p>
 
           <Button fullWidth size="lg" className="mt-3.5" onClick={() => setSettling(headline)}>
-            Record that this happened
+            {t('balances.slab.record')}
           </Button>
         </Slab>
       ) : (
         <Slab eyebrow={group.name}>
           <p className="font-display mt-1.5 text-4xl font-black tracking-[-0.03em]">
-            Everyone is square.
+            {t('balances.slab.squareTitle')}
           </p>
-          <p className="text-faint mt-2 text-sm">No payments needed.</p>
+          <p className="text-faint mt-2 text-sm">{t('balances.slab.squareBody')}</p>
         </Slab>
       )}
 
@@ -104,22 +105,23 @@ export function BalancesScreen() {
 
       {rest.length > 0 && (
         <>
-          <ListSection header={rest.length === 1 ? 'And one more' : `And ${rest.length} more`}>
+          <ListSection header={t('balances.rest.header', { count: rest.length })}>
             {rest.map((transfer) => (
               <ListRow
                 key={`${transfer.from_user.id}-${transfer.to_user.id}`}
                 leading={<Avatar user={transfer.from_user} size="sm" />}
                 title={
-                  <>
-                    {name(transfer.from_user, user?.id)}{' '}
-                    {transfer.from_user.id === user?.id ? 'pay' : 'pays'}{' '}
-                    {name(transfer.to_user, user?.id)}
-                  </>
+                  transfer.from_user.id === user?.id
+                    ? t('balances.rest.rowSelf', { to: transfer.to_user.name })
+                    : t('balances.rest.rowOther', {
+                        from: transfer.from_user.name,
+                        to: name(t, transfer.to_user, user?.id),
+                      })
                 }
                 meta={<Money amount={transfer.amount} currency={currency} size="lg" />}
                 trailing={
                   <Button size="sm" variant="secondary" onClick={() => setSettling(transfer)}>
-                    Record
+                    {t('common.actions.record')}
                   </Button>
                 }
               />
@@ -129,10 +131,7 @@ export function BalancesScreen() {
       )}
 
       <p className="text-muted px-4 py-3 text-xs" dir="auto">
-        This is the fewest transfers that clears everyone, and it is only a suggestion &mdash;
-        nothing changes until you record a payment that actually happened. Balances always add up to
-        zero, and someone who has left the group stays here until they are square: leaving does not
-        erase a debt.
+        {t('balances.planNote')}
       </p>
 
       {myDebtors.length > 0 && (
@@ -143,10 +142,13 @@ export function BalancesScreen() {
             loading={remind.isPending}
             onClick={() => remind.mutate(undefined)}
           >
-            Nudge {myDebtors.length === 1 ? myDebtors[0]?.from_user.name : 'everyone who owes you'}
+            {t('balances.nudge', {
+              count: myDebtors.length,
+              name: myDebtors[0]?.from_user.name ?? '',
+            })}
           </Button>
           {remind.isSuccess && (
-            <p className="text-credit mt-2 text-center text-xs">Reminder sent.</p>
+            <p className="text-credit mt-2 text-center text-xs">{t('balances.nudgeSent')}</p>
           )}
           {remind.isError && (
             <p role="alert" className="text-danger mt-2 text-center text-xs">
@@ -178,6 +180,8 @@ function WhoIsWhere({
   currency: string
   meId: string | undefined
 }) {
+  const t = useT()
+
   // The widest bar belongs to whoever is furthest from zero. This is a pixel
   // proportion, not an amount -- no money is derived from it.
   const largest = rows.reduce((max, row) => Math.max(max, Math.abs(Number(row.net))), 0)
@@ -186,7 +190,7 @@ function WhoIsWhere({
     <section className="flex flex-col">
       <header className="px-4 pt-5 pb-2">
         <h2 className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
-          Who is up, who is down
+          {t('balances.whoIsWhere')}
         </h2>
       </header>
 
@@ -202,7 +206,9 @@ function WhoIsWhere({
                 <Avatar user={row.user} size="md" />
                 <span className="min-w-0 flex-1 truncate text-base font-semibold">
                   {row.user.name}
-                  {row.user.id === meId && <span className="text-faint font-normal"> (you)</span>}
+                  {row.user.id === meId && (
+                    <span className="text-faint font-normal">{t('common.state.youMarker')}</span>
+                  )}
                 </span>
                 <Money
                   amount={row.net}
@@ -214,7 +220,11 @@ function WhoIsWhere({
 
               <span
                 role="img"
-                aria-label={`${row.user.name}: paid ${row.paid}, used ${row.owed}`}
+                aria-label={t('balances.barAria', {
+                  name: row.user.name,
+                  paid: row.paid,
+                  owed: row.owed,
+                })}
                 className="bg-sunken mt-2.5 block h-1.5 w-full overflow-hidden rounded-sm"
               >
                 <span
@@ -229,7 +239,11 @@ function WhoIsWhere({
                   square ? 'text-muted' : up ? 'text-credit' : 'text-debt',
                 )}
               >
-                {square ? 'square' : up ? 'is owed' : 'owes'}
+                {square
+                  ? t('common.state.square')
+                  : up
+                    ? t('common.state.credit')
+                    : t('common.state.debt')}
               </p>
             </div>
           )
@@ -239,24 +253,36 @@ function WhoIsWhere({
   )
 }
 
+type T = (key: MessageKey, vars?: Vars) => string
+
 /** "Maya pays you." — the same fact as the arrow, in words that survive a mirror. */
-function sentenceFor(transfer: PlannedTransfer, meId: string | undefined): string {
-  if (transfer.from_user.id === meId) return `You pay ${transfer.to_user.name}.`
-  if (transfer.to_user.id === meId) return `${transfer.from_user.name} pays you.`
-  return `${transfer.from_user.name} pays ${transfer.to_user.name}.`
+function sentenceFor(t: T, transfer: PlannedTransfer, meId: string | undefined): string {
+  if (transfer.from_user.id === meId) {
+    return t('balances.sentence.youPay', { name: transfer.to_user.name })
+  }
+  if (transfer.to_user.id === meId) {
+    return t('balances.sentence.paysYou', { name: transfer.from_user.name })
+  }
+  return t('balances.sentence.pays', {
+    from: transfer.from_user.name,
+    to: transfer.to_user.name,
+  })
 }
 
-function restSentence(rest: PlannedTransfer[], meId: string | undefined): string {
-  if (rest.length === 1 && rest[0]) return `Then ${lower(sentenceFor(rest[0], meId))}`
-  return `Then ${rest.length} more, in that order.`
+/**
+ * There used to be a `lower()` here, which lowercased a sentence's first letter
+ * so it could be spliced in after the word "Then". Hebrew has no letter case,
+ * and once "Then" moved into the key the English did not need it either.
+ */
+function restSentence(t: T, rest: PlannedTransfer[], meId: string | undefined): string {
+  if (rest.length === 1 && rest[0]) {
+    return t('balances.sentence.thenOne', { sentence: sentenceFor(t, rest[0], meId) })
+  }
+  return t('balances.sentence.thenMore', { count: rest.length })
 }
 
-function lower(sentence: string): string {
-  return sentence.charAt(0).toLowerCase() + sentence.slice(1)
-}
-
-function name(user: User, meId: string | undefined): string {
-  return user.id === meId ? 'You' : user.name
+function name(t: T, user: User, meId: string | undefined): string {
+  return user.id === meId ? t('common.state.you') : user.name
 }
 
 function RecordPaymentSheet({
@@ -294,12 +320,12 @@ function RecordPaymentSheet({
     <Sheet
       open={transfer !== null}
       onClose={reset}
-      title="Record a payment"
-      description="This is what actually moves the balances."
+      title={t('balances.record.title')}
+      description={t('balances.record.description')}
       footer={
         <>
           <Button variant="secondary" fullWidth onClick={reset}>
-            Cancel
+            {t('common.actions.cancel')}
           </Button>
           <Button
             fullWidth
@@ -326,7 +352,7 @@ function RecordPaymentSheet({
               )
             }}
           >
-            Record it
+            {t('balances.record.submit')}
           </Button>
         </>
       }
@@ -339,13 +365,15 @@ function RecordPaymentSheet({
         )}
 
         {transfer && (
-          <p className="text-base" dir="auto">
-            <span className="font-semibold">{transfer.from_user.name}</span> paid{' '}
-            <span className="font-semibold">{transfer.to_user.name}</span>
+          <p className="text-base font-semibold" dir="auto">
+            {t('balances.record.paidLine', {
+              from: transfer.from_user.name,
+              to: transfer.to_user.name,
+            })}
           </p>
         )}
 
-        <Field label="How much?" required>
+        <Field label={t('balances.record.howMuch')} required>
           {(props) => (
             <MoneyInput
               {...props}
@@ -356,7 +384,7 @@ function RecordPaymentSheet({
           )}
         </Field>
 
-        <Field label="How?">
+        <Field label={t('balances.record.how')}>
           {(props) => (
             <Select
               {...props}
@@ -372,7 +400,7 @@ function RecordPaymentSheet({
           )}
         </Field>
 
-        <Field label="When?">
+        <Field label={t('balances.record.when')}>
           {(props) => (
             <Input
               {...props}
@@ -383,13 +411,13 @@ function RecordPaymentSheet({
           )}
         </Field>
 
-        <Field label="Note">
+        <Field label={t('balances.record.note')}>
           {(props) => (
             <Input
               {...props}
               value={note}
               onChange={(event) => setNote(event.target.value)}
-              placeholder="Optional"
+              placeholder={t('balances.record.notePlaceholder')}
             />
           )}
         </Field>

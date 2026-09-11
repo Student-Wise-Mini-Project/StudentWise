@@ -3,5 +3,52 @@
     "MANUAL": "Cash or transfer",
     "BIT": "Bit",
     "PAYBOX": "PayBox"
+  },
+  "slab": {
+    "eyebrow": {
+      "one": "{group} · one transfer clears it",
+      "other": "{group} · {count} transfers clear it"
+    },
+    "record": "Record that this happened",
+    "squareTitle": "Everyone is square.",
+    "squareBody": "No payments needed."
+  },
+  "sentence": {
+    "youPay": "You pay {name}.",
+    "paysYou": "{name} pays you.",
+    "pays": "{from} pays {to}.",
+    "thenOne": " Then {sentence}",
+    "thenMore": {
+      "one": " Then one more.",
+      "other": " Then {count} more, in that order."
+    }
+  },
+  "whoIsWhere": "Who is up, who is down",
+  "barAria": "{name}: paid {paid}, used {owed}",
+  "rest": {
+    "header": {
+      "one": "And one more",
+      "other": "And {count} more"
+    },
+    "rowSelf": "You pay {to}",
+    "rowOther": "{from} pays {to}"
+  },
+  "planNote": "This is the fewest transfers that clears everyone, and it is only a suggestion — nothing changes until you record a payment that actually happened. Balances always add up to zero, and someone who has left the group stays here until they are square: leaving does not erase a debt.",
+  "nudge": {
+    "one": "Nudge {name}",
+    "other": "Nudge everyone who owes you"
+  },
+  "nudgeSent": "Reminder sent.",
+  "planError": "Cannot work out a plan",
+  "record": {
+    "title": "Record a payment",
+    "description": "This is what actually moves the balances.",
+    "paidLine": "{from} paid {to}",
+    "howMuch": "How much?",
+    "how": "How?",
+    "when": "When?",
+    "note": "Note",
+    "notePlaceholder": "Optional",
+    "submit": "Record it"
   }
 }

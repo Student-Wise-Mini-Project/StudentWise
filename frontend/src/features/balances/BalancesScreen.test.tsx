@@ -156,8 +156,13 @@ describe('balances', () => {
   it('names the payer and payee, and gets the verb right for "you"', async () => {
     // "You pays Maya" is what the first version said. A test that only asserts
     // the names would have kept saying it.
+    //
+    // `findAllByText`, not `findByText`: the sentence under the slab and the
+    // row in "And one more" both say this now. They used to differ only because
+    // the row was three JSX fragments and so matched no single text node --
+    // translation made it one string, which is what a translator needs.
     renderScreen(GAL)
-    expect(await screen.findByText(/Noa pays Maya/)).toBeInTheDocument()
+    expect(await screen.findAllByText(/Noa pays Maya/)).not.toHaveLength(0)
     expect(screen.queryByText(/You pays/)).not.toBeInTheDocument()
   })
 
