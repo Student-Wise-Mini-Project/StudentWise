@@ -32,3 +32,6 @@ backend/var/
 # Intermediate: regenerated from the backend on demand. `schema.d.ts` is the
 # artifact we commit, because that is what the type checker reads.
 frontend/openapi.json
+
+# Local dev server logs (scripts/dev-up.ps1)
+logs/

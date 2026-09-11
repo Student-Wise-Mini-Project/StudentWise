@@ -48,3 +48,29 @@ export function dismissIosHint(): void {
     /* ignore */
   }
 }
+
+const DEBUG_CONSOLE_KEY = 'sw.debugConsole'
+
+/**
+ * Whether the on-screen devtools panel should start.
+ *
+ * Per-device, like everything else here: it is a property of the phone you are
+ * debugging on, not of the account signed in. Dev builds are the only thing
+ * that reads it -- see `dev/mobileConsole.ts`.
+ */
+export function debugConsoleEnabled(): boolean {
+  try {
+    return window.localStorage.getItem(DEBUG_CONSOLE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function setDebugConsole(on: boolean): void {
+  try {
+    if (on) window.localStorage.setItem(DEBUG_CONSOLE_KEY, '1')
+    else window.localStorage.removeItem(DEBUG_CONSOLE_KEY)
+  } catch {
+    /* ignore */
+  }
+}
