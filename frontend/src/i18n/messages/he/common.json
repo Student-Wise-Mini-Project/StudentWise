@@ -1,0 +1,67 @@
+{
+  "appName": "StudentWise",
+  "actions": {
+    "add": "הוספה",
+    "back": "חזרה",
+    "cancel": "ביטול",
+    "close": "סגירה",
+    "create": "יצירה",
+    "delete": "מחיקה",
+    "edit": "עריכה",
+    "goHome": "למסך הבית",
+    "leave": "יציאה",
+    "loadMore": "טעינת עוד",
+    "loading": "בטעינה",
+    "new": "חדשה",
+    "record": "רישום",
+    "remove": "הסרה",
+    "retry": "ניסיון נוסף",
+    "save": "שמירה"
+  },
+  "state": {
+    "credit": "זכות",
+    "debt": "חוב",
+    "square": "מאוזן",
+    "squareTitle": "מאוזן",
+    "you": "אני",
+    "youMarker": " (אני)"
+  },
+  "dates": {
+    "today": "היום",
+    "yesterday": "אתמול",
+    "justNow": "עכשיו"
+  },
+  "nav": {
+    "main": "ראשי",
+    "home": "בית",
+    "groups": "קבוצות",
+    "alerts": "התראות",
+    "you": "אני"
+  },
+  "alerts": {
+    "unreadCount": {
+      "one": "התראה אחת שלא נקראה",
+      "two": "שתי התראות שלא נקראו",
+      "many": "{count} התראות שלא נקראו",
+      "other": "{count} התראות שלא נקראו"
+    }
+  },
+  "shell": {
+    "addExpense": "הוספת הוצאה"
+  },
+  "auth": {
+    "signingIn": "בתהליך כניסה"
+  },
+  "offline": "אין חיבור — מוצג מה שנשמר. להוספת הוצאה נדרש חיבור.",
+  "errorState": {
+    "title": "הטעינה נכשלה"
+  },
+  "notFound": {
+    "title": "אין כאן כלום",
+    "body": "הדף הזה לא קיים."
+  },
+  "pwa": {
+    "iosTitle": "הוספת StudentWise למסך הבית",
+    "iosBody": "יש להקיש על כפתור השיתוף ואז על הוספה למסך הבית. האפליקציה נפתחת במסך מלא ועובדת גם בלי חיבור."
+  }
+}

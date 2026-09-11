@@ -1,0 +1,62 @@
+{
+  "appName": "StudentWise",
+  "actions": {
+    "add": "Add",
+    "back": "Back",
+    "cancel": "Cancel",
+    "close": "Close",
+    "create": "Create",
+    "delete": "Delete",
+    "edit": "Edit",
+    "goHome": "Go home",
+    "leave": "Leave",
+    "loadMore": "Load more",
+    "loading": "Loading",
+    "new": "New",
+    "record": "Record",
+    "remove": "Remove",
+    "retry": "Try again",
+    "save": "Save"
+  },
+  "state": {
+    "credit": "is owed",
+    "debt": "owes",
+    "square": "square",
+    "squareTitle": "Square",
+    "you": "You",
+    "youMarker": " (you)"
+  },
+  "dates": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "justNow": "just now"
+  },
+  "nav": {
+    "main": "Main",
+    "home": "Home",
+    "groups": "Groups",
+    "alerts": "Alerts",
+    "you": "You"
+  },
+  "alerts": {
+    "unreadCount": { "one": "{count} unread", "other": "{count} unread" }
+  },
+  "shell": {
+    "addExpense": "Add expense"
+  },
+  "auth": {
+    "signingIn": "Signing you in"
+  },
+  "offline": "Offline — showing what was saved. New expenses need a connection.",
+  "errorState": {
+    "title": "That did not load"
+  },
+  "notFound": {
+    "title": "Nothing here",
+    "body": "That page does not exist."
+  },
+  "pwa": {
+    "iosTitle": "Add StudentWise to your home screen",
+    "iosBody": "Tap the Share button, then Add to Home Screen. It opens full screen and works offline."
+  }
+}
