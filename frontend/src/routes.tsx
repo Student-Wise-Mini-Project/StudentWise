@@ -13,6 +13,8 @@ import { ExpenseListScreen } from '@/features/expenses/ExpenseListScreen'
 import { ExpenseRedirect } from '@/features/expenses/ExpenseRedirect'
 import { GroupScopeRoute, GroupTabsLayout } from '@/features/groups/GroupLayout'
 import { GroupListScreen } from '@/features/groups/GroupListScreen'
+import { HomeScreen } from '@/features/activity/HomeScreen'
+import { BalancesScreen } from '@/features/balances/BalancesScreen'
 import { MembersScreen } from '@/features/groups/MembersScreen'
 import { env } from '@/lib/env'
 
@@ -40,13 +42,13 @@ export function AppRoutes() {
 
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
-          <Route index element={<Placeholder title="Home" />} />
+          <Route index element={<HomeScreen />} />
           <Route path="groups" element={<GroupListScreen />} />
 
           <Route path="groups/:groupId" element={<GroupScopeRoute />}>
             <Route element={<GroupTabsLayout />}>
               <Route index element={<ExpenseListScreen />} />
-              <Route path="balances" element={<Placeholder title="Balances" />} />
+              <Route path="balances" element={<BalancesScreen />} />
               <Route path="members" element={<MembersScreen />} />
             </Route>
 
