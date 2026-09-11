@@ -3,6 +3,7 @@ import type {
   ExpenseSource,
   GroupType,
   MemberRole,
+  NotificationKind,
   SettlementMethod,
   SplitType,
 } from '@/api/types'
@@ -65,4 +66,12 @@ export function settlementMethodLabel(t: T, method: SettlementMethod): string {
  */
 export function sourceLabel(t: T, source: ExpenseSource): string {
   return t(`expenses.sources.${source}` as MessageKey)
+}
+
+/**
+ * The kind, as a short label. The full sentence is built by
+ * `features/notifications/render.ts`; this is for a badge or a filter.
+ */
+export function notificationKindLabel(t: T, kind: NotificationKind): string {
+  return t(`notifications.kindLabels.${kind}` as MessageKey)
 }

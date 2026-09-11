@@ -11,11 +11,14 @@ import { SegmentedControl } from '@/components/SegmentedControl'
 import { EmptyState } from '@/components/feedback'
 import { BellIcon } from '@/components/icons'
 import { Page } from '@/components/layout'
+import { useT } from '@/i18n/i18nContext'
 import { formatRelative } from '@/lib/dates'
 
 import { useMarkAllRead, useMarkRead, useNotifications } from './api'
+import { renderNotification } from './render'
 
 export function NotificationsScreen() {
+  const t = useT()
   const [params, setParams] = useSearchParams()
   const unreadOnly = params.get('unread') === '1'
   const list = useNotifications(unreadOnly)
@@ -25,7 +28,7 @@ export function NotificationsScreen() {
   return (
     <>
       <AppBar
-        title="Alerts"
+        title={t('notifications.title')}
         actions={
           <Button
             size="sm"
@@ -33,7 +36,7 @@ export function NotificationsScreen() {
             loading={markAllRead.isPending}
             onClick={() => markAllRead.mutate()}
           >
-            Mark all read
+            {t('notifications.markAllRead')}
           </Button>
         }
       />
@@ -41,7 +44,7 @@ export function NotificationsScreen() {
       <Page width="narrow">
         <div className="px-4 py-3">
           <SegmentedControl
-            name="Filter"
+            name={t('notifications.filter')}
             value={unreadOnly ? 'unread' : 'all'}
             onChange={(value) => {
               const next = new URLSearchParams(params)
@@ -50,8 +53,8 @@ export function NotificationsScreen() {
               setParams(next, { replace: true })
             }}
             segments={[
-              { value: 'all', label: 'Everything' },
-              { value: 'unread', label: 'Unread' },
+              { value: 'all', label: t('notifications.filterAll') },
+              { value: 'unread', label: t('notifications.filterUnread') },
             ]}
           />
         </div>
@@ -70,11 +73,11 @@ export function NotificationsScreen() {
           empty={
             <EmptyState
               icon={<BellIcon className="size-10" />}
-              title={unreadOnly ? 'Nothing unread' : 'Nothing yet'}
+              title={
+                unreadOnly ? t('notifications.emptyUnreadTitle') : t('notifications.emptyAllTitle')
+              }
               body={
-                unreadOnly
-                  ? 'You are all caught up.'
-                  : 'You will hear about new expenses, comments and payments here.'
+                unreadOnly ? t('notifications.emptyUnreadBody') : t('notifications.emptyAllBody')
               }
               size="page"
             />
@@ -88,12 +91,17 @@ export function NotificationsScreen() {
 /**
  * One notification.
  *
- * `title` and `body` are rendered by the server at read time from a `kind` plus
- * a payload of plain facts -- no wording is stored. That is what lets the same
- * row be shown in Hebrew later without a migration, and it is why this component
- * renders what it is given rather than composing a sentence of its own.
+ * No wording is stored: a row is a `kind` plus a payload of plain facts. The
+ * server renders those into English at read time and sends the result, and the
+ * client renders the same facts into the active language -- see `render.ts`,
+ * which is a port of `notification_service.render()`.
+ *
+ * "later without a migration" is what the schema comment promised. This is
+ * later, and there was no migration.
  */
 function NotificationRow({ item, onOpen }: { item: Notification; onOpen: () => void }) {
+  const t = useT()
+  const { title, body } = renderNotification(t, item)
   const unread = item.read_at === null
   const to = item.expense_id ? `/expenses/${item.expense_id}` : undefined
 
@@ -113,13 +121,17 @@ function NotificationRow({ item, onOpen }: { item: Notification; onOpen: () => v
       }
       title={
         <span className={unread ? 'font-semibold' : undefined}>
-          {item.title}
+          {title}
           {unread && <span className="bg-accent ms-2 inline-block size-2 rounded-sm" />}
         </span>
       }
-      subtitle={item.body}
+      subtitle={body}
       metaSubtitle={formatRelative(item.created_at)}
-      trailing={item.kind.startsWith('BUDGET') ? <Badge tone="warn">Budget</Badge> : undefined}
+      trailing={
+        item.kind.startsWith('BUDGET') ? (
+          <Badge tone="warn">{t('notifications.budgetBadge')}</Badge>
+        ) : undefined
+      }
     />
   )
 }
