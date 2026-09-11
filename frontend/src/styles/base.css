@@ -1,0 +1,110 @@
+/* Base layer: document defaults. Everything here is direction-agnostic — the app
+ * is English today and right-to-left Hebrew later, so nothing may assume that
+ * "start" means "left". */
+
+@layer base {
+  html {
+    background: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    -webkit-text-size-adjust: 100%;
+    /* iOS rubber-banding shows the page background behind the app, so the html
+     * element has to carry the ground colour too, not just body. */
+    overscroll-behavior-y: none;
+  }
+
+  body {
+    margin: 0;
+    min-block-size: 100dvh;
+    background: var(--color-ground);
+    color: var(--color-ink);
+    font-size: var(--text-base);
+    line-height: 1.45;
+    text-align: start;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.011em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  /* Money, counts and dates sit in columns and must line up. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* A visible focus ring is not optional; it is how the app is usable at all
+   * with a keyboard. Only `:focus-visible`, so a mouse click stays quiet. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  img,
+  svg,
+  video {
+    max-inline-size: 100%;
+    block-size: auto;
+  }
+
+  /* The tap-highlight flash on iOS makes every list row look broken. */
+  a,
+  button,
+  [role='button'] {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  dialog::backdrop {
+    background: var(--color-overlay);
+  }
+}
+
+@layer base {
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Safe areas, named once. The tab bar and the FAB both need to clear the iOS
+ * home indicator, and neither should know the magic incantation. */
+@layer base {
+  :root {
+    --sw-safe-block-start: env(safe-area-inset-top, 0px);
+    --sw-safe-block-end: env(safe-area-inset-bottom, 0px);
+    --sw-safe-inline-start: env(safe-area-inset-left, 0px);
+    --sw-safe-inline-end: env(safe-area-inset-right, 0px);
+  }
+}

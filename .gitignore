@@ -28,3 +28,7 @@ Thumbs.db
 *.sqlite3
 uploads/
 backend/var/
+
+# Intermediate: regenerated from the backend on demand. `schema.d.ts` is the
+# artifact we commit, because that is what the type checker reads.
+frontend/openapi.json
