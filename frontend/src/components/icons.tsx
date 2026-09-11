@@ -106,3 +106,14 @@ export const BackIcon = (p: SVGProps<SVGSVGElement>) => (
     <path d="m15 5-7 7 7 7" />
   </Icon>
 )
+
+/**
+ * A recorded payment. Two arrows pointing opposite ways, which is the one arrow
+ * shape that means the same thing after the layout mirrors -- a single `→`
+ * would say "Gal paid Maya" in English and "Maya paid Gal" in Hebrew.
+ */
+export const TransferIcon = (p: SVGProps<SVGSVGElement>) => (
+  <Icon {...p}>
+    <path d="M4 9h16l-3-3M20 15H4l3 3" />
+  </Icon>
+)

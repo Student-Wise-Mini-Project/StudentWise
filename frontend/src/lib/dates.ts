@@ -73,6 +73,32 @@ export function formatTimestamp(isoTimestamp: string): string {
   return Number.isNaN(value.getTime()) ? '' : timeFormat.format(value)
 }
 
+const dayHeaderFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long' })
+
+/**
+ * The date a feed groups under: `"Today"`, `"Yesterday"`, or `"1 September"`.
+ *
+ * Takes an instant and answers in the reader's own calendar days, which is the
+ * only thing "today" can mean. Comparing local calendar days rather than
+ * subtracting milliseconds is deliberate: 23:30 and 00:30 are sixty minutes
+ * apart *and* two different days, and a feed that files the second under
+ * "today" while the phone clock says otherwise looks broken.
+ */
+export function formatDayHeader(isoTimestamp: string, now: Date = new Date()): string {
+  const then = new Date(isoTimestamp)
+  if (Number.isNaN(then.getTime())) return ''
+
+  const key = (value: Date) => `${value.getFullYear()}-${value.getMonth()}-${value.getDate()}`
+  const yesterday = new Date(now)
+  yesterday.setDate(yesterday.getDate() - 1)
+
+  if (key(then) === key(now)) return 'Today'
+  if (key(then) === key(yesterday)) return 'Yesterday'
+  return then.getFullYear() === now.getFullYear()
+    ? dayHeaderFormat.format(then)
+    : dayFormat.format(then)
+}
+
 const monthFormat = new Intl.DateTimeFormat('en-GB', { month: 'short' })
 const monthYearFormat = new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' })
 

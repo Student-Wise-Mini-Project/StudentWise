@@ -45,11 +45,15 @@ export function useOverallPosition(groups: Group[] | undefined, userId: string |
   })
 
   const loading = queries.some((query) => query.isLoading)
+  const names = new Map((groups ?? []).map((group) => [group.id, group.name]))
   const perGroup = queries
     .map((query) => query.data)
     .filter((data): data is GroupBalances => Boolean(data))
     .map((data) => ({
       groupId: data.group_id,
+      // The balances payload does not carry the group's name and the slab's
+      // chips need it; `groups` is already in hand, so no second request.
+      name: names.get(data.group_id) ?? '',
       currency: data.currency,
       net: data.balances.find((row) => row.user.id === userId)?.net ?? '0.00',
     }))
