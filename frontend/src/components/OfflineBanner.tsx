@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useT } from '@/i18n/i18nContext'
 
 /**
  * "You are offline."
@@ -8,6 +9,7 @@ import { useEffect, useState } from 'react'
  * quietly a few minutes old looks like data that is current.
  */
 export function OfflineBanner() {
+  const t = useT()
   const [online, setOnline] = useState(() => navigator.onLine)
 
   useEffect(() => {
@@ -28,7 +30,7 @@ export function OfflineBanner() {
       role="status"
       className="bg-warn-soft text-warn sticky top-0 z-40 px-4 py-1.5 text-center text-xs font-semibold"
     >
-      Offline — showing what was saved. New expenses need a connection.
+      {t('common.offline')}
     </p>
   )
 }

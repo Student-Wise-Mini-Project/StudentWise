@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 
 import { BackIcon } from '@/components/icons'
+import { useT } from '@/i18n/i18nContext'
 import { cn } from '@/lib/cn'
 
 /**
@@ -33,6 +34,7 @@ export function AppBar({
   className?: string
 }) {
   const navigate = useNavigate()
+  const t = useT()
   const modal = variant === 'modal'
 
   return (
@@ -48,7 +50,7 @@ export function AppBar({
           (back && (
             <button
               type="button"
-              aria-label="Back"
+              aria-label={t('common.actions.back')}
               onClick={() => (typeof back === 'string' ? navigate(back) : navigate(-1))}
               className="text-ink hover:bg-sunken rounded-md p-2 transition-colors"
             >

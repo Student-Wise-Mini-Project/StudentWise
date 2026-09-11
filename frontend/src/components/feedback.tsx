@@ -1,3 +1,4 @@
+import { useT } from '@/i18n/i18nContext'
 import type { ReactNode } from 'react'
 
 import { detailOf } from '@/api/errors'
@@ -62,24 +63,30 @@ export function EmptyState({
 
 /** A failed request, with the API's own `detail` and a way to try again. */
 export function ErrorState({
-  title = 'That did not load',
+  title,
   error,
   onRetry,
   size = 'page',
 }: {
+  /** Defaults to a generic heading -- resolved inside, because a default
+   * parameter cannot call a hook. */
   title?: string
   error?: unknown
   onRetry?: () => void
   size?: 'inline' | 'page'
 }) {
+  const t = useT()
+
   return (
     <div className={cn('flex flex-col text-start', size === 'page' ? 'px-4 py-10' : 'px-4 py-6')}>
-      <h3 className="font-display text-xl font-extrabold tracking-[-0.015em]">{title}</h3>
+      <h3 className="font-display text-xl font-extrabold tracking-[-0.015em]">
+        {title ?? t('common.errorState.title')}
+      </h3>
       <p className="text-muted mt-1.5 max-w-[38ch] text-sm">{detailOf(error)}</p>
       {onRetry && (
         <span className="mt-4">
           <Button variant="secondary" onClick={onRetry}>
-            Try again
+            {t('common.actions.retry')}
           </Button>
         </span>
       )}

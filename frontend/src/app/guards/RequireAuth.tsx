@@ -2,6 +2,7 @@ import { Navigate, Outlet, useLocation } from 'react-router'
 
 import { Spinner } from '@/components/Spinner'
 import { useAuth } from '@/features/auth/authContext'
+import { useT } from '@/i18n/i18nContext'
 
 /**
  * Protects everything behind it.
@@ -14,13 +15,14 @@ import { useAuth } from '@/features/auth/authContext'
  * returns you to the task rather than the home screen.
  */
 export function RequireAuth() {
+  const t = useT()
   const { isAuthenticated, isResolving } = useAuth()
   const location = useLocation()
 
   if (isResolving) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
-        <Spinner size="lg" label="Signing you in" />
+        <Spinner size="lg" label={t('common.auth.signingIn')} />
       </div>
     )
   }

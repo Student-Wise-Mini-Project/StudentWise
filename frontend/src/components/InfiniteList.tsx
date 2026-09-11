@@ -3,6 +3,7 @@ import { type ReactNode, useEffect, useRef } from 'react'
 import type { PagedResult } from '@/api/paged'
 import { Button } from './Button'
 import { ErrorState, ListRowSkeleton } from './feedback'
+import { useT } from '@/i18n/i18nContext'
 
 /**
  * Every paged list in the app.
@@ -24,6 +25,7 @@ export function InfiniteList<T>({
   empty: ReactNode
   skeletonRows?: number
 }) {
+  const t = useT()
   const sentinel = useRef<HTMLDivElement>(null)
   const { hasNextPage, fetchNextPage, isFetchingNextPage } = query
 
@@ -52,7 +54,7 @@ export function InfiniteList<T>({
       {hasNextPage && (
         <div ref={sentinel} className="flex justify-center px-4 py-4">
           <Button variant="ghost" onClick={fetchNextPage} loading={isFetchingNextPage}>
-            {isFetchingNextPage ? 'Loading' : 'Load more'}
+            {isFetchingNextPage ? t('common.actions.loading') : t('common.actions.loadMore')}
           </Button>
         </div>
       )}

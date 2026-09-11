@@ -1,3 +1,4 @@
+import { useT } from '@/i18n/i18nContext'
 import { Route, Routes } from 'react-router'
 
 import { RedirectIfAuthed, RequireAuth } from '@/app/guards/RequireAuth'
@@ -76,12 +77,14 @@ export function AppRoutes() {
 }
 
 function NotFound() {
+  const t = useT()
+
   return (
     <Page width="narrow">
       <EmptyState
-        title="Nothing here"
-        body="That page does not exist."
-        action={{ label: 'Go home', to: '/' }}
+        title={t('common.notFound.title')}
+        body={t('common.notFound.body')}
+        action={{ label: t('common.actions.goHome'), to: '/' }}
       />
     </Page>
   )

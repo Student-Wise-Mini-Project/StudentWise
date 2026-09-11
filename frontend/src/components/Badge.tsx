@@ -1,3 +1,4 @@
+import { useT } from '@/i18n/i18nContext'
 import type { ReactNode } from 'react'
 
 import { cn } from '@/lib/cn'
@@ -37,11 +38,12 @@ export function Badge({
 
 /** An unread count. Caps the number so a badge cannot stretch a tab bar. */
 export function CountBadge({ count, max = 99 }: { count: number; max?: number }) {
+  const t = useT()
   if (count <= 0) return null
   return (
     <span
       className="bg-debt font-display tnum text-2xs text-on-slab inline-flex min-w-5 items-center justify-center rounded-sm px-1.5 py-0.5 font-extrabold"
-      aria-label={`${count} unread`}
+      aria-label={t('common.alerts.unreadCount', { count })}
     >
       {count > max ? `${max}+` : count}
     </span>

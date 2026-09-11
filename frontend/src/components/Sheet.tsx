@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useRef } from 'react'
 
+import { useT } from '@/i18n/i18nContext'
 import { cn } from '@/lib/cn'
 
 /**
@@ -28,6 +29,7 @@ export function Sheet({
   children: ReactNode
   className?: string
 }) {
+  const t = useT()
   const ref = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -75,7 +77,7 @@ export function Sheet({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t('common.actions.close')}
             className="text-muted hover:bg-sunken hover:text-ink -me-1 shrink-0 rounded-md p-1.5 transition-colors"
           >
             <svg

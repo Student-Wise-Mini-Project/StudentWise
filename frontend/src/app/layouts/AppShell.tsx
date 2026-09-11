@@ -1,6 +1,7 @@
 import { Link, Outlet, useMatch } from 'react-router'
 
 import { OfflineBanner } from '@/components/OfflineBanner'
+import { useT } from '@/i18n/i18nContext'
 import { PlusIcon } from '@/components/icons'
 import { useUnreadCount } from '@/features/notifications/api'
 import { IosInstallHint, UpdatePrompt } from '@/pwa/PwaPrompts'
@@ -19,6 +20,7 @@ import { TabBar } from './TabBar'
 export function AppShell() {
   // Fetched here, once, and shared by both navigations. Fetching it inside each
   // of them would double the request and let the two disagree mid-refresh.
+  const t = useT()
   const unread = useUnreadCount()
   const unreadCount = unread.data?.unread ?? 0
 
@@ -66,7 +68,7 @@ export function AppShell() {
             className="bg-accent text-on-accent shadow-float font-display pointer-events-auto mx-auto flex h-13 max-w-2xl items-center justify-center gap-2 rounded-full text-lg font-extrabold transition-transform active:scale-[0.98]"
           >
             <PlusIcon className="size-5" />
-            Add expense
+            {t('common.shell.addExpense')}
           </Link>
         </div>
       )}
