@@ -54,7 +54,7 @@ export function CommentThread({ expenseId }: { expenseId: string }) {
 
       {thread.hasNextPage && (
         <Button variant="ghost" size="sm" onClick={thread.fetchNextPage}>
-          Show earlier comments
+          {t('expenses.comments.showEarlier')}
         </Button>
       )}
 
@@ -83,7 +83,7 @@ export function CommentThread({ expenseId }: { expenseId: string }) {
             disabled={trimmed.length === 0}
             onClick={() => add.mutate(trimmed, { onSuccess: () => setDraft('') })}
           >
-            Send
+            {t('common.actions.send')}
           </Button>
         </Stack>
         {add.isError && (
@@ -144,7 +144,7 @@ function CommentRow({ comment, expenseId }: { comment: Comment; expenseId: strin
                   )
                 }
               >
-                Save
+                {t('common.actions.save')}
               </Button>
               <Button
                 size="sm"
@@ -154,7 +154,7 @@ function CommentRow({ comment, expenseId }: { comment: Comment; expenseId: strin
                   setEditing(false)
                 }}
               >
-                Cancel
+                {t('common.actions.cancel')}
               </Button>
             </Stack>
           </Stack>
@@ -170,7 +170,7 @@ function CommentRow({ comment, expenseId }: { comment: Comment; expenseId: strin
                 onClick={() => setEditing(true)}
                 className="text-muted hover:text-ink text-xs font-medium"
               >
-                Edit
+                {t('common.actions.edit')}
               </button>
             )}
             {canDelete && (
@@ -179,7 +179,7 @@ function CommentRow({ comment, expenseId }: { comment: Comment; expenseId: strin
                 onClick={() => remove.mutate(comment.id)}
                 className="text-muted hover:text-danger text-xs font-medium"
               >
-                Delete
+                {t('common.actions.delete')}
               </button>
             )}
           </Stack>

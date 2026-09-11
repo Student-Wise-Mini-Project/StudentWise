@@ -33,7 +33,7 @@ export function ReceiptSection({
   return (
     <section className="flex flex-col gap-3 px-4">
       <h2 className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
-        Receipt
+        {t('expenses.receipts.header')}
       </h2>
 
       {receipt.status === 'loading' && (
@@ -91,7 +91,7 @@ export function ReceiptSection({
             loading={remove.isPending}
             onClick={() => remove.mutate()}
           >
-            Remove
+            {t('common.actions.remove')}
           </Button>
         )}
       </Stack>
@@ -102,10 +102,7 @@ export function ReceiptSection({
         </p>
       )}
 
-      <p className="text-muted text-xs">
-        JPEG, PNG or WebP, up to 5&nbsp;MB. The server checks the actual bytes rather than trusting
-        the file name, and only members of this group can see it.
-      </p>
+      <p className="text-muted text-xs">{t('expenses.receipts.formatNote')}</p>
     </section>
   )
 }

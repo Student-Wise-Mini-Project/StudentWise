@@ -16,7 +16,8 @@
     "record": "Record",
     "remove": "Remove",
     "retry": "Try again",
-    "save": "Save"
+    "save": "Save",
+    "send": "Send"
   },
   "state": {
     "credit": "is owed",
@@ -39,7 +40,10 @@
     "you": "You"
   },
   "alerts": {
-    "unreadCount": { "one": "{count} unread", "other": "{count} unread" }
+    "unreadCount": {
+      "one": "{count} unread",
+      "other": "{count} unread"
+    }
   },
   "shell": {
     "addExpense": "Add expense"
@@ -57,6 +61,12 @@
   },
   "pwa": {
     "iosTitle": "Add StudentWise to your home screen",
-    "iosBody": "Tap the Share button, then Add to Home Screen. It opens full screen and works offline."
+    "updateReady": "A new version of StudentWise is ready.",
+    "later": "Later",
+    "reload": "Reload",
+    "gotIt": "Got it",
+    "iosBefore": "Tap the Share button, then ",
+    "iosControl": "Add to Home Screen",
+    "iosAfter": ". It opens full screen and works without a signal."
   }
 }

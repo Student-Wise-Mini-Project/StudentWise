@@ -4,6 +4,7 @@ import { useRegisterSW } from 'virtual:pwa-register/react'
 import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
 import { Stack } from '@/components/layout'
+import { useT } from '@/i18n/i18nContext'
 import { isIosSafari, isStandalone } from '@/lib/platform'
 import { dismissIosHint, iosHintDismissed } from '@/lib/prefs'
 
@@ -15,6 +16,7 @@ import { dismissIosHint, iosHintDismissed } from '@/lib/prefs'
  * through typing rent. The new version waits until they say so.
  */
 export function UpdatePrompt() {
+  const t = useT()
   const {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
@@ -25,12 +27,12 @@ export function UpdatePrompt() {
   return (
     <Banner>
       <Stack direction="row" gap={3} className="items-center">
-        <p className="flex-1 text-sm font-medium">A new version of StudentWise is ready.</p>
+        <p className="flex-1 text-sm font-medium">{t('common.pwa.updateReady')}</p>
         <Button size="sm" variant="secondary" onClick={() => setNeedRefresh(false)}>
-          Later
+          {t('common.pwa.later')}
         </Button>
         <Button size="sm" onClick={() => void updateServiceWorker(true)}>
-          Reload
+          {t('common.pwa.reload')}
         </Button>
       </Stack>
     </Banner>
@@ -46,6 +48,8 @@ export function UpdatePrompt() {
  * is, once, and let them dismiss it.
  */
 export function IosInstallHint() {
+  const t = useT()
+
   // Computed once during the first render rather than in an effect: the answer
   // never changes while the app is open, and setting state from an effect body
   // is a cascading render for no reason.
@@ -61,13 +65,14 @@ export function IosInstallHint() {
   return (
     <Banner>
       <Stack gap={2}>
-        <p className="text-sm font-semibold">Add StudentWise to your home screen</p>
+        <p className="text-sm font-semibold">{t('common.pwa.iosTitle')}</p>
         <p className="text-muted text-xs">
-          Tap the Share button, then <strong>Add to Home Screen</strong>. It opens full screen and
-          works without a signal.
+          {t('common.pwa.iosBefore')}
+          <strong>{t('common.pwa.iosControl')}</strong>
+          {t('common.pwa.iosAfter')}
         </p>
         <Button size="sm" variant="secondary" onClick={dismiss}>
-          Got it
+          {t('common.pwa.gotIt')}
         </Button>
       </Stack>
     </Banner>

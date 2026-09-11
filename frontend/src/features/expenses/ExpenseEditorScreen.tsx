@@ -215,7 +215,7 @@ function ExpenseForm({
         }
         leading={
           <Button variant="ghost" size="sm" onClick={onCancel}>
-            Cancel
+            {t('common.actions.cancel')}
           </Button>
         }
       />
