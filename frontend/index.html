@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" dir="ltr">
+<html lang="he" dir="rtl">
   <head>
     <meta charset="UTF-8" />
     <!-- viewport-fit=cover is what lets env(safe-area-inset-*) return anything
@@ -41,9 +41,21 @@
       // Runs before the first paint. Without this the page renders in the OS
       // theme for a frame and then snaps to the chosen one -- a white flash on
       // every cold start for anyone who picked dark.
+      //
+      // The same is true of the language, and worse: a frame of ltr before
+      // snapping to rtl does not flash a colour, it mirrors the whole layout
+      // in front of the reader. Kept in step with `readStoredLocale` in
+      // src/lib/prefs.ts by hand -- no module has loaded yet.
       try {
         var t = localStorage.getItem('sw.theme')
         if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t
+
+        var l = localStorage.getItem('sw.locale')
+        if (l !== 'en' && l !== 'he') {
+          l = navigator.language && navigator.language.toLowerCase().indexOf('en') === 0 ? 'en' : 'he'
+        }
+        document.documentElement.lang = l
+        document.documentElement.dir = l === 'he' ? 'rtl' : 'ltr'
       } catch (e) {}
     </script>
     <div id="root"></div>
