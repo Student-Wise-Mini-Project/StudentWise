@@ -581,7 +581,7 @@
     </p>
 
     <dl class="figures">
-      <div class="figure"><dt>Missions done</dt><dd>47<small> / 78</small></dd></div>
+      <div class="figure"><dt>Missions done</dt><dd>48<small> / 79</small></dd></div>
       <div class="figure"><dt>Endpoints</dt><dd>60</dd></div>
       <div class="figure"><dt>Backend tests</dt><dd>646</dd></div>
       <div class="figure"><dt>Frontend tests</dt><dd>148</dd></div>
@@ -802,7 +802,7 @@
         ["8.4", "RAG: “that Italian place in October”", "L", "#2", "todo"],
       ]},
     { n: 9, name: "Frontend",
-      note: "<strong>Nine of twelve, in one push.</strong> Three decisions are doing most of the work. <strong>The API types are generated</strong> from <code>/openapi.json</code> and never hand-written; a <code>contract</code> CI job regenerates them and fails on a diff, which is the frontend's <code>alembic check</code>. <strong>The client never divides money</strong> — the backend allocates cents by largest remainder, and a second implementation would disagree by one, so <code>divideForDisplay</code> returns a wrapped value that only <code>&lt;Money approximate/&gt;</code> can render and the <code>≈</code> is enforced by the type system. And <strong>only the theme file may name a colour or a typeface</strong>, so applying the design brief is a token edit rather than a pass over every screen — two guard tests fail the build on a stray hex or a physical <code>ml-</code>, the second because the app is English now and Hebrew later and nobody here would notice a mirrored layout. <br><br>Left: 9.9 needs <code>ANTHROPIC_API_KEY</code> and returns 503 without one; 9.10 works today; 9.12 is deferred.",
+      note: "<strong>Ten of thirteen.</strong> Three decisions are doing most of the work. <strong>The API types are generated</strong> from <code>/openapi.json</code> and never hand-written; a <code>contract</code> CI job regenerates them and fails on a diff, which is the frontend's <code>alembic check</code>. <strong>The client never divides money</strong> — the backend allocates cents by largest remainder, and a second implementation would disagree by one, so <code>divideForDisplay</code> returns a wrapped value that only <code>&lt;Money approximate/&gt;</code> can render and the <code>≈</code> is enforced by the type system. And <strong>only the theme file may name a colour or a typeface</strong>, so applying the design brief is a token edit rather than a pass over every screen — two guard tests fail the build on a stray hex or a physical <code>ml-</code>, the second because the app is English now and Hebrew later and nobody here would notice a mirrored layout. <strong>The app now runs in Hebrew</strong> (9.13): the layout axis was already finished, so this was only the words — a typed <code>t()</code> rather than a library, because keys derived from the English catalogue make a typo and a missing translation both compile errors, and a third guard test fails the build on a hardcoded string. <br><br>Left: 9.9 needs <code>ANTHROPIC_API_KEY</code> and returns 503 without one; 9.10 works today; 9.12 is deferred.",
       missions: [
         ["9.1", "Scaffold: React + Vite + Tailwind + router", "M", "#3", "done"],
         ["9.2", "API client and typed models generated from OpenAPI", "M", "#3", "done"],
@@ -816,6 +816,7 @@
         ["9.10", "Anomaly alerts surfaced in the UI", "S", "#3", "todo"],
         ["9.11", "PWA: manifest, service worker, iOS install", "M", "#3", "done"],
         ["9.12", "Android APK wrapper", "M", "#3", "todo"],
+        ["9.13", "Hebrew + i18n: catalogue, typed t(), RTL switch", "L", "Gal", "done"],
       ]},
     { n: 10, name: "Deployment",
       note: "10.1 gates the rest and is one question — ask it this week. It has also stopped being purely academic: testing on a phone currently means a dev server on the Wi-Fi, and a deployed URL over HTTPS is the only way the PWA's service worker and the iOS install actually run. <strong>Do not deploy with the dev JWT secret:</strong> it is committed in <code>.env.example</code>, so anyone reading the repo could forge a token for any account.",

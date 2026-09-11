@@ -65,7 +65,7 @@ you get half-written expenses with no splits.
 
 ## Frontend rules
 
-Three of these are enforced by tests, not by review, because none of them fail
+Four of these are enforced by tests, not by review, because none of them fail
 loudly on their own.
 
 10. **Only `frontend/src/styles/` may name a colour or a typeface.** A hex, an
@@ -88,6 +88,14 @@ loudly on their own.
     after a backend change and commit the result. The `contract` CI job
     regenerates it from `app.main` and fails on a diff -- the frontend's
     `alembic check`.
+14. **No user-visible string lives in a component.** Every one is a key in
+    `frontend/src/i18n/messages/`, rendered with `t()`. Keys are derived from
+    the English catalogue, so a typo and a missing Hebrew string are both `tsc`
+    errors; `test/guards/no-bare-strings.test.ts` catches what the types cannot
+    see -- it found seventeen the translation pass itself missed.
+    **Hebrew is gender-neutral**: `החוב שלך`, not `אתה חייב`; `בתשלום גל`, not
+    `גל שילם`. The API stores no gender and should not start. Past-tense second
+    person (`שילמת`, `הוספת`) is spelled the same either way and is safe.
 
 ### Frontend notes
 

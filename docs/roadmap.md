@@ -317,12 +317,22 @@ with no interface is hard to demo whatever the API does.
 | 9.10 | Anomaly alerts surfaced in the UI | S | #3 | ⬜ |
 | 9.11 | PWA: manifest, service worker, iOS install | M | #3 | ✅ |
 | 9.12 | Android APK wrapper | M | #3 | ⬜ |
+| 9.13 | Hebrew + i18n: catalogue, typed `t()`, RTL switch | L | Gal | ✅ |
 
-> **9 of 12 done.** You can sign in, create a flat, add flatmates and weights,
+> **10 of 13 done.** You can sign in, create a flat, add flatmates and weights,
 > add an expense in any of the four split modes, see balances, settle up,
-> comment, attach a receipt, read your alerts, see where the money goes, and
-> install it to an iOS home screen. What is left is the natural-language Ask
-> screen (9.9), anomaly alerts (9.10) and the APK (9.12).
+> comment, attach a receipt, read your alerts, see where the money goes, install
+> it to an iOS home screen, **and run the whole thing in Hebrew**. What is left
+> is the natural-language Ask screen (9.9), anomaly alerts (9.10) and the APK
+> (9.12).
+>
+> **Hebrew is 9.13 and it is done.** The RTL groundwork paid off: the layout
+> axis was finished in advance, so this was only the words. No i18n library --
+> keys are derived from the English catalogue, so a typo and a missing Hebrew
+> string are both `tsc` errors. Notification wording moved from the backend to
+> the client, which needed no API change because `NotificationOut` has shipped
+> `payload` from the start for exactly that. A third guard test now fails the
+> build on a hardcoded string; it found seventeen the translation pass missed.
 >
 > Start from `frontend/README.md`. **The visual identity has landed**: the
 > "Kiosk" design from Claude Design is applied — tokens, the eleven shared
