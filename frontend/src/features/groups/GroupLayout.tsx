@@ -6,6 +6,7 @@ import { Spinner } from '@/components/Spinner'
 import { ErrorState } from '@/components/feedback'
 import { Page } from '@/components/layout'
 import { useAuth } from '@/features/auth/authContext'
+import { useRunDueBillsOnce } from '@/features/recurring/api'
 import { cn } from '@/lib/cn'
 
 import { useGroup } from './api'
@@ -23,6 +24,9 @@ export function GroupScopeRoute() {
   const { groupId } = useParams<{ groupId: string }>()
   const { user } = useAuth()
   const query = useGroup(groupId)
+
+  // Nothing runs on a scheduler, so opening a group is what posts the rent.
+  useRunDueBillsOnce(groupId)
 
   const scope = useMemo<GroupScope | null>(() => {
     if (!query.data || !groupId) return null

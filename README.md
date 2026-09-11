@@ -41,7 +41,7 @@ Health check: http://localhost:8000/health
 ## Layout
 
 - `backend/` — FastAPI + Postgres API
-- `frontend/` — React + Tailwind PWA (not started)
+- `frontend/` — React + Tailwind PWA. Runs: see `frontend/README.md`
 - `docs/onboarding.md` — first-run guide for a new teammate
 - `docs/roadmap.md` — every epic and mission, with what's done
 - `docs/api-contract.md` — the endpoint contract the frontend builds against

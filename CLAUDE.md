@@ -18,6 +18,10 @@ algorithms (balances, min-cash-flow), Step 3+ = AI.
 | Tests | pytest + FastAPI TestClient |
 | Lint | ruff (lint + format). No mypy, no pre-commit hooks. |
 | DB | Postgres 16 via `docker compose up -d` |
+| Frontend | React 19 + Vite + TypeScript, **Tailwind v4** (CSS-first `@theme`) |
+| FE state | TanStack Query v5. React Router v8. No Redux. |
+| FE API | Types **generated** from `/openapi.json`; never hand-written |
+| FE tests | Vitest + Testing Library + MSW, `happy-dom` (not jsdom -- see below) |
 
 ## Architecture — four layers, nothing more
 
@@ -58,6 +62,46 @@ you get half-written expenses with no splits.
    exactly and anything ordered by it falls into an arbitrary order. Order by a
    second column too, so a pager cannot repeat or skip a row.
 
+
+## Frontend rules
+
+Three of these are enforced by tests, not by review, because none of them fail
+loudly on their own.
+
+10. **Only `frontend/src/styles/` may name a colour or a typeface.** A hex, an
+    `rgb(`, a `font-family` or a Tailwind arbitrary-colour class anywhere else
+    fails `test/guards/design-tokens.test.ts`. This is what keeps a redesign to
+    one file plus the shared components. The brief it is built from is
+    `docs/design-brief.md`.
+11. **No physical direction utilities.** `ms-`/`me-`, never `ml-`/`mr-`;
+    `text-start`, never `text-left`. The app is English now and right-to-left
+    Hebrew later, and physical utilities survive a `dir` flip and land the layout
+    mirrored in the wrong places. `test/guards/logical-props.test.ts` catches
+    them, because nobody here is reading Hebrew while building.
+12. **The client never divides money.** `lib/money.ts` formats and validates and
+    exposes nothing that splits a total between people -- the backend allocates
+    cents by largest remainder and a second implementation would disagree by one.
+    `divideForDisplay` returns `{value, approximate: true}`, so the only thing
+    that can render it is `<Money approximate/>` and the `≈` is enforced by the
+    type system.
+13. **`src/api/schema.d.ts` is generated. Never edit it.** Run `npm run gen:api`
+    after a backend change and commit the result. The `contract` CI job
+    regenerates it from `app.main` and fails on a diff -- the frontend's
+    `alembic check`.
+
+### Frontend notes
+
+- **Tests run on `happy-dom`, not jsdom.** jsdom installs its own
+  `AbortController`, and once MSW patches the global `Request`, the brand check
+  in `new Request(url, {signal})` fails. TanStack Query passes a signal to every
+  query, so under jsdom *every* typed-client request threw before it was sent.
+- **The generated types are stricter than the API**: any field with a
+  server-side default comes out required. Send it explicitly.
+- **Receipts cannot use `<img src>`** -- the endpoint needs the `Authorization`
+  header, so the bytes are fetched and turned into an object URL.
+- **Nothing runs on a scheduler**, so opening a group posts the bills that are
+  due (`features/recurring`), once per group per session.
+
 ## Commands
 
 ```powershell
@@ -68,6 +112,14 @@ pytest                                # run tests
 pytest tests/unit -q                  # fast: pure logic only
 ruff check --fix . ; ruff format .    # lint + format
 alembic revision --autogenerate -m "add expenses"   # new migration
+```
+
+```powershell
+cd frontend
+npm run dev                           # http://localhost:5173, /api proxied to :8000
+npm run gen:api                       # regenerate the API types (backend must be up)
+npm test ; npm run lint ; npm run build
+npm run gen:icons                     # PWA icons, from one SVG
 ```
 
 ## Git
@@ -94,6 +146,8 @@ alembic revision --autogenerate -m "add expenses"   # new migration
 - **Teammate 2** — `app/ai/` package + `api/ai.py` (OCR, voice, Text-to-SQL,
   anomalies). Calls `expense_service` functions; never touches models or repositories.
 - **Teammate 3** — `frontend/`. Builds against `docs/api-contract.md` and `/docs`.
+  The scaffold, design system, auth, groups, expenses, balances and PWA exist;
+  see `frontend/README.md`.
 
 ## End of session
 
