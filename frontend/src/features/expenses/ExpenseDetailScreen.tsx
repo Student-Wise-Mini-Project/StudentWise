@@ -20,7 +20,7 @@ import { cn } from '@/lib/cn'
 import { formatDay, formatRelative } from '@/lib/dates'
 import { useT } from '@/i18n/i18nContext'
 import { categoryLabelOf, sourceLabel, splitTypeLabel } from '@/lib/labels'
-import { subtract } from '@/lib/money'
+import { formatMoney, subtract } from '@/lib/money'
 
 import { useDeleteExpense, useExpense } from './api'
 
@@ -38,7 +38,7 @@ export function ExpenseDetailScreen() {
   if (query.isLoading) {
     return (
       <div className="flex min-h-[50dvh] items-center justify-center">
-        <Spinner size="lg" label="Loading the expense" />
+        <Spinner size="lg" label={t('expenses.detail.loading')} />
       </div>
     )
   }
@@ -74,7 +74,7 @@ export function ExpenseDetailScreen() {
             size="sm"
             variant="ghost"
           >
-            Edit
+            {t('common.actions.edit')}
           </LinkButton>
         }
       />
@@ -97,8 +97,16 @@ export function ExpenseDetailScreen() {
               <Money amount={expense.total_amount} currency={currency} size="hero" />
             </p>
             <p className="text-muted mt-1.5 text-sm" dir="auto">
-              {expense.payer.id === meId ? 'You' : expense.payer.name} paid ·{' '}
-              {formatDay(expense.expense_date)} · {group.name}
+              {expense.payer.id === meId
+                ? t('expenses.detail.metaSelf', {
+                    date: formatDay(expense.expense_date),
+                    group: group.name,
+                  })
+                : t('expenses.detail.metaOther', {
+                    name: expense.payer.name,
+                    date: formatDay(expense.expense_date),
+                    group: group.name,
+                  })}
             </p>
 
             {/* Where the reader stands, as one filled pill. The list below has
@@ -110,7 +118,7 @@ export function ExpenseDetailScreen() {
                   myPosition.lent ? 'bg-credit-soft text-credit' : 'bg-debt-soft text-debt',
                 )}
               >
-                {myPosition.lent ? 'You lent' : 'You owe'}{' '}
+                {myPosition.lent ? t('expenses.detail.youLent') : t('expenses.detail.youOwe')}{' '}
                 <Money
                   amount={myPosition.amount}
                   currency={currency}
@@ -123,12 +131,15 @@ export function ExpenseDetailScreen() {
 
           {expense.split_rule && (
             <p className="text-muted px-4 text-xs">
-              Split by the group&rsquo;s standing rule &ldquo;{expense.split_rule.name}&rdquo;.
+              {t('expenses.detail.splitRule', { name: expense.split_rule.name })}
             </p>
           )}
 
           <ListSection
-            header={`${splitTypeLabel(t, expense.split_type)} between ${expense.splits.length}`}
+            header={t('expenses.detail.splitHeader', {
+              splitType: splitTypeLabel(t, expense.split_type),
+              count: expense.splits.length,
+            })}
           >
             {expense.splits.map((split) => (
               <ListRow
@@ -136,9 +147,11 @@ export function ExpenseDetailScreen() {
                 leading={<Avatar user={split.user} size="sm" />}
                 title={
                   <>
-                    {split.user.id === meId ? 'You' : split.user.name}
+                    {split.user.id === meId ? t('common.state.you') : split.user.name}
                     {split.user.id === expense.payer.id && (
-                      <span className="text-faint font-normal"> paid</span>
+                      <span className="text-faint font-normal">
+                        {t('expenses.detail.paidMarker')}
+                      </span>
                     )}
                   </>
                 }
@@ -150,15 +163,12 @@ export function ExpenseDetailScreen() {
             ))}
           </ListSection>
 
-          <p className="text-muted px-4 text-xs">
-            These add up to the total exactly. The odd cent goes to the largest remainder, so nobody
-            is ever short-changed twice.
-          </p>
+          <p className="text-muted px-4 text-xs">{t('expenses.detail.roundingNote')}</p>
 
           {expense.notes && (
             <div className="px-4">
               <p className="text-muted font-display text-2xs mb-1 font-extrabold tracking-[0.1em] uppercase">
-                Notes
+                {t('expenses.detail.notes')}
               </p>
               <p className="text-base whitespace-pre-wrap">{expense.notes}</p>
             </div>
@@ -173,15 +183,15 @@ export function ExpenseDetailScreen() {
           <CommentThread expenseId={expense.id} />
 
           <p className="text-muted px-4 text-xs">
-            Added {formatRelative(expense.created_at)}
+            {t('expenses.detail.added', { when: formatRelative(expense.created_at) })}
             {expense.updated_at !== expense.created_at &&
-              `, edited ${formatRelative(expense.updated_at)}`}
+              t('expenses.detail.edited', { when: formatRelative(expense.updated_at) })}
             .
           </p>
 
           <div className="px-4">
             <Button variant="danger" fullWidth onClick={() => setConfirming(true)}>
-              Delete this expense
+              {t('expenses.detail.delete')}
             </Button>
           </div>
         </Stack>
@@ -190,12 +200,12 @@ export function ExpenseDetailScreen() {
       <Sheet
         open={confirming}
         onClose={() => setConfirming(false)}
-        title="Delete this expense?"
-        description="It goes for everyone, and the balances change straight away. This cannot be undone."
+        title={t('expenses.detail.confirmTitle')}
+        description={t('expenses.detail.confirmBody')}
         footer={
           <>
             <Button variant="secondary" fullWidth onClick={() => setConfirming(false)}>
-              Keep it
+              {t('expenses.detail.confirmKeep')}
             </Button>
             <Button
               variant="danger"
@@ -207,16 +217,22 @@ export function ExpenseDetailScreen() {
                 })
               }
             >
-              Delete
+              {t('common.actions.delete')}
             </Button>
           </>
         }
       >
         <Stack gap={2}>
           <p className="text-sm">
-            <span className="font-semibold">{expense.title}</span> &mdash;{' '}
-            <Money amount={expense.total_amount} currency={currency} />, split between{' '}
-            {expense.splits.length} {expense.splits.length === 1 ? 'person' : 'people'}.
+            {/* One sentence with an amount inside it. The catalogue holds the
+             * whole sentence with a {amount} placeholder and the formatted
+             * money is substituted in, rather than the sentence being built
+             * from three JSX fragments that no translator could reorder. */}
+            {t('expenses.detail.confirmSummary', {
+              title: expense.title,
+              amount: formatMoney(expense.total_amount, currency),
+              count: expense.splits.length,
+            })}
           </p>
           {remove.isError && (
             <p role="alert" className="text-danger text-sm">

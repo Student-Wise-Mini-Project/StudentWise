@@ -1,4 +1,6 @@
 import type { SplitType } from '@/api/types'
+import type { MessageKey } from '@/i18n/messages'
+import type { Vars } from '@/i18n/types'
 import { addAll, allPositive, isValidAmount, remaining, subtract } from '@/lib/money'
 
 /**
@@ -30,8 +32,16 @@ export type ParticipantDraft = {
 
 export type SplitValidation = {
   valid: boolean
-  /** What to show under the editor. Empty when everything adds up. */
-  message: string
+  /**
+   * What to show under the editor -- a catalogue key, not a sentence.
+   *
+   * This function is pure and has no hook, so it cannot translate. Returning
+   * the key also makes the tests stronger: they stop breaking when copy is
+   * reworded, and start failing if a key disappears.
+   */
+  messageKey: MessageKey | null
+  /** Interpolation for `messageKey`, where it takes any. */
+  messageVars?: Vars
   /** For EXACT: what is still unallocated. Negative means over-allocated. */
   remaining: string | null
 }
@@ -42,7 +52,7 @@ export function validateSplit(
   total: string,
 ): SplitValidation {
   if (participants.length === 0) {
-    return { valid: false, message: 'Pick at least one person.', remaining: null }
+    return { valid: false, messageKey: 'expenses.split.pickOne', remaining: null }
   }
 
   const values = participants.map((participant) => participant.shareValue)
@@ -50,43 +60,49 @@ export function validateSplit(
   switch (splitType) {
     case 'EQUAL':
       // The server decides the cents. There is nothing here to be wrong about.
-      return { valid: true, message: '', remaining: null }
+      return { valid: true, messageKey: null, remaining: null }
 
     case 'EXACT': {
       if (!values.every(isBlankOrNumber)) {
-        return { valid: false, message: 'Every amount has to be a number.', remaining: null }
+        return { valid: false, messageKey: 'expenses.split.notANumber', remaining: null }
       }
       // The total is a form field, so it is empty for as long as it takes
       // somebody to type it -- and "split this exactly" before there is a total
       // is a perfectly ordinary order to do things in. There is simply nothing
       // to allocate against yet, which is not the same as the split being wrong.
       if (!isValidAmount(total)) {
-        return { valid: false, message: 'Enter the total first.', remaining: null }
+        return { valid: false, messageKey: 'expenses.split.totalFirst', remaining: null }
       }
       const left = remaining(values.map(orZero), total)
-      if (left === '0.00') return { valid: true, message: '', remaining: '0.00' }
+      if (left === '0.00') return { valid: true, messageKey: null, remaining: '0.00' }
       return {
         valid: false,
-        message: left.startsWith('-')
-          ? `That is ${left.slice(1)} more than the total.`
-          : `${left} still to allocate.`,
+        messageKey: left.startsWith('-')
+          ? 'expenses.split.overBy'
+          : 'expenses.split.stillToAllocate',
+        messageVars: { amount: left.startsWith('-') ? left.slice(1) : left },
         remaining: left,
       }
     }
 
     case 'PERCENTAGE': {
       if (!values.every(isBlankOrNumber)) {
-        return { valid: false, message: 'Every share has to be a number.', remaining: null }
+        return { valid: false, messageKey: 'expenses.split.shareNotANumber', remaining: null }
       }
       const sum = addAll(values.map(orZero))
-      if (sum === '100.00') return { valid: true, message: '', remaining: null }
-      return { valid: false, message: `Adds up to ${sum}%, not 100%.`, remaining: null }
+      if (sum === '100.00') return { valid: true, messageKey: null, remaining: null }
+      return {
+        valid: false,
+        messageKey: 'expenses.split.percentSum',
+        messageVars: { sum },
+        remaining: null,
+      }
     }
 
     case 'WEIGHT':
       return allPositive(values)
-        ? { valid: true, message: '', remaining: null }
-        : { valid: false, message: 'Every share has to be above zero.', remaining: null }
+        ? { valid: true, messageKey: null, remaining: null }
+        : { valid: false, messageKey: 'expenses.split.shareAboveZero', remaining: null }
   }
 }
 

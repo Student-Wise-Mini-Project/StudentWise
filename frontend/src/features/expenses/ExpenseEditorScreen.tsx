@@ -67,13 +67,14 @@ export function EditExpenseScreen() {
   const { expenseId } = useParams<{ expenseId: string }>()
   const navigate = useNavigate()
   const query = useExpense(expenseId)
+  const t = useT()
   const { activeMembers, currency, groupId } = useGroupScope()
   const update = useUpdateExpense(groupId, expenseId ?? '')
 
   if (query.isLoading) {
     return (
       <div className="flex min-h-[50dvh] items-center justify-center">
-        <Spinner size="lg" label="Loading" />
+        <Spinner size="lg" label={t('common.actions.loading')} />
       </div>
     )
   }
@@ -209,7 +210,9 @@ function ExpenseForm({
     <>
       <AppBar
         variant="modal"
-        title={mode === 'create' ? 'New expense' : 'Edit expense'}
+        title={
+          mode === 'create' ? t('expenses.editor.createTitle') : t('expenses.editor.editTitle')
+        }
         leading={
           <Button variant="ghost" size="sm" onClick={onCancel}>
             Cancel
@@ -237,7 +240,7 @@ function ExpenseForm({
             value={form.amount}
             onValueChange={(amount) => patch({ amount })}
             currencySymbol={currency === 'ILS' ? '₪' : currency}
-            aria-label="Amount"
+            aria-label={t('expenses.editor.amount')}
             placeholder="0.00"
             autoFocus={mode === 'create'}
             className="w-40 text-center"
@@ -251,40 +254,42 @@ function ExpenseForm({
         </div>
 
         <div className="bg-surface border-line divide-line divide-y border-y">
-          <LabelRow label="What">
+          <LabelRow label={t('expenses.editor.what')}>
             <input
               value={form.title}
               onChange={(event) => patch({ title: event.target.value })}
               maxLength={200}
-              aria-label="What was it?"
-              placeholder="Supermarket"
+              aria-label={t('expenses.editor.whatAria')}
+              placeholder={t('expenses.editor.whatPlaceholder')}
               className="placeholder:text-faint text-control w-full border-0 bg-transparent font-semibold outline-none"
             />
           </LabelRow>
 
-          <LabelRow label="Paid by" onClick={() => setPayerSheetOpen(true)}>
+          <LabelRow label={t('expenses.editor.paidBy')} onClick={() => setPayerSheetOpen(true)}>
             <span className="flex items-center gap-2">
               {payer && <Avatar user={payer.user} size="xs" />}
-              <span className="text-base font-semibold">{payer?.user.name ?? 'Pick someone'}</span>
+              <span className="text-base font-semibold">
+                {payer?.user.name ?? t('expenses.editor.pickSomeone')}
+              </span>
             </span>
           </LabelRow>
 
-          <LabelRow label="When">
+          <LabelRow label={t('expenses.editor.when')}>
             <input
               type="date"
               value={form.date}
               onChange={(event) => patch({ date: event.target.value })}
-              aria-label="When?"
+              aria-label={t('expenses.editor.whenAria')}
               className="tnum text-control w-full border-0 bg-transparent font-semibold outline-none"
             />
           </LabelRow>
 
-          <LabelRow label="Note">
+          <LabelRow label={t('expenses.editor.note')}>
             <input
               value={form.notes}
               onChange={(event) => patch({ notes: event.target.value })}
-              aria-label="Notes"
-              placeholder="Optional"
+              aria-label={t('expenses.editor.notesAria')}
+              placeholder={t('expenses.editor.notePlaceholder')}
               className="placeholder:text-faint text-control w-full border-0 bg-transparent outline-none"
             />
           </LabelRow>
@@ -297,7 +302,7 @@ function ExpenseForm({
               id="category-label"
               className="text-muted font-display text-2xs block font-extrabold tracking-[0.08em] uppercase"
             >
-              Category
+              {t('expenses.editor.category')}
             </span>
             <div
               role="group"
@@ -339,7 +344,7 @@ function ExpenseForm({
 
         <div className="px-4 pt-6">
           <Button fullWidth size="lg" loading={pending} disabled={!canSave} onClick={submit}>
-            {mode === 'create' ? 'Save expense' : 'Save changes'}
+            {mode === 'create' ? t('expenses.editor.saveCreate') : t('expenses.editor.saveEdit')}
           </Button>
         </div>
       </Page>
@@ -347,7 +352,7 @@ function ExpenseForm({
       <Sheet
         open={payerSheetOpen}
         onClose={() => setPayerSheetOpen(false)}
-        title="Who paid?"
+        title={t('expenses.editor.whoPaid')}
         className="sm:max-w-sm"
       >
         <div className="divide-line -my-1 divide-y">

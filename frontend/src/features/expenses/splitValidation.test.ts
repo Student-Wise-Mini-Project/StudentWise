@@ -25,13 +25,14 @@ describe('EXACT', () => {
     const result = validateSplit('EXACT', people('33.33', '33.33', '33.33'), '100.00')
     expect(result.valid).toBe(false)
     expect(result.remaining).toBe('0.01')
-    expect(result.message).toContain('0.01')
+    expect(result.messageVars?.amount).toBe('0.01')
   })
 
   it('says so when the parts overshoot, rather than showing a negative', () => {
     const result = validateSplit('EXACT', people('60.00', '50.00'), '100.00')
     expect(result.valid).toBe(false)
-    expect(result.message).toBe('That is 10.00 more than the total.')
+    expect(result.messageKey).toBe('expenses.split.overBy')
+    expect(result.messageVars?.amount).toBe('10.00')
   })
 
   it('refuses text', () => {
@@ -47,7 +48,8 @@ describe('PERCENTAGE', () => {
   it('names the total when it is not 100', () => {
     const result = validateSplit('PERCENTAGE', people('33.33', '33.33', '33.33'), '100.00')
     expect(result.valid).toBe(false)
-    expect(result.message).toBe('Adds up to 99.99%, not 100%.')
+    expect(result.messageKey).toBe('expenses.split.percentSum')
+    expect(result.messageVars?.sum).toBe('99.99')
   })
 
   it('does not care what the money total is', () => {
@@ -97,7 +99,7 @@ describe('before the total has been typed', () => {
   it('asks for the total instead of crashing on EXACT', () => {
     const result = validateSplit('EXACT', people('', '', ''), '')
     expect(result.valid).toBe(false)
-    expect(result.message).toBe('Enter the total first.')
+    expect(result.messageKey).toBe('expenses.split.totalFirst')
     expect(result.remaining).toBeNull()
   })
 

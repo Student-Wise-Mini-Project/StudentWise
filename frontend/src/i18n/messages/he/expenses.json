@@ -27,5 +27,111 @@
     "OCR": "נקראה מקבלה",
     "GMAIL_API": "נמצאה באימייל",
     "RECURRING": "נוספה לפי לוח זמנים"
+  },
+  "list": {
+    "count": {
+      "one": "הוצאה",
+      "two": "הוצאות",
+      "many": "הוצאות",
+      "other": "הוצאות"
+    },
+    "matching": "מתאימות",
+    "filterEverything": "הכול",
+    "filterPaidBy": "בתשלום {name}",
+    "rowPaidSelf": "שילמת · {date}",
+    "rowPaidOther": "בתשלום {name} · {date}",
+    "rowPartial": "{count} מתוך {total}",
+    "badgeAuto": "אוטומטי",
+    "emptyTitle": "אין עדיין הוצאות",
+    "emptyBody": "מוסיפים את הראשונה וכל הקבוצה רואה אותה.",
+    "emptyAction": "הוספת הוצאה",
+    "noMatchTitle": "אין התאמות",
+    "noMatchBody": "אפשר לנסות סינון אחר.",
+    "noMatchAction": "ניקוי הסינון"
+  },
+  "detail": {
+    "loading": "ההוצאה בטעינה",
+    "metaSelf": "שילמת · {date} · {group}",
+    "metaOther": "בתשלום {name} · {date} · {group}",
+    "youLent": "הלווית",
+    "youOwe": "החוב שלך",
+    "splitRule": "חלוקה לפי הכלל הקבוע של הקבוצה „{name}”.",
+    "splitHeader": "{splitType} בין {count}",
+    "paidMarker": " (מי ששילם)",
+    "roundingNote": "הסכומים מסתכמים בדיוק לסך הכול. האגורה העודפת הולכת לשארית הגדולה ביותר, כך שאף חשבון לא מפסיד פעמיים.",
+    "notes": "הערות",
+    "added": "נוספה {when}",
+    "edited": ", נערכה {when}",
+    "delete": "מחיקת ההוצאה",
+    "confirmTitle": "למחוק את ההוצאה?",
+    "confirmBody": "המחיקה חלה על כולם והיתרות משתנות מיד. אי אפשר לבטל.",
+    "confirmKeep": "השארה",
+    "confirmSummary": {
+      "one": "{title} — {amount}, בחלוקה לאדם אחד.",
+      "two": "{title} — {amount}, בחלוקה בין שני אנשים.",
+      "many": "{title} — {amount}, בחלוקה בין {count} אנשים.",
+      "other": "{title} — {amount}, בחלוקה בין {count} אנשים."
+    }
+  },
+  "editor": {
+    "createTitle": "הוצאה חדשה",
+    "editTitle": "עריכת הוצאה",
+    "amount": "סכום",
+    "what": "מה",
+    "whatAria": "על מה?",
+    "whatPlaceholder": "סופר",
+    "paidBy": "שולם על ידי",
+    "pickSomeone": "בחירת אדם",
+    "when": "מתי",
+    "whenAria": "מתי?",
+    "note": "הערה",
+    "notePlaceholder": "לא חובה",
+    "notesAria": "הערות",
+    "category": "קטגוריה",
+    "saveCreate": "שמירת ההוצאה",
+    "saveEdit": "שמירת השינויים",
+    "whoPaid": "מי שילם?"
+  },
+  "redirect": {
+    "loading": "ההוצאה נפתחת",
+    "error": "לא ניתן לפתוח את ההוצאה"
+  },
+  "split": {
+    "how": "איך מתחלק?",
+    "pickOne": "צריך לבחור לפחות אדם אחד.",
+    "everyone": "כולם",
+    "selected": "{count} מתוך {total} נבחרו",
+    "addsUp": "מסתכם בדיוק",
+    "overTotal": " מעל הסכום הכולל",
+    "leftToAssign": " נותרו לחלוקה",
+    "percentOf": "{sum}% מתוך 100%",
+    "weightsTotal": "סך החלקים {sum}",
+    "giveRest": "להעביר את השארית ל{name}",
+    "equalRounded": " מוצג מעוגל — החלקים המדויקים מחושבים בשמירה ומסתכמים לסכום הכולל עד האגורה.",
+    "amountAria": "הסכום של {name}",
+    "percentageAria": "האחוז של {name}",
+    "shareAria": "החלק של {name}",
+    "notANumber": "כל סכום חייב להיות מספר.",
+    "totalFirst": "צריך להזין קודם את הסכום הכולל.",
+    "shareNotANumber": "כל חלק חייב להיות מספר.",
+    "shareAboveZero": "כל חלק חייב להיות גדול מאפס.",
+    "overBy": "זה {amount} יותר מהסכום הכולל.",
+    "stillToAllocate": "{amount} נותרו לחלוקה.",
+    "percentSum": "מסתכם ל{sum}%, לא 100%."
+  },
+  "comments": {
+    "header": "תגובות",
+    "headerWithCount": "תגובות ({count})",
+    "loading": "התגובות בטעינה",
+    "placeholder": "הוספת תגובה",
+    "editAria": "עריכת תגובה"
+  },
+  "receipts": {
+    "loading": "הקבלה בטעינה",
+    "alt": "הקבלה של ההוצאה הזו",
+    "loadError": "הטעינה נכשלה.",
+    "replace": "החלפת תמונה",
+    "add": "הוספת תמונה",
+    "tooBig": "התמונה גדולה מ‑5MB."
   }
 }

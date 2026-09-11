@@ -5,6 +5,7 @@ import { ErrorState } from '@/components/feedback'
 import { Page } from '@/components/layout'
 
 import { useExpense } from './api'
+import { useT } from '@/i18n/i18nContext'
 
 /**
  * Resolves a bare `/expenses/:id` link to its group-scoped route.
@@ -17,13 +18,14 @@ import { useExpense } from './api'
  * are in scope.
  */
 export function ExpenseRedirect() {
+  const t = useT()
   const { expenseId } = useParams<{ expenseId: string }>()
   const query = useExpense(expenseId)
 
   if (query.isLoading) {
     return (
       <div className="flex min-h-[50dvh] items-center justify-center">
-        <Spinner size="lg" label="Opening the expense" />
+        <Spinner size="lg" label={t('expenses.redirect.loading')} />
       </div>
     )
   }
@@ -31,7 +33,7 @@ export function ExpenseRedirect() {
   if (query.isError || !query.data) {
     return (
       <Page width="narrow">
-        <ErrorState title="Cannot open that expense" error={query.error} />
+        <ErrorState title={t('expenses.redirect.error')} error={query.error} />
       </Page>
     )
   }

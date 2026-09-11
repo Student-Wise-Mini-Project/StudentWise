@@ -12,6 +12,7 @@ import { useGroupScope } from '@/features/groups/groupContext'
 import { formatRelative } from '@/lib/dates'
 
 import { useAddComment, useComments, useDeleteComment, useEditComment } from './api'
+import { useT } from '@/i18n/i18nContext'
 
 const MAX = 2000
 
@@ -22,6 +23,7 @@ const MAX = 2000
  * "why am I not on this one?" is exactly the comment worth allowing.
  */
 export function CommentThread({ expenseId }: { expenseId: string }) {
+  const t = useT()
   const thread = useComments(expenseId)
   const add = useAddComment(expenseId)
   const [draft, setDraft] = useState('')
@@ -31,10 +33,12 @@ export function CommentThread({ expenseId }: { expenseId: string }) {
   return (
     <section className="flex flex-col gap-3 px-4">
       <h2 className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
-        {thread.total > 0 ? `Comments (${thread.total})` : 'Comments'}
+        {thread.total > 0
+          ? t('expenses.comments.headerWithCount', { count: thread.total })
+          : t('expenses.comments.header')}
       </h2>
 
-      {thread.isLoading && <Spinner label="Loading comments" />}
+      {thread.isLoading && <Spinner label={t('expenses.comments.loading')} />}
 
       {!thread.isLoading && thread.items.length === 0 && (
         <p className="text-muted text-sm">
@@ -67,9 +71,9 @@ export function CommentThread({ expenseId }: { expenseId: string }) {
           <Textarea
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
-            placeholder="Add a comment"
+            placeholder={t('expenses.comments.placeholder')}
             maxLength={MAX}
-            aria-label="Add a comment"
+            aria-label={t('expenses.comments.placeholder')}
             rows={1}
             className="min-h-12"
           />
@@ -93,6 +97,7 @@ export function CommentThread({ expenseId }: { expenseId: string }) {
 }
 
 function CommentRow({ comment, expenseId }: { comment: Comment; expenseId: string }) {
+  const t = useT()
   const { user } = useAuth()
   const { isOwner } = useGroupScope()
   const edit = useEditComment(expenseId)
@@ -124,7 +129,7 @@ function CommentRow({ comment, expenseId }: { comment: Comment; expenseId: strin
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               maxLength={MAX}
-              aria-label="Edit comment"
+              aria-label={t('expenses.comments.editAria')}
               rows={2}
             />
             <Stack direction="row" gap={2}>

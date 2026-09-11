@@ -59,22 +59,28 @@ export function ExpenseListScreen() {
       <div className="flex items-center justify-between gap-3 px-4 pt-4 pb-2">
         <p className="text-muted text-sm">
           {expenses.isLoading ? (
-            'Loading'
+            t('common.actions.loading')
           ) : (
             <>
+              {/* The number is styled and the word is not, so they stay two
+               * nodes -- and the plural key therefore carries no {count}. */}
               <span className="tnum text-ink font-semibold">{expenses.total}</span>{' '}
-              {expenses.total === 1 ? 'expense' : 'expenses'}
-              {filtered && ' matching'}
+              {t('expenses.list.count', { count: expenses.total })}
+              {filtered && ` ${t('expenses.list.matching')}`}
             </>
           )}
         </p>
         <LinkButton to={`/groups/${groupId}/expenses/new`} size="sm">
-          Add
+          {t('common.actions.add')}
         </LinkButton>
       </div>
 
       <div className="flex gap-2 overflow-x-auto px-4 pb-3">
-        <FilterChip label="Everything" active={!filtered} onClick={() => setFilters({})} />
+        <FilterChip
+          label={t('expenses.list.filterEverything')}
+          active={!filtered}
+          onClick={() => setFilters({})}
+        />
         {EXPENSE_CATEGORIES.map((category) => (
           <FilterChip
             key={category}
@@ -95,7 +101,7 @@ export function ExpenseListScreen() {
           {activeMembers.map((member) => (
             <FilterChip
               key={member.user.id}
-              label={`${member.user.name} paid`}
+              label={t('expenses.list.filterPaidBy', { name: member.user.name })}
               active={filters.payer_id === member.user.id}
               onClick={() =>
                 setFilters({
@@ -116,17 +122,25 @@ export function ExpenseListScreen() {
             to={`/groups/${groupId}/expenses/${expense.id}`}
             leading={<Avatar user={expense.payer} />}
             title={expense.title}
-            subtitle={`${expense.payer.name} paid · ${formatDay(expense.expense_date, 'short')}`}
+            subtitle={t('expenses.list.rowPaidOther', {
+              name: expense.payer.name,
+              date: formatDay(expense.expense_date, 'short'),
+            })}
             meta={<Money amount={expense.total_amount} currency={currency} size="lg" />}
             metaSubtitle={
               expense.splits.length === activeMembers.length
                 ? categoryLabelOf(t, expense.category)
-                : `${expense.splits.length} of ${activeMembers.length}`
+                : t('expenses.list.rowPartial', {
+                    count: expense.splits.length,
+                    total: activeMembers.length,
+                  })
             }
             trailing={
               <span className="flex items-center gap-1">
                 {expense.receipt_url && <ReceiptIcon className="text-faint size-4" />}
-                {expense.source === 'RECURRING' && <Badge tone="neutral">Auto</Badge>}
+                {expense.source === 'RECURRING' && (
+                  <Badge tone="neutral">{t('expenses.list.badgeAuto')}</Badge>
+                )}
                 <ChevronEnd />
               </span>
             }
@@ -135,17 +149,20 @@ export function ExpenseListScreen() {
         empty={
           filtered ? (
             <EmptyState
-              title="Nothing matches"
-              body="Try a different filter."
-              action={{ label: 'Clear filters', onClick: () => setFilters({}) }}
+              title={t('expenses.list.noMatchTitle')}
+              body={t('expenses.list.noMatchBody')}
+              action={{ label: t('expenses.list.noMatchAction'), onClick: () => setFilters({}) }}
               size="page"
             />
           ) : (
             <EmptyState
               icon={<ReceiptIcon className="size-10" />}
-              title="No expenses yet"
-              body="Add the first one and everyone in the group will see it."
-              action={{ label: 'Add an expense', to: `/groups/${groupId}/expenses/new` }}
+              title={t('expenses.list.emptyTitle')}
+              body={t('expenses.list.emptyBody')}
+              action={{
+                label: t('expenses.list.emptyAction'),
+                to: `/groups/${groupId}/expenses/new`,
+              }}
             />
           )
         }

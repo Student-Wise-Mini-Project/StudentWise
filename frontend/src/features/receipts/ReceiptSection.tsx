@@ -6,6 +6,7 @@ import { Spinner } from '@/components/Spinner'
 import { Stack } from '@/components/layout'
 
 import { useDeleteReceipt, useReceiptBlob, useUploadReceipt } from './api'
+import { useT } from '@/i18n/i18nContext'
 
 /** What the API accepts. Anything else is a 400, so say so before the upload. */
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp']
@@ -20,6 +21,7 @@ export function ReceiptSection({
   expenseId: string
   hasReceipt: boolean
 }) {
+  const t = useT()
   const receipt = useReceiptBlob(expenseId, hasReceipt)
   const upload = useUploadReceipt(groupId, expenseId)
   const remove = useDeleteReceipt(groupId, expenseId)
@@ -36,20 +38,22 @@ export function ReceiptSection({
 
       {receipt.status === 'loading' && (
         <div className="bg-sunken flex h-40 items-center justify-center rounded-sm">
-          <Spinner label="Loading the receipt" />
+          <Spinner label={t('expenses.receipts.loading')} />
         </div>
       )}
 
       {receipt.status === 'ready' && (
         <img
           src={receipt.url}
-          alt="The receipt for this expense"
+          alt={t('expenses.receipts.alt')}
           className="border-line max-h-96 w-full rounded-sm border object-contain"
         />
       )}
 
       {receipt.status === 'error' && (
-        <p className="text-danger text-sm">{detailOf(receipt.error, 'Could not load it.')}</p>
+        <p className="text-danger text-sm">
+          {detailOf(receipt.error, t('expenses.receipts.loadError'))}
+        </p>
       )}
 
       {receipt.status === 'none' && (
@@ -78,7 +82,7 @@ export function ReceiptSection({
           loading={upload.isPending}
           onClick={() => fileInput.current?.click()}
         >
-          {receipt.status === 'ready' ? 'Replace photo' : 'Add a photo'}
+          {receipt.status === 'ready' ? t('expenses.receipts.replace') : t('expenses.receipts.add')}
         </Button>
         {receipt.status === 'ready' && (
           <Button
@@ -94,7 +98,7 @@ export function ReceiptSection({
 
       {upload.isError && (
         <p role="alert" className="text-danger text-sm">
-          {tooBig ? 'That photo is over 5 MB.' : detailOf(upload.error)}
+          {tooBig ? t('expenses.receipts.tooBig') : detailOf(upload.error)}
         </p>
       )}
 

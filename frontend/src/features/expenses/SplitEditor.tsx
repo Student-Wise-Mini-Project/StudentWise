@@ -94,7 +94,7 @@ export function SplitEditor({
 
       <div className="px-4">
         <SegmentedControl
-          name="How is it split?"
+          name={t('expenses.split.how')}
           value={splitType}
           onChange={(next) => {
             onSplitTypeChange(next)
@@ -145,7 +145,7 @@ export function SplitEditor({
                   <MoneyInput
                     value={draft.shareValue}
                     onValueChange={(value) => setValue(member.user.id, value)}
-                    aria-label={`${member.user.name}'s amount`}
+                    aria-label={t('expenses.split.amountAria', { name: member.user.name })}
                     className="text-control h-10"
                   />
                 )}
@@ -157,8 +157,8 @@ export function SplitEditor({
                     inputMode="decimal"
                     aria-label={
                       splitType === 'PERCENTAGE'
-                        ? `${member.user.name}'s percentage`
-                        : `${member.user.name}'s share`
+                        ? t('expenses.split.percentageAria', { name: member.user.name })
+                        : t('expenses.split.shareAria', { name: member.user.name })
                     }
                     slotEnd={splitType === 'PERCENTAGE' ? <span className="text-sm">%</span> : null}
                     className="tnum h-10 w-24 text-end"
@@ -176,9 +176,7 @@ export function SplitEditor({
 
       <p className="text-muted px-4 pt-2.5 text-xs" dir="auto">
         {splitTypeHint(t, splitType)}
-        {splitType === 'EQUAL' &&
-          participants.length > 0 &&
-          ' Shown rounded — the exact shares are worked out when you save, so they add up to the total to the cent.'}
+        {splitType === 'EQUAL' && participants.length > 0 && t('expenses.split.equalRounded')}
       </p>
 
       {splitType === 'EXACT' && participants.length > 1 && (
@@ -194,7 +192,7 @@ export function SplitEditor({
                 variant="secondary"
                 onClick={() => setValue(participant.userId, rest)}
               >
-                Give the rest to {member.user.name}
+                {t('expenses.split.giveRest', { name: member.user.name })}
               </Button>
             )
           })}
@@ -225,12 +223,13 @@ function Summary({
   currency: string
   validation: ReturnType<typeof validateSplit>
 }) {
+  const t = useT()
   const classes = cn('text-sm', validation.valid ? 'text-muted' : 'text-debt font-semibold')
 
   if (participants.length === 0) {
     return (
       <p role="status" className="text-debt text-sm font-semibold">
-        Pick at least one person.
+        {t('expenses.split.pickOne')}
       </p>
     )
   }
@@ -239,8 +238,8 @@ function Summary({
     return (
       <p role="status" className={classes}>
         {participants.length === memberCount
-          ? 'Everyone'
-          : `${participants.length} of ${memberCount} selected`}
+          ? t('expenses.split.everyone')
+          : t('expenses.split.selected', { count: participants.length, total: memberCount })}
       </p>
     )
   }
@@ -250,14 +249,14 @@ function Summary({
     if (left === null) {
       return (
         <p role="status" className={classes}>
-          {validation.message}
+          {validation.messageKey && t(validation.messageKey, validation.messageVars)}
         </p>
       )
     }
     if (validation.valid) {
       return (
         <p role="status" className="text-credit text-sm font-semibold">
-          Adds up exactly
+          {t('expenses.split.addsUp')}
         </p>
       )
     }
@@ -265,7 +264,7 @@ function Summary({
     return (
       <p role="status" className="text-debt text-sm font-semibold">
         <Money amount={left} currency={currency} size="sm" className="text-inherit" />
-        {over ? ' over the total' : ' left to assign'}
+        {over ? t('expenses.split.overTotal') : t('expenses.split.leftToAssign')}
       </p>
     )
   }
@@ -275,14 +274,14 @@ function Summary({
   if (splitType === 'PERCENTAGE') {
     return (
       <p role="status" className={classes}>
-        <span className="tnum amount">{trim(sum)}%</span> of 100%
+        {t('expenses.split.percentOf', { sum: trim(sum) })}
       </p>
     )
   }
 
   return (
     <p role="status" className={classes}>
-      Weights total <span className="tnum amount">{trim(sum)}</span>
+      {t('expenses.split.weightsTotal', { sum: trim(sum) })}
     </p>
   )
 }

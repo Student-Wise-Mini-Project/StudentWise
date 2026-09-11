@@ -27,5 +27,107 @@
     "OCR": "Read from a receipt",
     "GMAIL_API": "Found in email",
     "RECURRING": "Posted by a schedule"
+  },
+  "list": {
+    "count": {
+      "one": "expense",
+      "other": "expenses"
+    },
+    "matching": "matching",
+    "filterEverything": "Everything",
+    "filterPaidBy": "{name} paid",
+    "rowPaidSelf": "You paid · {date}",
+    "rowPaidOther": "{name} paid · {date}",
+    "rowPartial": "{count} of {total}",
+    "badgeAuto": "Auto",
+    "emptyTitle": "No expenses yet",
+    "emptyBody": "Add the first one and everyone in the group will see it.",
+    "emptyAction": "Add an expense",
+    "noMatchTitle": "Nothing matches",
+    "noMatchBody": "Try a different filter.",
+    "noMatchAction": "Clear filters"
+  },
+  "detail": {
+    "loading": "Loading the expense",
+    "metaSelf": "You paid · {date} · {group}",
+    "metaOther": "{name} paid · {date} · {group}",
+    "youLent": "You lent",
+    "youOwe": "You owe",
+    "splitRule": "Split by the group's standing rule “{name}”.",
+    "splitHeader": "{splitType} between {count}",
+    "paidMarker": " (paid)",
+    "roundingNote": "These add up to the total exactly. The odd cent goes to the largest remainder, so nobody is ever short-changed twice.",
+    "notes": "Notes",
+    "added": "Added {when}",
+    "edited": ", edited {when}",
+    "delete": "Delete this expense",
+    "confirmTitle": "Delete this expense?",
+    "confirmBody": "It goes for everyone, and the balances change straight away. This cannot be undone.",
+    "confirmKeep": "Keep it",
+    "confirmSummary": {
+      "one": "{title} — {amount}, split between {count} person.",
+      "other": "{title} — {amount}, split between {count} people."
+    }
+  },
+  "editor": {
+    "createTitle": "New expense",
+    "editTitle": "Edit expense",
+    "amount": "Amount",
+    "what": "What",
+    "whatAria": "What was it?",
+    "whatPlaceholder": "Supermarket",
+    "paidBy": "Paid by",
+    "pickSomeone": "Pick someone",
+    "when": "When",
+    "whenAria": "When?",
+    "note": "Note",
+    "notePlaceholder": "Optional",
+    "notesAria": "Notes",
+    "category": "Category",
+    "saveCreate": "Save expense",
+    "saveEdit": "Save changes",
+    "whoPaid": "Who paid?"
+  },
+  "redirect": {
+    "loading": "Opening the expense",
+    "error": "Cannot open that expense"
+  },
+  "split": {
+    "how": "How is it split?",
+    "pickOne": "Pick at least one person.",
+    "everyone": "Everyone",
+    "selected": "{count} of {total} selected",
+    "addsUp": "Adds up exactly",
+    "overTotal": " over the total",
+    "leftToAssign": " left to assign",
+    "percentOf": "{sum}% of 100%",
+    "weightsTotal": "Weights total {sum}",
+    "giveRest": "Give the rest to {name}",
+    "equalRounded": " Shown rounded — the exact shares are worked out when you save, so they add up to the total to the cent.",
+    "amountAria": "{name}'s amount",
+    "percentageAria": "{name}'s percentage",
+    "shareAria": "{name}'s share",
+    "notANumber": "Every amount has to be a number.",
+    "totalFirst": "Enter the total first.",
+    "shareNotANumber": "Every share has to be a number.",
+    "shareAboveZero": "Every share has to be above zero.",
+    "overBy": "That is {amount} more than the total.",
+    "stillToAllocate": "{amount} still to allocate.",
+    "percentSum": "Adds up to {sum}%, not 100%."
+  },
+  "comments": {
+    "header": "Comments",
+    "headerWithCount": "Comments ({count})",
+    "loading": "Loading comments",
+    "placeholder": "Add a comment",
+    "editAria": "Edit comment"
+  },
+  "receipts": {
+    "loading": "Loading the receipt",
+    "alt": "The receipt for this expense",
+    "loadError": "Could not load it.",
+    "replace": "Replace photo",
+    "add": "Add a photo",
+    "tooBig": "That photo is over 5 MB."
   }
 }
