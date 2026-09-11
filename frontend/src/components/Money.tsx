@@ -83,17 +83,11 @@ export function Money({
   return (
     <span
       className={cn(
-        'tnum font-display font-extrabold whitespace-nowrap',
+        'tnum amount font-display font-extrabold whitespace-nowrap',
         SIZES[size],
         tone === 'auto' ? autoTone : TONES[tone],
         className,
       )}
-      // An amount is a left-to-right run wherever it appears. Without this, a
-      // leading `+` or `−` is bidi-reordered to the trailing end inside an RTL
-      // paragraph and `+₪412.60` renders as `₪412.60+` -- the app's single most
-      // load-bearing character, silently moved. Isolating here rather than at
-      // each call site means no screen has to remember.
-      style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
       aria-label={approximate ? `approximately ${formatted}` : undefined}
     >
       {approximate && (

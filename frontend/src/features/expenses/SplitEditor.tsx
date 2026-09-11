@@ -273,14 +273,14 @@ function Summary({
   if (splitType === 'PERCENTAGE') {
     return (
       <p role="status" className={classes}>
-        <span className="tnum">{trim(sum)}%</span> of 100%
+        <span className="tnum amount">{trim(sum)}%</span> of 100%
       </p>
     )
   }
 
   return (
     <p role="status" className={classes}>
-      Weights total <span className="tnum">{trim(sum)}</span>
+      Weights total <span className="tnum amount">{trim(sum)}</span>
     </p>
   )
 }

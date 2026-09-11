@@ -115,7 +115,7 @@ function CreateGroupSheet({ open, onClose }: { open: boolean; onClose: () => voi
     >
       <Stack gap={4}>
         {create.isError && (
-          <p role="alert" className="bg-danger-soft text-danger rounded-lg px-3 py-2.5 text-sm">
+          <p role="alert" className="bg-danger-soft text-danger rounded-sm px-3 py-2.5 text-sm">
             {detailOf(create.error)}
           </p>
         )}

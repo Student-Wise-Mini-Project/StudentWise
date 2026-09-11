@@ -92,7 +92,7 @@ export function InsightsScreen() {
           <Card className="mx-4">
             <Stack gap={3}>
               <Stack gap={1} className="items-center text-center">
-                <p className="text-muted text-xs font-semibold tracking-wide uppercase">
+                <p className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
                   {scope === 'group' ? 'Total spent' : 'Your share'}
                 </p>
                 <Money amount={summary.data.total_spent} currency={currency} size="display" />
@@ -207,7 +207,7 @@ export function InsightsScreen() {
                 metaSubtitle={
                   <Badge>{categoryLabelOf(summary.data.largest_expense.category)}</Badge>
                 }
-                className="bg-surface border-line rounded-xl border"
+                className="bg-surface border-line rounded-sm border"
               />
             </Section>
           )}
@@ -227,7 +227,9 @@ function peakOf(months: { month: string; total: string }[], currency: string): s
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-2 px-4">
-      <h2 className="text-muted text-xs font-semibold tracking-wide uppercase">{title}</h2>
+      <h2 className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
+        {title}
+      </h2>
       {children}
     </section>
   )

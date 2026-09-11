@@ -29,8 +29,10 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    font-weight: 600;
-    letter-spacing: -0.011em;
+    /* 800, not 600: in this identity a heading is set in Heebo at display
+     * weight. Anything lighter reads as body text that happens to be big. */
+    font-weight: 800;
+    letter-spacing: -0.015em;
     text-wrap: balance;
     margin: 0;
   }
@@ -69,6 +71,23 @@
   .tnum {
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum' 1;
+  }
+
+  /* A rendered currency amount is a left-to-right island, wherever it lands.
+   *
+   * Without this, the neutral characters at an amount's edges -- a leading `+`
+   * or `−`, the ₪ -- are reordered by the surrounding paragraph under
+   * `dir="rtl"`, and `+₪412.60` renders as `₪412.60+`. The digits themselves
+   * are safe (Unicode calls them weak and renders them LTR either way); it is
+   * the sign, the single most load-bearing character in this app, that moves.
+   *
+   * Deliberately NOT folded into `.tnum`. That class also lands on inputs and
+   * on plain counts, and forcing `direction: ltr` there would flip what
+   * `text-end` resolves to inside a right-to-left row. This class means "this
+   * is an amount being displayed", which is exactly the set that wants it. */
+  .amount {
+    direction: ltr;
+    unicode-bidi: isolate;
   }
 
   button,

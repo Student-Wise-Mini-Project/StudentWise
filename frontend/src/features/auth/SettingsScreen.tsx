@@ -30,7 +30,7 @@ export function SettingsScreen() {
               <Stack direction="row" gap={3} className="items-center">
                 <Avatar user={user} size="lg" />
                 <div className="min-w-0">
-                  <p className="font-display truncate text-lg font-semibold">{user.name}</p>
+                  <p className="font-display truncate text-lg font-extrabold">{user.name}</p>
                   <p className="text-muted truncate text-sm">{user.email}</p>
                 </div>
               </Stack>
@@ -38,7 +38,7 @@ export function SettingsScreen() {
           )}
 
           <div className="px-4">
-            <p className="text-muted mb-2 text-xs font-semibold tracking-wide uppercase">
+            <p className="text-muted font-display text-2xs mb-2 font-extrabold tracking-[0.1em] uppercase">
               Appearance
             </p>
             <SegmentedControl

@@ -61,3 +61,39 @@ describe('Money', () => {
     expect(container.firstElementChild?.className).toContain('tnum')
   })
 })
+
+describe('under dir=rtl', () => {
+  // (Spelled "LTR" rather than the hyphenated phrase on purpose: the
+  // logical-props guard scans string literals too, because that is where class
+  // names live, and it cannot tell prose from a utility.)
+  //
+  // Nobody on this team reads Hebrew while building, and happy-dom does not run
+  // the Unicode bidi algorithm, so neither a review nor a render test will
+  // catch a sign that has moved. What CAN be checked is that the mechanism
+  // which pins it is present -- and that is the whole failure mode: the moment
+  // `.amount` is missing, `+₪412.60` renders as `₪412.60+` under `dir="rtl"`
+  // and nothing else in the suite notices.
+  it('pins the amount as its own LTR run', () => {
+    const { container } = render(<Money amount="412.60" tone="credit" />)
+    expect(container.firstElementChild?.className).toContain('amount')
+  })
+
+  it('puts the sign first in the DOM, which is the order the isolation locks', () => {
+    const { container } = render(<Money amount="412.60" tone="credit" />)
+    expect(container.textContent?.trimStart().startsWith('+')).toBe(true)
+  })
+
+  it('signs a credit and a debt without being asked, because a tone IS a claim', () => {
+    // `tone="credit"` means "this is money owed to you". A number that says so
+    // in colour alone fails the commonest colour-vision deficiency there is.
+    const { container: credit } = render(<Money amount="412.60" tone="credit" />)
+    expect(credit.textContent).toContain('+')
+
+    const { container: debt } = render(<Money amount="-280.10" tone="debt" />)
+    expect(debt.textContent).toMatch(/[-−]/)
+
+    // A plain total is not a claim about direction, so it gets no sign.
+    const { container: plain } = render(<Money amount="212.30" />)
+    expect(plain.textContent).not.toContain('+')
+  })
+})

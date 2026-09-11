@@ -105,7 +105,7 @@ export function DonutChart({
           <span className="text-muted text-2xs font-semibold tracking-wide uppercase">
             {totalLabel}
           </span>
-          <span className="font-display tnum text-xl font-semibold">{total}</span>
+          <span className="font-display tnum amount text-xl font-extrabold">{total}</span>
         </div>
       </div>
 
@@ -120,8 +120,8 @@ export function DonutChart({
               )}
             />
             <span className="min-w-0 flex-1 truncate text-sm font-medium">{slice.label}</span>
-            <span className="text-muted tnum text-xs">{slice.caption}</span>
-            <span className="tnum text-sm font-semibold">{slice.amount}</span>
+            <span className="text-muted tnum amount text-xs">{slice.caption}</span>
+            <span className="tnum amount text-sm font-semibold">{slice.amount}</span>
           </li>
         ))}
       </ul>
@@ -194,7 +194,9 @@ export function TrendChart({
     <div className={cn('flex flex-col gap-2', className)}>
       <div className="text-muted flex items-baseline justify-between text-xs">
         <span className="font-semibold tracking-wide uppercase">Peak</span>
-        <span className="tnum">{peakLabel}</span>
+        <span className="tnum" dir="auto">
+          {peakLabel}
+        </span>
       </div>
 
       <svg
@@ -298,7 +300,8 @@ export function PairedBars({
           <div className="flex items-baseline justify-between gap-2">
             <span className="truncate text-sm font-medium">{row.label}</span>
             <span className="text-muted tnum text-xs">
-              {row.aLabel} / {row.bLabel}
+              <span className="amount">{row.aLabel}</span> /{' '}
+              <span className="amount">{row.bLabel}</span>
             </span>
           </div>
           <div className="flex flex-col gap-1">
