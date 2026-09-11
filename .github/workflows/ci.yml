@@ -132,7 +132,7 @@ jobs:
         run: |
           python -c "import json, sys; sys.path.insert(0, 'backend'); from app.main import app; print(json.dumps(app.openapi(), indent=2))" > frontend/openapi.json
           cd frontend
-          npx openapi-typescript openapi.json -o src/api/schema.d.ts
+          OPENAPI_SOURCE=openapi.json node scripts/gen-api.mjs
 
       - name: Fail if the committed client is out of date
         run: |

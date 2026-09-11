@@ -44,9 +44,10 @@ const schemaCount = Object.keys(schema.components?.schemas ?? {}).length
 if (pathCount === 0) throw new Error('The schema has no paths. Refusing to generate from it.')
 
 await writeFile(SCHEMA_JSON, `${JSON.stringify(schema, null, 2)}\n`, 'utf8')
-execFileSync('npx', ['openapi-typescript', SCHEMA_JSON, '-o', SCHEMA_TYPES], {
-  stdio: 'inherit',
-  shell: process.platform === 'win32',
-})
+// Run the CLI's JS entry point with this same Node binary. `npx` with
+// `shell: true` warns about unescaped arguments, and Windows cannot execFile a
+// `.cmd` shim without a shell -- calling the script directly sidesteps both.
+const cli = resolve(ROOT, 'node_modules/openapi-typescript/bin/cli.js')
+execFileSync(process.execPath, [cli, SCHEMA_JSON, '-o', SCHEMA_TYPES], { stdio: 'inherit' })
 
 console.log(`\nGenerated src/api/schema.d.ts from ${pathCount} paths, ${schemaCount} schemas.`)

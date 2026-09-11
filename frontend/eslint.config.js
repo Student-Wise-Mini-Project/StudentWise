@@ -5,6 +5,9 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
+const STORAGE_MESSAGE =
+  'Go through features/auth/authStore.ts. Storage access is the XSS surface for the access token, so it lives in exactly one file.'
+
 export default tseslint.config(
   { ignores: ['dist', 'dev-dist', 'node_modules', 'src/api/schema.d.ts'] },
   {
@@ -36,14 +39,25 @@ export default tseslint.config(
             'Never inject HTML. The auth token lives in localStorage, so an XSS here hands over every account.',
         },
       ],
+      // `no-restricted-globals` alone does NOT catch `window.localStorage` --
+      // only the bare identifier -- so both forms are banned explicitly.
       'no-restricted-globals': [
         'error',
-        {
-          name: 'localStorage',
-          message: 'Go through features/auth/authStore.ts or lib/storage.ts, never directly.',
-        },
+        { name: 'localStorage', message: STORAGE_MESSAGE },
+        { name: 'sessionStorage', message: STORAGE_MESSAGE },
+      ],
+      'no-restricted-properties': [
+        'error',
+        { object: 'window', property: 'localStorage', message: STORAGE_MESSAGE },
+        { object: 'window', property: 'sessionStorage', message: STORAGE_MESSAGE },
+        { object: 'globalThis', property: 'localStorage', message: STORAGE_MESSAGE },
       ],
     },
+  },
+  {
+    // The one module allowed to touch storage: it *is* the seam.
+    files: ['src/features/auth/authStore.ts'],
+    rules: { 'no-restricted-globals': 'off', 'no-restricted-properties': 'off' },
   },
   {
     // Scripts and configs run in Node, not a browser.
