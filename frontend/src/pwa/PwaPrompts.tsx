@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 
 import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
 import { Stack } from '@/components/layout'
 import { isIosSafari, isStandalone } from '@/lib/platform'
+import { dismissIosHint, iosHintDismissed } from '@/lib/prefs'
 
 /**
  * "A new version is ready."
@@ -36,8 +37,6 @@ export function UpdatePrompt() {
   )
 }
 
-const DISMISSED_KEY = 'sw.iosInstallHintDismissed'
-
 /**
  * The iOS install hint.
  *
@@ -47,27 +46,16 @@ const DISMISSED_KEY = 'sw.iosInstallHintDismissed'
  * is, once, and let them dismiss it.
  */
 export function IosInstallHint() {
-  const [show, setShow] = useState(false)
-
-  useEffect(() => {
-    let dismissed = false
-    try {
-      dismissed = window.localStorage.getItem(DISMISSED_KEY) === '1'
-    } catch {
-      /* A browser blocking site data just means the hint shows again. */
-    }
-    setShow(!dismissed && isIosSafari() && !isStandalone())
-  }, [])
+  // Computed once during the first render rather than in an effect: the answer
+  // never changes while the app is open, and setting state from an effect body
+  // is a cascading render for no reason.
+  const [show, setShow] = useState(() => !iosHintDismissed() && isIosSafari() && !isStandalone())
 
   if (!show) return null
 
   function dismiss() {
     setShow(false)
-    try {
-      window.localStorage.setItem(DISMISSED_KEY, '1')
-    } catch {
-      /* ignore */
-    }
+    dismissIosHint()
   }
 
   return (
