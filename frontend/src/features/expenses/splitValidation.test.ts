@@ -89,3 +89,35 @@ describe('remainderFor', () => {
     expect(remainderFor(people('30.00', 'abc', ''), 'u3', '100.00')).toBeNull()
   })
 })
+
+describe('before the total has been typed', () => {
+  // The amount is a form field. Choosing "exact amounts" first and typing the
+  // total afterwards is an ordinary order to do things in, and it used to throw
+  // a DecimalError out of the render and blank the screen.
+  it('asks for the total instead of crashing on EXACT', () => {
+    const result = validateSplit('EXACT', people('', '', ''), '')
+    expect(result.valid).toBe(false)
+    expect(result.message).toBe('Enter the total first.')
+    expect(result.remaining).toBeNull()
+  })
+
+  it('offers no remainder when there is no total to take it from', () => {
+    expect(remainderFor(people('30.00', '', ''), 'u3', '')).toBeNull()
+  })
+
+  it('still validates the modes that do not need a total', () => {
+    // A percentage split is checked against 100, not against the amount, so an
+    // empty total must not make it complain.
+    expect(validateSplit('PERCENTAGE', people('50', '30', '20'), '').valid).toBe(true)
+    expect(validateSplit('WEIGHT', people('1', '1', '2'), '').valid).toBe(true)
+    expect(validateSplit('EQUAL', people('', '', ''), '').valid).toBe(true)
+  })
+
+  it('reads a trailing dot as the number it already is', () => {
+    // Someone mid-keystroke has typed "12.", which is twelve. Refusing it would
+    // make the remainder hint flicker away under their fingers between the dot
+    // and the first decimal digit.
+    expect(remainderFor(people('5.00', '', ''), 'u3', '12.')).toBe('7.00')
+    expect(validateSplit('EXACT', people('12.', '', ''), '12.00').valid).toBe(true)
+  })
+})

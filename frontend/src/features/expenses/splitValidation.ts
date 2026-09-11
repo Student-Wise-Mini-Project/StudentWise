@@ -56,6 +56,13 @@ export function validateSplit(
       if (!values.every(isBlankOrNumber)) {
         return { valid: false, message: 'Every amount has to be a number.', remaining: null }
       }
+      // The total is a form field, so it is empty for as long as it takes
+      // somebody to type it -- and "split this exactly" before there is a total
+      // is a perfectly ordinary order to do things in. There is simply nothing
+      // to allocate against yet, which is not the same as the split being wrong.
+      if (!isValidAmount(total)) {
+        return { valid: false, message: 'Enter the total first.', remaining: null }
+      }
       const left = remaining(values.map(orZero), total)
       if (left === '0.00') return { valid: true, message: '', remaining: '0.00' }
       return {
@@ -95,6 +102,8 @@ export function remainderFor(
   total: string,
 ): string | null {
   const others = participants.filter((participant) => participant.userId !== userId)
+  // No total yet means no remainder to offer -- same reason as above.
+  if (!isValidAmount(total)) return null
   if (!others.every((participant) => isBlankOrNumber(participant.shareValue))) return null
   return subtract(total, addAll(others.map((participant) => orZero(participant.shareValue))))
 }
