@@ -5,7 +5,9 @@ Tailwind v4.
 
 ## Run it
 
-The backend has to be up first — see the root `README.md`.
+Needs **Node 20 or newer**. The backend has to be up first — if you have never
+run it, go through [`../docs/onboarding.md`](../docs/onboarding.md) once and
+come back.
 
 ```powershell
 docker compose up -d                       # from the repo root
@@ -19,7 +21,14 @@ npm run gen:api                            # needs the backend running
 npm run dev                                # http://localhost:5173
 ```
 
-Sign in with `gal@studentwise.dev` / `password123`.
+Sign in with `gal@studentwise.dev` / `password123`. That account is in five
+seeded groups chosen to be different from each other along the axes the UI
+branches on — one in euros, one it does not own, one settled to exactly zero,
+one with no other members. [`../docs/testing.md`](../docs/testing.md) says which
+is which, and which screen each one is there to break.
+
+`/__kitchen-sink` shows every shared component in every variant (dev server
+only). Build from those rather than new markup.
 
 Vite proxies `/api` to `localhost:8000`, so the app is same-origin in
 development and the service worker's caching rules behave exactly as they will

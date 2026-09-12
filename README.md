@@ -4,9 +4,15 @@ Expense splitting for shared apartments, couples and trips — with AI on top.
 University project, 3 people. See `CLAUDE.md` for the rules of the road.
 
 **New to the project?** Start with **[`docs/onboarding.md`](docs/onboarding.md)** —
-clone to a running app in about ten minutes, then your first mission.
+clone to a running app in about ten minutes, then your first mission. Then
+**[`docs/testing.md`](docs/testing.md)** for the demo accounts and the test
+suites.
 
 ## Setup (Windows, PowerShell)
+
+Needs **Python 3.12** (not 3.13 or 3.14 — `psycopg-binary` has no wheel),
+**Docker Desktop running**, and **Node 20+** only if you are touching the
+frontend.
 
 ```powershell
 # 1. Start Postgres (Docker Desktop must be running)
@@ -18,13 +24,26 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 copy .env.example .env
+alembic upgrade head
 
-# 3. Run it
+# 3. Demo data, then run it
+python seed.py
 uvicorn app.main:app --reload
 ```
 
 API docs: http://localhost:8000/docs
 Health check: http://localhost:8000/health
+
+Sign in as **`gal@studentwise.dev`** / **`password123`** — in `/docs` use the
+**Authorize** button. Every seeded user has that password.
+
+```powershell
+# 4. Frontend (optional; the backend must be running for both commands)
+cd ..\frontend
+npm install
+npm run gen:api
+npm run dev            # http://localhost:5173
+```
 
 ## Everyday commands
 
@@ -37,15 +56,39 @@ Health check: http://localhost:8000/health
 | Lint + format | `ruff check --fix . ; ruff format .` |
 | Reseed demo data | `python seed.py` (from `backend/`) |
 | Post due recurring bills | `python run_due_bills.py` (from `backend/`) |
+| Frontend dev server | `npm run dev` (from `frontend/`) |
+| Frontend tests | `npm test` (from `frontend/`) |
+| Regenerate API types | `npm run gen:api` (from `frontend/`, backend up) |
+| Check the roadmap is in sync | `node scripts/check-roadmap-sync.mjs` |
+
+## Testing
+
+Two suites and a pile of demo data, all of it covered in
+**[`docs/testing.md`](docs/testing.md)**: which of the seven seeded accounts to
+sign in as, what each of the six groups is there to demonstrate, and what the
+frontend's guard tests will refuse to let you do.
+
+```powershell
+pytest                    # backend: 672 tests, ~4 min. Venv active, from backend/
+pytest tests/unit -q      # 298 of them are pure logic and run in under a second
+npm test                  # frontend. From frontend/
+```
+
+Tests use a **separate database** (`studentwise_test`), created on the
+container's first boot by `docker/init-test-db.sql`. Nothing you do by hand can
+affect a test run, and no test run can destroy your demo data.
 
 ## Layout
 
 - `backend/` — FastAPI + Postgres API
 - `frontend/` — React + Tailwind PWA. Runs: see `frontend/README.md`
 - `docs/onboarding.md` — first-run guide for a new teammate
+- `docs/testing.md` — demo accounts, both test suites, what CI runs
 - `docs/roadmap.md` — every epic and mission, with what's done
 - `docs/api-contract.md` — the endpoint contract the frontend builds against
+- `docs/design-brief.md` — the visual identity the frontend is built from
 - `docs/sessions/` — end-of-session summaries
+- `CLAUDE.md` — the rulebook: layering, money, migrations, ownership
 
 ## Ports
 

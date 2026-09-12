@@ -581,35 +581,36 @@
     </p>
 
     <dl class="figures">
-      <div class="figure"><dt>Missions done</dt><dd>54<small> / 85</small></dd></div>
-      <div class="figure"><dt>Endpoints</dt><dd>60</dd></div>
-      <div class="figure"><dt>Backend tests</dt><dd>646</dd></div>
-      <div class="figure"><dt>Frontend tests</dt><dd>148</dd></div>
+      <div class="figure"><dt>Missions done</dt><dd>55<small> / 86</small></dd></div>
+      <div class="figure"><dt>Endpoints</dt><dd>62</dd></div>
+      <div class="figure"><dt>Backend tests</dt><dd>672</dd></div>
+      <div class="figure"><dt>Frontend tests</dt><dd>253</dd></div>
       <div class="figure"><dt>Tables</dt><dd>14</dd></div>
-      <div class="figure"><dt>Migrations</dt><dd>9</dd></div>
+      <div class="figure"><dt>Migrations</dt><dd>12</dd></div>
     </dl>
 
     <div class="read">
       <p>
-        <strong>The honest read.</strong> A week ago the problem was that a
-        substantial API had no interface. That is no longer true: Epic&nbsp;9 went
-        from nothing to <strong>nine of twelve missions</strong> — scaffold, typed
-        client, auth, groups, expenses, the split editor, balances, settle-up,
-        charts and the PWA. You can log in, add an expense split four different
-        ways, watch the balances move, record a payment, and install the whole
-        thing to an iOS home screen.
+        <strong>The honest read.</strong> The app works end to end. You can sign
+        in, create a flat, add flatmates and weights, add an expense in any of
+        the four split modes, see the balances move, settle up, comment, attach
+        a receipt, read your alerts, see where the money goes, install it to an
+        iOS home screen &mdash; and <strong>run the whole thing in Hebrew</strong>.
+        Epic&nbsp;9 is <strong>14 of 17</strong>, and the three that are left are
+        two screens and an APK.
       </p>
       <p>
-        <strong>The backend is finished and has been for days.</strong> Epics
+        <strong>The backend has been finished for a week.</strong> Epics
         1,&nbsp;2,&nbsp;3 and&nbsp;6 are complete; Epic&nbsp;4 has one mission
         left and it is blocked on a key. What remains is
-        <em>somebody&nbsp;else&rsquo;s</em> — the AI ingestion module — or is
-        waiting on a person rather than on code.
+        <em>somebody&nbsp;else&rsquo;s</em> &mdash; the AI ingestion module &mdash;
+        or is waiting on a person rather than on code.
       </p>
       <p>
-        <strong>Which is now the real constraint.</strong> Two things are
-        blocked on a human decision, not on engineering time, and neither takes
-        more than a few minutes to unblock.
+        <strong>So the constraint is two people who still cannot see the
+        code.</strong> Nothing here is short of engineering time. Both of the
+        blockers below are a few minutes of somebody&rsquo;s attention, and both
+        have been on this page for days.
       </p>
     </div>
 
@@ -712,7 +713,7 @@
 <script>
   const EPICS = [
     { n: 0, name: "Ways of working",
-      note: "<strong>0.5 — invitations are sent, and none has been accepted.</strong> Four are pending and they <strong>expire on 17 September</strong>. An invitation grants nothing until the person clicks the link GitHub emailed them, so two of three people still cannot see the code — and with no collaborator able to approve a pull request, every branch so far has been merged by its own author. <br><br><strong>0.6 needs a paid plan:</strong> branch protection and rulesets are both refused on a private repo on the Free plan. The rule is written and committed as <code>.github/ruleset-main.json</code>, so turning it on is one command. The GitHub Student Developer Pack gives free Pro and both .ac.il addresses qualify.",
+      note: "<strong>0.5 — invitations are sent, and none has been accepted.</strong> Four are pending and they <strong>expire on 17 September</strong>. An invitation grants nothing until the person clicks the link GitHub emailed them, so two of three people still cannot see the code — and with no collaborator able to approve a pull request, every branch so far has been merged by its own author. <br><br><strong>0.6 needs a paid plan:</strong> branch protection and rulesets are both refused on a private repo on the Free plan. The rule is written and committed as <code>.github/ruleset-main.json</code>, so turning it on is one command. The GitHub Student Developer Pack gives free Pro and both .ac.il addresses qualify. <br><br><strong>0.8 &mdash; the seed outgrew the doc describing it.</strong> The onboarding page still promised one flat and three users when <code>seed.py</code> had grown to seven users and six groups, and it told people to squash-merge when the rulebook says rebase. The demo world now has a page of its own, <code>docs/testing.md</code>: every account, what each of the six groups exists to prove, both test suites, and what CI fails you on. The seeded groups are test fixtures people can click through &mdash; one is a group the main account is <em>not</em> in, so a group list that forgot its filter is visible in one screenful rather than discovered in a viva.",
       missions: [
         ["0.1", "Git repo, main branch, monorepo layout", "S", "Gal", "done"],
         ["0.2", "CLAUDE.md — stack, layering rule, code standards", "S", "Gal", "done"],
@@ -721,6 +722,7 @@
         ["0.5", "Add teammates as GitHub collaborators", "S", "Gal", "wip"],
         ["0.6", "Protect main: require PR + 1 review + green CI", "S", "Gal", "blocked"],
         ["0.7", "Onboarding doc: clone to running app in 10 minutes", "S", "Gal", "done"],
+        ["0.8", "Contributor docs: testing guide, demo accounts, a doc map", "S", "Gal", "done"],
       ]},
     { n: 1, name: "Backend foundation", note: null,
       missions: [

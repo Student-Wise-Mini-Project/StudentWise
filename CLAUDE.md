@@ -4,6 +4,27 @@ Expense-splitting app (Splitwise/Tricount style) with AI features layered on top
 Team of 3. Backend first, step by step: **Step 1 = DB + Auth + CRUD**, Step 2 =
 algorithms (balances, min-cash-flow), Step 3+ = AI.
 
+## Start here
+
+This file is the rulebook — *what must be true of the code*. It is not a
+tutorial. If you are new, read them in this order:
+
+| Read | For |
+|---|---|
+| [`docs/onboarding.md`](docs/onboarding.md) | Clone → running app → your first mission. Day one, in order |
+| [`docs/testing.md`](docs/testing.md) | The seven demo accounts, what each seeded group proves, both test suites, what CI runs |
+| **This file** | The rules that make a change acceptable |
+| [`docs/roadmap.md`](docs/roadmap.md) | Every epic and mission, with owners and status |
+| [`docs/api-contract.md`](docs/api-contract.md) | The endpoint contract, before building any UI |
+| [`frontend/README.md`](frontend/README.md) | The four frontend rules, and why each is a test |
+
+**The thirty-second version.** Postgres in Docker on port 5434; backend is
+Python 3.12 + FastAPI in `backend/` with a venv you must activate every
+terminal; `python seed.py` builds seven users and six groups, all with the
+password `password123`; sign in as `gal@studentwise.dev`. Four layers, and
+**only services commit**. Money is `Decimal`, never `float`. Every schema change
+ships with its migration; every endpoint ships with its test.
+
 ## Stack
 
 | Layer | Choice |
@@ -112,15 +133,25 @@ loudly on their own.
 
 ## Commands
 
+From `backend/`, with `.\.venv\Scripts\Activate.ps1` run first — every new
+terminal needs it.
+
 ```powershell
 docker compose up -d                  # start Postgres (host port 5434)
 alembic upgrade head                  # apply migrations (run from backend/)
+python seed.py                        # rebuild the demo data (wipes first)
 uvicorn app.main:app --reload         # run the API
-pytest                                # run tests
+pytest                                # run tests (separate DB: studentwise_test)
 pytest tests/unit -q                  # fast: pure logic only
 ruff check --fix . ; ruff format .    # lint + format
 alembic revision --autogenerate -m "add expenses"   # new migration
+alembic check                         # does the schema match the models?
 ```
+
+**First time on a new machine**, in order: `docker compose up -d` ·
+`py -3.12 -m venv .venv` · activate · `pip install -r requirements.txt` ·
+`copy .env.example .env` · `alembic upgrade head` · `python seed.py`.
+Full version, with what goes wrong: [`docs/onboarding.md`](docs/onboarding.md).
 
 ```powershell
 cd frontend
@@ -154,13 +185,24 @@ npm run gen:icons                     # PWA icons, from one SVG
 - **Teammate 2** — `app/ai/` package + `api/ai.py` (OCR, voice, Text-to-SQL,
   anomalies). Calls `expense_service` functions; never touches models or repositories.
 - **Teammate 3** — `frontend/`. Builds against `docs/api-contract.md` and `/docs`.
-  The scaffold, design system, auth, groups, expenses, balances and PWA exist;
-  see `frontend/README.md`.
+  The scaffold, design system, auth, groups, expenses, balances, charts, i18n
+  and PWA exist; see `frontend/README.md`.
+
+Onboarding docs are nobody's exclusive property: if you hit something that cost
+you an hour and is not written down, write it down in the file where you would
+have looked for it.
 
 ## End of session
 
 Write a summary to `docs/sessions/YYYY-MM-DD-<topic>.md`: what was built, what
 decisions were made and why, what's next, anything that surprised us.
+
+**If the session changed `seed.py`, update `docs/testing.md` in the same
+commit.** That page describes the demo world account by account and group by
+group, and it is what a teammate trusts when they cannot tell a bug from a
+misunderstanding. It went stale once already — promising three users when the
+seed had seven — which is the same failure mode as a stale roadmap page, minus
+the script that catches it.
 
 Then tick the missions off in `docs/roadmap.md`, mirror them in
 `docs/roadmap.html`, and run `node scripts/check-roadmap-sync.mjs` — it fails if

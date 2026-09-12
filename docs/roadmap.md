@@ -3,8 +3,12 @@
 Everything the project needs, A to Z, split into **epics** (features) and
 **missions** (a task one person can finish and merge).
 
-**Status as of 2026-09-11:** 60 endpoints · 14 tables · 646 backend tests ·
-148 frontend tests · 9 migrations · CI green.
+**Status as of 2026-09-12:** 62 endpoints · 14 tables · 672 backend tests ·
+253 frontend tests · 12 migrations · CI green.
+
+**New here?** This file is status, not instructions. Start at
+[`onboarding.md`](onboarding.md), then [`testing.md`](testing.md), then come
+back and pick a ⬜ mission with your name on it.
 
 **This file is the source of truth for status.** It is also published as a page —
 `docs/roadmap.html`, live at
@@ -32,27 +36,33 @@ touch the same file.
 
 | Epic | Done | Left | State |
 |---|---:|---:|---|
-| 0. Ways of working | 5 | 2 | 🔨 invites sent, not yet accepted |
+| 0. Ways of working | 6 | 2 | 🔨 invites sent, not yet accepted |
 | 1. Backend foundation | 5 | 0 | ✅ complete |
 | 2. Core domain (Splitwise parity) | 14 | 0 | ✅ complete |
 | 3. Algorithms | 4 | 0 | ✅ complete |
 | 4. Analytics & intelligence | 5 | 1 | 🚫 only 4.4, blocked on a key |
-| 5. AI ingestion (Module 1) | 1 | 8 | started |
+| 5. AI ingestion (Module 1) | 1 | 8 | 🔨 5.3 landed early, as 2.11 |
 | 6. Recurring & automation | 5 | 0 | ✅ complete |
 | 7. Payments (Bit / PayBox) | 0 | 3 | ⬜ not started |
 | 8. AI chat assistant / RAG | 0 | 4 | ⬜ not started |
 | 9. Frontend | 14 | 3 | 🔨 the app works end to end |
 | 10. Deployment | 0 | 6 | ⬜ not started |
-| 11. Academic deliverables | 1 | 4 | started |
-| **Total** | **44** | **40** | |
+| 11. Academic deliverables | 1 | 4 | 🔨 started |
+| **Total** | **55** | **31** | |
 
-**The honest read:** the backend is essentially done. Epics 1, 2, 3 and 6 are
-complete and Epic 4 has only its blocked mission left. Everything remaining is
-either **somebody else's** (Epic 5 AI ingestion, Epic 9 frontend) or waiting on
-a decision (Epic 10 hosting).
+**The honest read:** the app works end to end. You can sign in, create a flat,
+add flatmates and weights, add an expense in any of the four split modes, see
+balances, settle up, comment, attach a receipt, read your alerts, see where the
+money goes, install it to an iOS home screen and **run the whole thing in
+Hebrew**. Epics 1, 2, 3 and 6 are complete, Epic 4 has only its blocked mission
+left, and Epic 9 is 14 of 17.
 
-Epic 9 is now unambiguously the critical path: 12 missions, none started, and
-nothing blocking them. There is a great deal of API and still no interface.
+**So the constraint is no longer code — it is the two people who cannot yet see
+it.** 0.5 has been the top of this list for days and it is still the only thing
+that matters: every branch so far has been merged by its own author, because
+there is nobody else with access to approve one. Everything that remains is
+either **somebody else's** (Epic 5 ingestion, the last three frontend missions)
+or waiting on a decision (Epic 10 hosting) or on a key (4.4).
 
 ---
 
@@ -67,6 +77,7 @@ nothing blocking them. There is a great deal of API and still no interface.
 | 0.5 | Add teammates as GitHub collaborators | S | Gal | 🔨 |
 | 0.6 | Protect `main`: require PR + 1 review + green CI | S | Gal | 🚫 |
 | 0.7 | Onboarding doc: clone → running app in 10 minutes | S | Gal | ✅ |
+| 0.8 | **Contributor docs**: testing guide, demo accounts, a doc map | S | Gal | ✅ |
 
 > **0.5 — invitations are sent, and none has been accepted yet.** Four are
 > pending: three by email and one to `galq-harel`. An invitation grants nothing
@@ -85,6 +96,22 @@ nothing blocking them. There is a great deal of API and still no interface.
 >
 > 0.7 is `docs/onboarding.md`: install list, first run, five checks that prove the
 > environment, where the code lives, and each teammate's first mission.
+>
+> **0.8 — the seed outgrew the doc that described it.** `onboarding.md` still
+> promised one flat and three users when `seed.py` had long since grown to
+> seven users and six groups, and it told people to squash-merge, which is the
+> opposite of what `CLAUDE.md` says. Both are the same failure as a stale status
+> page: documentation nobody re-reads while changing the thing it documents.
+>
+> So the demo world now has a page of its own, `docs/testing.md` — every
+> account, **what each of the six groups exists to prove** (one in euros, one
+> Gal does not own, one settled to zero, one Gal is not in at all), the two test
+> suites, and what CI will fail you on. `CLAUDE.md`, `README.md` and
+> `onboarding.md` all point at it rather than each restating a third of it.
+>
+> The part worth keeping: the seeded groups are **test fixtures people can click
+> through**. Florentin 22 exists so that a group list which forgot its filter is
+> visible in one screenful rather than discovered in a viva.
 
 ---
 
@@ -204,7 +231,7 @@ Decisions from 2.9–2.13 worth keeping:
 
 ---
 
-## Epic 5 — AI ingestion (Module 1) ⬜
+## Epic 5 — AI ingestion (Module 1) 🔨
 
 The largest remaining backend chunk, and the headline "AI" of the project.
 
@@ -236,7 +263,7 @@ from an image that is already on the server.**
 
 ---
 
-## Epic 6 — Recurring bills & automation ⬜
+## Epic 6 — Recurring bills & automation ✅
 
 | # | Mission | Size | Owner | Status |
 |---|---|---|---|---|
@@ -326,8 +353,9 @@ expense form are what turned it into a feature people can use.
 
 ## Epic 9 — Frontend 🔨
 
-**This is the critical path.** The backend is far ahead of the UI, and a project
-with no interface is hard to demo whatever the API does.
+**Was the critical path; no longer is.** 14 of 17 are merged and the app runs
+end to end in two languages. What is left is two screens against endpoints that
+already exist (9.9, 9.10) and the APK (9.12).
 
 | # | Mission | Size | Owner | Status |
 |---|---|---|---|---|
@@ -448,26 +476,33 @@ with no interface is hard to demo whatever the API does.
 
 ## Suggested order for the next two weeks
 
-**Week 1 — unblock the team**
+**Week 1 — get the other two people actually working**
 
-1. 0.5 — add Hila and Dana in the GitHub web UI *(two minutes, unblocks two
-   people, and nothing else on this list matters until it is done)*
-2. 9.1–9.3 — frontend scaffold, API client, auth *(#3 starts immediately)*
-3. 5.1 + 5.2 — item tables and per-item splits *(#2 starts on pure backend)*
-4. 10.1 — ask the lecturer about hosting *(one question, gates Epic 10)*
-5. 0.6 — apply for the Student Developer Pack, then run the one command in
+1. **0.5 — chase the invitations.** Still the only thing on this list that
+   blocks other humans. Nothing else here matters until Hila and Dana can clone
+   the repo.
+2. **Both of them: run `docs/onboarding.md` end to end on their own laptop, then
+   `docs/testing.md`.** Half a day, and it is the cheapest half-day on the
+   project — the alternative is discovering the wrong Python version during the
+   week something is due.
+3. 5.1 + 5.2 — item tables and per-item splits *(Hila starts on pure backend,
+   no AI, no new patterns to learn at the same time)*
+4. 9.9 + 9.10 — the Ask screen and anomaly alerts *(Dana; both are new screens
+   against endpoints that already exist and are already tested)*
+5. 10.1 — ask the lecturer about hosting *(one question, gates all of Epic 10)*
+6. 0.6 — apply for the Student Developer Pack, then run the one command in
    `.github/branch-protection.md`
 
-**The backend is no longer the constraint.** Nothing in Epics 9 or 5 is waiting
-on it; both can start the moment 0.5 is done.
+**Nothing on this list is waiting on the backend.** It has not been the
+constraint for a week.
 
 **Week 2 — make it demoable**
 
-6. 9.4–9.7 — groups, expenses, balances screens
 7. 5.4 + 5.5 — receipt OCR and the review-and-confirm flow *(the headline demo
-   moment; upload already works)*
+   moment; upload already works, so this starts from an image on the server)*
 8. 4.4 — measure Text-to-SQL quality once a key exists
 9. 10.2 + 10.3 — get it deployed somewhere real
+10. 11.2 — the architecture diagrams, while the decisions are still fresh
 
 **Deliberately deferred:** Epic 8 (RAG) and 9.12 (APK). Both are real features;
 neither is on the path to a working demo.
