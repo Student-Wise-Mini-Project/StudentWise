@@ -69,6 +69,31 @@ export function applyLocale(locale: Locale): void {
   }
 }
 
+const LAST_GROUP_KEY = 'sw.lastGroup'
+
+/**
+ * The group opened most recently, so the `+` bar can lead with it.
+ *
+ * Per-device, like the theme and the language above: which group you are most
+ * likely to be adding to is a property of the phone in your hand, not of the
+ * account signed in on it. The picker degrades to alphabetical without it.
+ */
+export function readLastGroupId(): string | null {
+  try {
+    return window.localStorage.getItem(LAST_GROUP_KEY)
+  } catch {
+    return null
+  }
+}
+
+export function rememberLastGroupId(groupId: string): void {
+  try {
+    window.localStorage.setItem(LAST_GROUP_KEY, groupId)
+  } catch {
+    /* A browser blocking site data just means the picker is alphabetical. */
+  }
+}
+
 const IOS_HINT_KEY = 'sw.iosInstallHintDismissed'
 
 /** Whether the "Add to Home Screen" hint has already been dismissed. */

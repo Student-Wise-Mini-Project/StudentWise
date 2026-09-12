@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { NavLink, Outlet, useParams } from 'react-router'
 
 import { AppBar } from '@/app/layouts/AppBar'
@@ -14,6 +14,7 @@ import { useT } from '@/i18n/i18nContext'
 import type { MessageKey } from '@/i18n/messages'
 import { cn } from '@/lib/cn'
 import { isPositive, isZero } from '@/lib/money'
+import { rememberLastGroupId } from '@/lib/prefs'
 
 import { useGroup } from './api'
 import { GroupContext, type GroupScope, useGroupScope } from './groupContext'
@@ -34,6 +35,11 @@ export function GroupScopeRoute() {
 
   // Nothing runs on a scheduler, so opening a group is what posts the rent.
   useRunDueBillsOnce(groupId)
+
+  // Which group the `+` bar should lead with when you are not inside one.
+  useEffect(() => {
+    if (groupId) rememberLastGroupId(groupId)
+  }, [groupId])
 
   const scope = useMemo<GroupScope | null>(() => {
     if (!query.data || !groupId) return null
