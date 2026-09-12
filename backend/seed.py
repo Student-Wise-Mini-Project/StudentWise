@@ -96,9 +96,9 @@ def backdate(db) -> None:
         seen = minute_of.get(expense.expense_date, 0)
         minute_of[expense.expense_date] = seen + 1
         # Early evening: the hour a flat actually enters the shopping.
-        stamp = datetime.combine(
-            expense.expense_date, time(18, 0), tzinfo=UTC
-        ) + timedelta(minutes=seen)
+        stamp = datetime.combine(expense.expense_date, time(18, 0), tzinfo=UTC) + timedelta(
+            minutes=seen
+        )
         expense.created_at = stamp
         expense.updated_at = stamp
 

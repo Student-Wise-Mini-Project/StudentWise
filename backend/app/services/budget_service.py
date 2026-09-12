@@ -24,7 +24,7 @@ from app.models.group import Group, GroupMember
 from app.models.user import User
 from app.repositories.budget_repository import BudgetRepository
 from app.repositories.group_repository import GroupRepository
-from app.services import notification_service
+from app.services import group_service, notification_service
 
 _ALERT_KIND = {
     BudgetLevel.WARNING: NotificationKind.BUDGET_WARNING,
@@ -108,6 +108,7 @@ def create_budget(
     amount: Decimal,
 ) -> Budget:
     _require_owner(membership)
+    group_service.require_open(group)
     if amount <= 0:
         raise BadRequestError("A budget has to be more than zero")
 
@@ -134,6 +135,7 @@ def update_budget(
     speak up straight away.
     """
     _require_owner(membership)
+    group_service.require_open(membership.group)
     if amount <= 0:
         raise BadRequestError("A budget has to be more than zero")
 

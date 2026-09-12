@@ -39,6 +39,12 @@ def list_settlements(
     return items, repo.count_by_group(group.id)
 
 
+# Deliberately no `group_service.require_open` anywhere in this module.
+#
+# Closing a group is allowed while money is still outstanding -- the client
+# warns and names what is owed, but the decision stays with the person. That
+# only works if the debt stays payable afterwards, so recording a payment is
+# the one write a closed group still accepts. Please do not "fix" this.
 def create_settlement(
     db: Session,
     group: Group,

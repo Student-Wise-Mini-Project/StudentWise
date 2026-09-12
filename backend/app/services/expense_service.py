@@ -23,6 +23,7 @@ from app.repositories.expense_repository import ExpenseRepository
 from app.repositories.group_repository import GroupRepository
 from app.services import (
     budget_service,
+    group_service,
     idempotency_service,
     notification_service,
     split_rule_service,
@@ -239,6 +240,11 @@ def create_expense(
     idempotency_key: str | None = None,
     request_fingerprint: str | None = None,
 ) -> Expense:
+    # Not in `build_expense`: recurring bills call that directly, inside their
+    # own transaction, and `run` has already decided a closed group has nothing
+    # due. Checking here keeps one check per write rather than two.
+    group_service.require_open(group)
+
     claim = None
     if idempotency_key and request_fingerprint:
         outcome = idempotency_service.claim(
@@ -292,6 +298,8 @@ def update_expense(
 ) -> Expense:
     """Apply a partial update. Splits are recomputed whenever anything that
     affects them changes, and the old rows are replaced rather than appended."""
+    group_service.require_open(group)
+
     if title is not None:
         expense.title = title.strip()
     if expense_date is not None:
@@ -346,6 +354,8 @@ def delete_expense(db: Session, expense: Expense) -> None:
     """Hard delete. Splits, comments and notifications go with it via
     ON DELETE CASCADE; the receipt image has to be removed by hand, because the
     database knows nothing about the file."""
+    group_service.require_open(expense.group)
+
     key = expense.receipt_image_url
     ExpenseRepository(db).delete(expense)
     db.commit()
@@ -363,6 +373,8 @@ def attach_receipt(db: Session, expense: Expense, *, data: bytes) -> Expense:
     keeping the old file would leave a picture of someone's shopping on disk
     that nothing points at.
     """
+    group_service.require_open(expense.group)
+
     store = get_receipt_store()
     previous = expense.receipt_image_url
 
@@ -387,6 +399,8 @@ def read_receipt(expense: Expense) -> tuple[bytes, str]:
 
 
 def remove_receipt(db: Session, expense: Expense) -> Expense:
+    group_service.require_open(expense.group)
+
     key = expense.receipt_image_url
     if not key:
         raise NotFoundError("This expense has no receipt")

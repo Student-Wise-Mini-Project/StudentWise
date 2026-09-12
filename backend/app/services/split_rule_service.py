@@ -18,6 +18,7 @@ from app.models.split_rule import SplitRule, SplitRuleShare
 from app.models.user import User
 from app.repositories.group_repository import GroupRepository
 from app.repositories.split_rule_repository import SplitRuleRepository
+from app.services import group_service
 
 
 @dataclass(frozen=True)
@@ -74,6 +75,7 @@ def create_rule(
     shares: list[ShareSpec],
 ) -> SplitRule:
     _require_owner(membership)
+    group_service.require_open(group)
 
     repo = SplitRuleRepository(db)
     existing = (
@@ -114,6 +116,7 @@ def update_rule(
     explicit act, and leaves a trace of it in the activity the group can see.
     """
     _require_owner(membership)
+    group_service.require_open(group)
 
     if name is not None:
         rule.name = name.strip()

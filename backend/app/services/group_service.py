@@ -120,6 +120,8 @@ def add_member(
     user_id: uuid.UUID | None = None,
     default_split_weight: Decimal = Decimal("1"),
 ) -> GroupMember:
+    require_open(group)
+
     if (email is None) == (user_id is None):
         raise BadRequestError("Provide exactly one of email or user_id")
 

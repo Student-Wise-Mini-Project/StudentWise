@@ -38,7 +38,7 @@ from app.models.recurring_bill import RecurringBill, RecurringBillParticipant
 from app.models.user import User
 from app.repositories.group_repository import GroupRepository
 from app.repositories.recurring_bill_repository import RecurringBillRepository
-from app.services import expense_service, notification_service
+from app.services import expense_service, group_service, notification_service
 from app.services.expense_service import ParticipantSpec
 
 #: A safety rail on catching up, not a business rule. `first_due_on` cannot be
@@ -118,6 +118,8 @@ def create_bill(
     reminder_days_before: int = 3,
     today: date | None = None,
 ) -> RecurringBill:
+    group_service.require_open(group)
+
     today = today or date.today()
 
     if first_due_on < today:
@@ -169,6 +171,8 @@ def update_bill(
     reminder_days_before: int | None = None,
     next_due_on: date | None = None,
 ) -> RecurringBill:
+    group_service.require_open(group)
+
     if title is not None:
         bill.title = title.strip()
     if category is not None:
@@ -290,6 +294,8 @@ def generate_now(
     The amount must be supplied when the bill does not carry one; inventing a
     number for the electricity would be worse than refusing.
     """
+    group_service.require_open(group)
+
     final_amount = amount if amount is not None else bill.amount
     if final_amount is None:
         raise BadRequestError("This bill has no fixed amount. Send the amount for this month.")
@@ -320,6 +326,12 @@ def run(db: Session, group: Group, *, today: date | None = None) -> RunResult:
     author of somebody else's rent, and the cron job would have no author at
     all.
     """
+    # Deliberately not require_open(): the client calls this on every group
+    # open, so raising here would make a closed group impossible to look at. A
+    # closed group simply has nothing due.
+    if not group.is_open:
+        return RunResult()
+
     today = today or date.today()
     result = RunResult()
 
