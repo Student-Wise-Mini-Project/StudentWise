@@ -78,7 +78,11 @@ export function RecurringScreen() {
                 <>
                   {frequencyLabel(t, bill.frequency)}
                   {' · '}
-                  {!bill.active ? (
+                  {bill.is_finished ? (
+                    // Spent, not paused. It stays in the list so the number can
+                    // be raised to extend it, or it can be deleted on purpose.
+                    t('recurring.finished')
+                  ) : !bill.active ? (
                     t('recurring.paused')
                   ) : bill.next_due_on <= today() ? (
                     // A bill that has already come due and is still sitting
@@ -104,29 +108,45 @@ export function RecurringScreen() {
                   <Money amount={bill.amount} currency={currency} size="lg" />
                 )
               }
+              metaSubtitle={
+                bill.occurrences_total === null || bill.occurrences_total === undefined
+                  ? undefined
+                  : t('recurring.counted', {
+                      done: bill.occurrences_done,
+                      total: bill.occurrences_total,
+                    })
+              }
               trailing={
                 isOpen ? (
                   <Stack direction="row" gap={1}>
-                    <Button size="sm" variant="secondary" onClick={() => setPosting(bill)}>
-                      {t('recurring.postNow')}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      loading={update.isPending && update.variables?.billId === bill.id}
-                      onClick={() =>
-                        update.mutate({
-                          billId: bill.id,
-                          // `clear_amount` is sent explicitly: the generated
-                          // types mark every server-defaulted field required,
-                          // and sending `true` here by omission would wipe a
-                          // fixed bill's amount just for a pause.
-                          input: { active: !bill.active, clear_amount: false },
-                        })
-                      }
-                    >
-                      {bill.active ? t('recurring.pause') : t('recurring.resume')}
-                    </Button>
+                    {!bill.is_finished && (
+                      <Button size="sm" variant="secondary" onClick={() => setPosting(bill)}>
+                        {t('recurring.postNow')}
+                      </Button>
+                    )}
+                    {!bill.is_finished && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        loading={update.isPending && update.variables?.billId === bill.id}
+                        onClick={() =>
+                          update.mutate({
+                            billId: bill.id,
+                            // `clear_amount` is sent explicitly: the generated
+                            // types mark every server-defaulted field required,
+                            // and sending `true` here by omission would wipe a
+                            // fixed bill's amount just for a pause.
+                            input: {
+                              active: !bill.active,
+                              clear_amount: false,
+                              clear_occurrences: false,
+                            },
+                          })
+                        }
+                      >
+                        {bill.active ? t('recurring.pause') : t('recurring.resume')}
+                      </Button>
+                    )}
                     <Button size="sm" variant="ghost" onClick={() => setEditing(bill)}>
                       {t('common.actions.edit')}
                     </Button>

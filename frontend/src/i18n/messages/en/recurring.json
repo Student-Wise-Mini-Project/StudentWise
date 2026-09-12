@@ -37,7 +37,11 @@
     "splitLabel": "How is it split?",
     "splitHint": "Across everyone in the group, or by their shares. Uneven splits are set per expense.",
     "reminderLabel": "Remind this many days before",
-    "save": "Save"
+    "save": "Save",
+    "countLabel": "Repeat a set number of times",
+    "countHint": "Twelve months of rent, say. Leave it off and it repeats forever.",
+    "countField": "How many times?",
+    "countError": "Has to be a whole number above zero."
   },
   "post": {
     "title": "Post {title}",
@@ -51,5 +55,7 @@
     "title": "Delete this bill?",
     "body": "The schedule stops. Expenses it has already posted are kept.",
     "submit": "Delete"
-  }
+  },
+  "finished": "Finished",
+  "counted": "{done} of {total}"
 }

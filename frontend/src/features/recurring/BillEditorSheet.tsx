@@ -67,13 +67,19 @@ export function BillEditorSheet({
   const [category, setCategory] = useState<ExpenseCategory | ''>(bill?.category ?? '')
   const [splitType, setSplitType] = useState<SplitType>(bill?.split_type ?? 'EQUAL')
   const [reminderDays, setReminderDays] = useState(String(bill?.reminder_days_before ?? 3))
+  const [counted, setCounted] = useState(bill?.occurrences_total != null)
+  const [count, setCount] = useState(
+    bill?.occurrences_total != null ? String(bill.occurrences_total) : '12',
+  )
 
   // The API refuses a first due date in the past, and it is right to: a
   // schedule nobody has seen yet should not conjure up months of back-dated
   // expenses on its first run. Caught here so it reads as a hint, not a 422.
   const duePast = bill === null && dueOn !== '' && dueOn < today()
   const amountValid = varies || (isValidAmount(amount) && isPositive(amount))
-  const valid = title.trim().length > 0 && payerId !== '' && amountValid && !duePast
+  // A whole number above zero, which is what the column's CHECK allows.
+  const countValid = !counted || /^[1-9]\d*$/.test(count.trim())
+  const valid = title.trim().length > 0 && payerId !== '' && amountValid && countValid && !duePast
 
   const pending = create.isPending || update.isPending
   const error = create.error ?? update.error
@@ -91,6 +97,7 @@ export function BillEditorSheet({
       category: category === '' ? null : category,
       split_type: splitType,
       reminder_days_before: Number(reminderDays) || 0,
+      occurrences_total: counted ? Number(count) : null,
     }
 
     if (bill) {
@@ -103,6 +110,9 @@ export function BillEditorSheet({
             // sending `amount: null` alone would read as "leave it alone".
             amount: varies ? null : amount,
             clear_amount: varies,
+            // Same reason as `clear_amount`: without this, "back to forever"
+            // and "leave the count alone" are the same request.
+            clear_occurrences: !counted,
             next_due_on: dueOn,
           },
         },
@@ -265,6 +275,36 @@ export function BillEditorSheet({
             </Select>
           )}
         </Field>
+
+        <label className="flex items-start gap-3 text-sm">
+          <input
+            type="checkbox"
+            checked={counted}
+            onChange={(event) => setCounted(event.target.checked)}
+            className="mt-0.5 size-4 shrink-0"
+          />
+          <span>
+            <span className="font-semibold">{t('recurring.editor.countLabel')}</span>
+            <span className="text-muted block">{t('recurring.editor.countHint')}</span>
+          </span>
+        </label>
+
+        {counted && (
+          <Field
+            label={t('recurring.editor.countField')}
+            required
+            error={countValid ? undefined : t('recurring.editor.countError')}
+          >
+            {(props) => (
+              <Input
+                {...props}
+                inputMode="numeric"
+                value={count}
+                onChange={(event) => setCount(event.target.value)}
+              />
+            )}
+          </Field>
+        )}
 
         <Field label={t('recurring.editor.reminderLabel')}>
           {(props) => (

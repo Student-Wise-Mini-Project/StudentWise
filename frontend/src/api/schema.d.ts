@@ -505,6 +505,11 @@ export interface paths {
          *
          *     `first_due_on` cannot be in the past: a schedule nobody has seen yet should
          *     not conjure up months of back-dated expenses on its first run.
+         *
+         *     **Leave `occurrences_total` out for a bill that repeats forever.** Set it to
+         *     12 and the bill posts twelve times and then reports itself finished -- it
+         *     stops posting and stops reminding, but stays put so it can be extended or
+         *     deleted deliberately.
          */
         post: operations["create_recurring_bill_api_groups__group_id__recurring_bills_post"];
         delete?: never;
@@ -1747,6 +1752,8 @@ export interface components {
              * @default 3
              */
             reminder_days_before: number;
+            /** Occurrences Total */
+            occurrences_total?: number | null;
         };
         /** RecurringBillOut */
         RecurringBillOut: {
@@ -1781,6 +1788,13 @@ export interface components {
             reminder_days_before: number;
             /** Last Generated On */
             last_generated_on?: string | null;
+            /** Occurrences Total */
+            occurrences_total?: number | null;
+            /**
+             * Occurrences Done
+             * @default 0
+             */
+            occurrences_done: number;
             /**
              * Participants
              * @default []
@@ -1804,6 +1818,15 @@ export interface components {
              *     electricity waits for somebody to read the meter.
              */
             readonly posts_itself: boolean;
+            /**
+             * Is Finished
+             * @description Spent: every occurrence it was given has been posted.
+             *
+             *     Separate from `active`, which only ever means a person paused it.
+             */
+            readonly is_finished: boolean;
+            /** Occurrences Remaining */
+            readonly occurrences_remaining: number | null;
         };
         /** RecurringBillUpdate */
         RecurringBillUpdate: {
@@ -1828,6 +1851,13 @@ export interface components {
             reminder_days_before?: number | null;
             /** Next Due On */
             next_due_on?: string | null;
+            /** Occurrences Total */
+            occurrences_total?: number | null;
+            /**
+             * Clear Occurrences
+             * @default false
+             */
+            clear_occurrences: boolean;
         };
         /** RegisterRequest */
         RegisterRequest: {
