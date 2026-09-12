@@ -46,6 +46,10 @@ class RecurringBill(Base):
     __tablename__ = "recurring_bills"
     __table_args__ = (
         CheckConstraint("anchor_day BETWEEN 1 AND 31", name="ck_recurring_bills_anchor_day"),
+        CheckConstraint(
+            "occurrences_total IS NULL OR occurrences_total > 0",
+            name="ck_recurring_bills_occurrences_total",
+        ),
         Index("ix_recurring_bills_next_due_on", "next_due_on"),
     )
 
@@ -72,6 +76,15 @@ class RecurringBill(Base):
     #: 31st after February, instead of walking backwards through the year.
     anchor_day: Mapped[int] = mapped_column(Integer, nullable=False)
     next_due_on: Mapped[date] = mapped_column(Date, nullable=False)
+
+    #: How many times this bill should ever post. NULL means forever, which is
+    #: what every bill was before this existed. "Twelve months of rent" is a
+    #: real agreement, and the only way to end a schedule used to be to
+    #: remember to delete it.
+    occurrences_total: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    #: How many it actually has posted. Counted in `_post_one`, which is the
+    #: single place an occurrence happens.
+    occurrences_done: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
 
     #: Paused rather than deleted -- a bill that stops for the summer keeps its
     #: history and its participants.
@@ -100,6 +113,26 @@ class RecurringBill(Base):
     def generates_automatically(self) -> bool:
         """A bill with a known amount can post itself; one without cannot."""
         return self.amount is not None
+
+    @property
+    def is_finished(self) -> bool:
+        """Spent: it has posted every occurrence it was given.
+
+        Deliberately *not* `active = False`. Pausing is something a person did
+        and can undo; finishing is arithmetic. Folding the two together would
+        mean Resume on a spent bill quietly posts a thirteenth rent -- the one
+        thing the count exists to prevent.
+        """
+        return (
+            self.occurrences_total is not None and self.occurrences_done >= self.occurrences_total
+        )
+
+    @property
+    def occurrences_remaining(self) -> int | None:
+        """None on an unlimited bill. Never negative."""
+        if self.occurrences_total is None:
+            return None
+        return max(self.occurrences_total - self.occurrences_done, 0)
 
     def __repr__(self) -> str:
         return f"<RecurringBill {self.title} every {self.frequency}>"

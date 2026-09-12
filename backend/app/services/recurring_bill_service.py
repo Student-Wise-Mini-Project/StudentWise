@@ -116,6 +116,7 @@ def create_bill(
     split_type: SplitType = SplitType.EQUAL,
     participants: list[ParticipantSpec] | None = None,
     reminder_days_before: int = 3,
+    occurrences_total: int | None = None,
     today: date | None = None,
 ) -> RecurringBill:
     group_service.require_open(group)
@@ -146,6 +147,7 @@ def create_bill(
         anchor_day=first_due_on.day,
         next_due_on=first_due_on,
         reminder_days_before=reminder_days_before,
+        occurrences_total=occurrences_total,
         created_by=creator.id,
         participants=_validated_participants(db, group, participants or []),
     )
@@ -170,8 +172,17 @@ def update_bill(
     active: bool | None = None,
     reminder_days_before: int | None = None,
     next_due_on: date | None = None,
+    occurrences_total: int | None = None,
+    clear_occurrences: bool = False,
 ) -> RecurringBill:
     group_service.require_open(group)
+
+    # Raising it past what has already posted is how a finished bill is
+    # extended; clearing it goes back to forever.
+    if clear_occurrences:
+        bill.occurrences_total = None
+    elif occurrences_total is not None:
+        bill.occurrences_total = occurrences_total
 
     if title is not None:
         bill.title = title.strip()
@@ -277,6 +288,12 @@ def _post_one(
         return None
 
     bill.last_generated_on = when
+    # The one place an occurrence is counted. Deliberately after the
+    # IntegrityError guard above, so losing the race for one due date does not
+    # burn one of the twelve. And it counts *postings*, not surviving expenses:
+    # deleting one of the twelve rents corrects that expense, it does not buy a
+    # thirteenth.
+    bill.occurrences_done += 1
     return expense
 
 
@@ -295,6 +312,11 @@ def generate_now(
     number for the electricity would be worse than refusing.
     """
     group_service.require_open(group)
+
+    if bill.is_finished:
+        raise ConflictError(
+            f"{bill.title} has already run all {bill.occurrences_total} of its times."
+        )
 
     final_amount = amount if amount is not None else bill.amount
     if final_amount is None:
@@ -340,9 +362,20 @@ def run(db: Session, group: Group, *, today: date | None = None) -> RunResult:
 
     recipients: list[uuid.UUID] | None = None
     for bill in bills:
+        # A spent bill neither posts nor nags. It stays in the list reading
+        # "finished" so it can be extended or deleted on purpose.
+        if bill.is_finished:
+            continue
+
         if bill.generates_automatically:
             posted = 0
-            while bill.next_due_on <= today and posted < MAX_PERIODS_PER_RUN:
+            # `is_finished` is re-checked every turn, not once: the catch-up
+            # loop posts one expense per period missed, so a bill five months
+            # overdue with two left must stop at two. This is the one place
+            # the limit could be walked straight past.
+            while (
+                bill.next_due_on <= today and posted < MAX_PERIODS_PER_RUN and not bill.is_finished
+            ):
                 expense = _post_one(
                     db,
                     group,

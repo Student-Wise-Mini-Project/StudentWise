@@ -441,3 +441,123 @@ def test_a_bill_from_another_group_is_not_found(client, flat, bob):
         f"/api/groups/{other['id']}/recurring-bills/{bill['id']}", headers=bob_headers
     )
     assert response.status_code == 404
+
+
+# --- a bill that runs a set number of times ----------------------------------
+#
+# "Twelve months of rent" is a real agreement. Until now every schedule ran
+# forever, so the only way to end one was to remember to delete it.
+
+
+def test_a_bill_is_unlimited_unless_asked_otherwise(client, flat):
+    body = make_bill(client, flat).json()
+    assert body["occurrences_total"] is None
+    assert body["occurrences_done"] == 0
+    assert body["is_finished"] is False
+    assert body["occurrences_remaining"] is None
+
+
+def test_a_counted_bill_reports_what_it_has_posted(client, flat):
+    bill = make_bill(client, flat, occurrences_total=12).json()
+    assert bill["occurrences_total"] == 12
+    assert bill["occurrences_done"] == 0
+    assert bill["occurrences_remaining"] == 12
+
+
+def test_a_counted_bill_stops_once_it_is_spent(client, flat):
+    """Two occurrences means two expenses, however many months go by."""
+    bill = make_bill(client, flat, first_due_on=in_days(0), occurrences_total=2).json()
+
+    # Five months pass, one run each. The due date has to be a *different* day
+    # every time: posting the same bill twice for one date is refused by a
+    # unique index, so reusing today would prove nothing about the count.
+    for day in (-4, -3, -2, -1, 0):
+        client.patch(
+            f"/api/groups/{flat['group_id']}/recurring-bills/{bill['id']}",
+            json={"next_due_on": in_days(day), "clear_amount": False},
+            headers=flat["headers"],
+        )
+        run(client, flat)
+
+    posted = [e for e in expenses(client, flat)["items"] if e["source"] == "RECURRING"]
+    assert len(posted) == 2
+
+    after = client.get(
+        f"/api/groups/{flat['group_id']}/recurring-bills/{bill['id']}", headers=flat["headers"]
+    ).json()
+    assert after["occurrences_done"] == 2
+    assert after["is_finished"] is True
+    assert after["occurrences_remaining"] == 0
+
+
+def test_a_finished_bill_refuses_to_be_posted_by_hand(client, flat):
+    bill = make_bill(client, flat, occurrences_total=1).json()
+    run(client, flat)
+
+    response = client.post(
+        f"/api/groups/{flat['group_id']}/recurring-bills/{bill['id']}/generate",
+        json={"expense_date": in_days(40)},
+        headers=flat["headers"],
+    )
+    assert response.status_code == 409
+
+
+def test_running_a_finished_bill_posts_nothing(client, flat):
+    make_bill(client, flat, occurrences_total=1)
+    run(client, flat)
+    before = len(expenses(client, flat)["items"])
+
+    result = run(client, flat)
+    assert result["generated"] == []
+    assert len(expenses(client, flat)["items"]) == before
+
+
+def test_catching_up_stops_at_the_count_not_at_the_calendar(client, flat):
+    """A bill overdue by several periods posts what it has left, and no more.
+
+    The catch-up loop is the one place the limit could be walked straight past:
+    it posts one expense per period it missed.
+    """
+    make_bill(client, flat, first_due_on=in_days(0), occurrences_total=2)
+    bills = client.get(
+        f"/api/groups/{flat['group_id']}/recurring-bills", headers=flat["headers"]
+    ).json()
+    # Five months overdue, two occurrences allowed.
+    client.patch(
+        f"/api/groups/{flat['group_id']}/recurring-bills/{bills[0]['id']}",
+        json={"next_due_on": in_days(-160), "clear_amount": False},
+        headers=flat["headers"],
+    )
+
+    result = run(client, flat)
+    assert len(result["generated"]) == 2
+
+
+def test_raising_the_count_lets_a_finished_bill_run_again(client, flat):
+    bill = make_bill(client, flat, occurrences_total=1).json()
+    run(client, flat)
+
+    updated = client.patch(
+        f"/api/groups/{flat['group_id']}/recurring-bills/{bill['id']}",
+        json={"occurrences_total": 3, "clear_amount": False},
+        headers=flat["headers"],
+    ).json()
+    assert updated["is_finished"] is False
+    assert updated["occurrences_remaining"] == 2
+
+
+def test_clearing_the_count_makes_a_bill_unlimited_again(client, flat):
+    bill = make_bill(client, flat, occurrences_total=1).json()
+
+    updated = client.patch(
+        f"/api/groups/{flat['group_id']}/recurring-bills/{bill['id']}",
+        json={"clear_occurrences": True, "clear_amount": False},
+        headers=flat["headers"],
+    ).json()
+    assert updated["occurrences_total"] is None
+    assert updated["is_finished"] is False
+
+
+def test_a_count_of_zero_is_refused(client, flat):
+    response = make_bill(client, flat, occurrences_total=0)
+    assert response.status_code == 422

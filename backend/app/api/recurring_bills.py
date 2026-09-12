@@ -56,6 +56,11 @@ def create_recurring_bill(
 
     `first_due_on` cannot be in the past: a schedule nobody has seen yet should
     not conjure up months of back-dated expenses on its first run.
+
+    **Leave `occurrences_total` out for a bill that repeats forever.** Set it to
+    12 and the bill posts twelve times and then reports itself finished -- it
+    stops posting and stops reminding, but stays put so it can be extended or
+    deleted deliberately.
     """
     bill = recurring_bill_service.create_bill(
         db,
@@ -70,6 +75,7 @@ def create_recurring_bill(
         split_type=payload.split_type,
         participants=_specs(payload.participants),
         reminder_days_before=payload.reminder_days_before,
+        occurrences_total=payload.occurrences_total,
     )
     return RecurringBillOut.model_validate(bill)
 
@@ -105,6 +111,8 @@ def update_recurring_bill(
         active=payload.active,
         reminder_days_before=payload.reminder_days_before,
         next_due_on=payload.next_due_on,
+        occurrences_total=payload.occurrences_total,
+        clear_occurrences=payload.clear_occurrences,
     )
     return RecurringBillOut.model_validate(updated)
 
