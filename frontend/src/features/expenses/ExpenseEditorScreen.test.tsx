@@ -1,5 +1,6 @@
 import { QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { HttpResponse, http } from 'msw'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it } from 'vitest'
@@ -79,5 +80,87 @@ describe('the new-expense form', () => {
   it('follows the signed-in user, not the position in the list', async () => {
     renderForm(NOA)
     expect(await screen.findByRole('button', { name: /paid by/i })).toHaveAccessibleName(/Noa/)
+  })
+})
+
+/**
+ * "Repeats" is the fast path into the recurring-bills feature: tick it while
+ * adding this month's rent and the schedule sets itself up.
+ */
+describe('the repeats toggle', () => {
+  function fillAndSave(overrides: { repeat?: string } = {}) {
+    return async () => {
+      await userEvent.type(await screen.findByLabelText('What was it?'), 'Rent')
+      await userEvent.type(screen.getByLabelText('Amount'), '3600')
+      await userEvent.clear(screen.getByLabelText('When?'))
+      await userEvent.type(screen.getByLabelText('When?'), '2026-09-12')
+      if (overrides.repeat) {
+        await userEvent.selectOptions(screen.getByLabelText('Repeats'), overrides.repeat)
+      }
+      await userEvent.click(screen.getByRole('button', { name: 'Save expense' }))
+    }
+  }
+
+  it('posts only the expense when it is left off', async () => {
+    const bills: unknown[] = []
+    renderForm()
+    server.use(
+      http.post(apiUrl('/api/groups/g1/expenses'), () =>
+        HttpResponse.json({ id: 'e1', group_id: 'g1' }, { status: 201 }),
+      ),
+      http.post(apiUrl('/api/groups/g1/recurring-bills'), async ({ request }) => {
+        bills.push(await request.json())
+        return HttpResponse.json({}, { status: 201 })
+      }),
+    )
+
+    await fillAndSave()()
+    await new Promise((resolve) => setTimeout(resolve, 60))
+    expect(bills).toEqual([])
+  })
+
+  it('starts the schedule one period after this expense, not on it', async () => {
+    // first_due_on equal to this expense's own date would make tonight's run
+    // post the same bill again -- and the unique index would turn that into a
+    // 409 the next time anyone opened the group.
+    const bills: Record<string, unknown>[] = []
+    renderForm()
+    server.use(
+      http.post(apiUrl('/api/groups/g1/expenses'), () =>
+        HttpResponse.json({ id: 'e1', group_id: 'g1' }, { status: 201 }),
+      ),
+      http.post(apiUrl('/api/groups/g1/recurring-bills'), async ({ request }) => {
+        bills.push((await request.json()) as Record<string, unknown>)
+        return HttpResponse.json({}, { status: 201 })
+      }),
+    )
+
+    await fillAndSave({ repeat: 'MONTHLY' })()
+
+    await waitFor(() => expect(bills).toHaveLength(1))
+    expect(bills[0]).toMatchObject({
+      title: 'Rent',
+      frequency: 'MONTHLY',
+      first_due_on: '2026-10-12',
+      // Normalised by MoneyInput, and a string all the way down.
+      amount: '3600.00',
+    })
+  })
+
+  it('keeps the expense and says so when the schedule could not be set up', async () => {
+    // Two requests, not one transaction. A silent half-success would mean a
+    // bill that quietly never recurs, found out the month it was needed.
+    renderForm()
+    server.use(
+      http.post(apiUrl('/api/groups/g1/expenses'), () =>
+        HttpResponse.json({ id: 'e1', group_id: 'g1' }, { status: 201 }),
+      ),
+      http.post(apiUrl('/api/groups/g1/recurring-bills'), () =>
+        HttpResponse.json({ detail: 'Nope' }, { status: 500 }),
+      ),
+    )
+
+    await fillAndSave({ repeat: 'MONTHLY' })()
+    expect(await screen.findByText(/repeat wasn't set up/i)).toBeInTheDocument()
   })
 })

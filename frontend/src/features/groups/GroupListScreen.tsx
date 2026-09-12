@@ -18,6 +18,7 @@ import { useT } from '@/i18n/i18nContext'
 import { groupTypeLabel } from '@/lib/labels'
 
 import { useAddMemberToNewGroup, useCreateGroup, useGroups, useReopenGroup } from './api'
+import { isGroupOpen } from './lifecycle'
 import { SuggestionChips } from './SuggestionChips'
 import { useMemberSuggestions } from './suggestions'
 
@@ -29,8 +30,8 @@ export function GroupListScreen() {
   // Closed groups stay on this screen rather than disappearing from it. A trip
   // that ended is still a thing that happened, and may still owe somebody
   // money -- it just belongs under its own heading, below the live ones.
-  const open = groups.data?.filter((group) => group.archived_at === null) ?? []
-  const closed = groups.data?.filter((group) => group.archived_at !== null) ?? []
+  const open = groups.data?.filter(isGroupOpen) ?? []
+  const closed = groups.data?.filter((group) => !isGroupOpen(group)) ?? []
 
   return (
     <>

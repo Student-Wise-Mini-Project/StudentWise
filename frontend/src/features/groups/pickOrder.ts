@@ -1,6 +1,8 @@
 import type { Group } from '@/api/types'
 import { readLastGroupId } from '@/lib/prefs'
 
+import { isGroupOpen } from './lifecycle'
+
 /**
  * The groups the `+` bar may offer, most likely first.
  *
@@ -14,11 +16,9 @@ import { readLastGroupId } from '@/lib/prefs'
  */
 export function openGroupsInPickOrder(groups: Group[] | undefined): Group[] {
   const last = readLastGroupId()
-  return (groups ?? [])
-    .filter((group) => group.archived_at === null)
-    .sort((a, b) => {
-      if (a.id === last) return -1
-      if (b.id === last) return 1
-      return a.name.localeCompare(b.name)
-    })
+  return (groups ?? []).filter(isGroupOpen).sort((a, b) => {
+    if (a.id === last) return -1
+    if (b.id === last) return 1
+    return a.name.localeCompare(b.name)
+  })
 }

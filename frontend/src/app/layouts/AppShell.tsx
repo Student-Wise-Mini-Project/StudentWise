@@ -6,6 +6,7 @@ import { useT } from '@/i18n/i18nContext'
 import { PlusIcon } from '@/components/icons'
 import { useGroups } from '@/features/groups/api'
 import { GroupPickerSheet } from '@/features/groups/GroupPickerSheet'
+import { isGroupOpen } from '@/features/groups/lifecycle'
 import { openGroupsInPickOrder } from '@/features/groups/pickOrder'
 import { useUnreadCount } from '@/features/notifications/api'
 import { IosInstallHint, UpdatePrompt } from '@/pwa/PwaPrompts'
@@ -43,7 +44,7 @@ export function AppShell() {
   // above `GroupScopeRoute` and so has no scope of its own to read.
   const groups = useGroups()
   const inClosedGroup = Boolean(
-    groupId && groups.data?.some((group) => group.id === groupId && group.archived_at !== null),
+    groupId && groups.data?.some((group) => group.id === groupId && !isGroupOpen(group)),
   )
 
   // Outside a group the bar has to find one. Three cases, and only the middle

@@ -4,8 +4,11 @@ import { useNavigate, useParams } from 'react-router'
 import { detailOf } from '@/api/errors'
 import {
   EXPENSE_CATEGORIES,
+  RECURRENCE_FREQUENCIES,
   type ExpenseCategory,
   type GroupMember,
+  type RecurrenceFrequency,
+  type RecurringBillCreate,
   type SplitType,
 } from '@/api/types'
 import { AppBar } from '@/app/layouts/AppBar'
@@ -25,14 +28,20 @@ import { useT } from '@/i18n/i18nContext'
 import { categoryLabel } from '@/lib/labels'
 import { isPositive, isValidAmount } from '@/lib/money'
 
+import { useCreateBill } from '@/features/recurring/api'
+import { frequencyLabel } from '@/features/recurring/labels'
+import { onePeriodAfter } from '@/features/recurring/nextPeriod'
+
 import { SplitEditor } from './SplitEditor'
 import { useCreateExpense, useExpense, useUpdateExpense } from './api'
 import { validateSplit, type ParticipantDraft } from './splitValidation'
 
 export function NewExpenseScreen() {
+  const t = useT()
   const { groupId, activeMembers, currency } = useGroupScope()
   const navigate = useNavigate()
   const create = useCreateExpense(groupId)
+  const createBill = useCreateBill(groupId)
 
   // One tracker per open form. A key is minted on the first submit, reused for a
   // retry of the same body, and replaced the moment a field changes -- because
@@ -40,26 +49,96 @@ export function NewExpenseScreen() {
   // baffling "conflict" on a fixed typo.
   const idempotency = useRef(createIdempotencyTracker())
 
+  // Held so the retry can re-send only the bill, without the expense.
+  const [scheduleFailed, setScheduleFailed] = useState<RecurringBillCreate | null>(null)
+
+  /**
+   * Set up the schedule the "Repeats" row asked for, then leave.
+   *
+   * Two requests, not one transaction, and the spec accepts that: a `recurring`
+   * block on `ExpenseCreate` would be the atomically-correct answer, but it
+   * would also make `expense_service` call `recurring_bill_service`, and the
+   * dependency deliberately points the other way.
+   *
+   * What the non-atomicity is not allowed to be is silent. A bill that quietly
+   * never recurs is found out the month it was needed.
+   */
+  function scheduleThenLeave(bill: RecurringBillCreate, expenseId: string) {
+    createBill.mutate(bill, {
+      onSuccess: () => navigate(`/groups/${groupId}/expenses/${expenseId}`, { replace: true }),
+      onError: () => setScheduleFailed(bill),
+    })
+  }
+
   return (
-    <ExpenseForm
-      mode="create"
-      members={activeMembers}
-      currency={currency}
-      pending={create.isPending}
-      error={create.error}
-      onCancel={() => navigate(`/groups/${groupId}`)}
-      onSubmit={(input) =>
-        create.mutate(
-          { input, idempotencyKey: idempotency.current.keyFor(input) },
-          {
-            onSuccess: (expense) => {
-              idempotency.current.consume()
-              navigate(`/groups/${groupId}/expenses/${expense.id}`, { replace: true })
+    <>
+      {scheduleFailed && (
+        <div className="bg-danger-soft mx-4 mt-4 rounded-sm px-3 py-2.5">
+          <p role="alert" className="text-danger text-sm">
+            {t('expenses.repeats.scheduleFailed')}
+          </p>
+          <Button
+            size="sm"
+            variant="secondary"
+            className="mt-2"
+            loading={createBill.isPending}
+            onClick={() => {
+              const bill = scheduleFailed
+              setScheduleFailed(null)
+              createBill.mutate(bill, {
+                onSuccess: () => navigate(`/groups/${groupId}`, { replace: true }),
+                onError: () => setScheduleFailed(bill),
+              })
+            }}
+          >
+            {t('expenses.repeats.retry')}
+          </Button>
+        </div>
+      )}
+
+      <ExpenseForm
+        mode="create"
+        members={activeMembers}
+        currency={currency}
+        pending={create.isPending || createBill.isPending}
+        error={create.error}
+        onCancel={() => navigate(`/groups/${groupId}`)}
+        onSubmit={({ repeats, ...input }) =>
+          create.mutate(
+            { input, idempotencyKey: idempotency.current.keyFor(input) },
+            {
+              onSuccess: (expense) => {
+                idempotency.current.consume()
+
+                if (!repeats) {
+                  navigate(`/groups/${groupId}/expenses/${expense.id}`, { replace: true })
+                  return
+                }
+
+                scheduleThenLeave(
+                  {
+                    title: input.title,
+                    frequency: repeats,
+                    // One period after this expense, never on it: the expense
+                    // just added *is* this period's, and a schedule due the
+                    // same day would post it twice.
+                    first_due_on: onePeriodAfter(input.expense_date, repeats),
+                    payer_id: input.payer_id,
+                    amount: input.total_amount,
+                    category: input.category,
+                    // EQUAL, and no participants: the API then falls back to
+                    // every active member, or to a standing split rule.
+                    split_type: 'EQUAL',
+                    reminder_days_before: 3,
+                  },
+                  expense.id,
+                )
+              },
             },
-          },
-        )
-      }
-    />
+          )
+        }
+      />
+    </>
   )
 }
 
@@ -168,6 +247,8 @@ function ExpenseForm({
     participants: { user_id: string; share_value?: string }[]
     category: ExpenseCategory | null
     notes: string | null
+    /** Create mode only. Null means this expense does not repeat. */
+    repeats: RecurrenceFrequency | null
   }) => void
   onCancel: () => void
 }) {
@@ -195,6 +276,9 @@ function ExpenseForm({
     },
   )
   const [payerSheetOpen, setPayerSheetOpen] = useState(false)
+  // Create mode only, and deliberately outside `FormState`: editing an expense
+  // must never silently rewrite a schedule.
+  const [repeats, setRepeats] = useState<RecurrenceFrequency | ''>('')
 
   const patch = (next: Partial<FormState>) => setForm((current) => ({ ...current, ...next }))
 
@@ -283,6 +367,24 @@ function ExpenseForm({
               className="tnum text-control w-full border-0 bg-transparent font-semibold outline-none"
             />
           </LabelRow>
+
+          {mode === 'create' && (
+            <LabelRow label={t('expenses.repeats.label')}>
+              <select
+                value={repeats}
+                onChange={(event) => setRepeats(event.target.value as RecurrenceFrequency | '')}
+                aria-label={t('expenses.repeats.label')}
+                className="text-control w-full border-0 bg-transparent font-semibold outline-none"
+              >
+                <option value="">{t('expenses.repeats.never')}</option>
+                {RECURRENCE_FREQUENCIES.map((option) => (
+                  <option key={option} value={option}>
+                    {frequencyLabel(t, option)}
+                  </option>
+                ))}
+              </select>
+            </LabelRow>
+          )}
 
           <LabelRow label={t('expenses.editor.note')}>
             <input
@@ -395,6 +497,7 @@ function ExpenseForm({
       })),
       category: form.category === '' ? null : form.category,
       notes: form.notes.trim() === '' ? null : form.notes.trim(),
+      repeats: repeats === '' ? null : repeats,
     })
   }
 }

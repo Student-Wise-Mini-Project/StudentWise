@@ -17,6 +17,7 @@ import { isPositive, isZero } from '@/lib/money'
 import { rememberLastGroupId } from '@/lib/prefs'
 
 import { useGroup } from './api'
+import { isGroupOpen } from './lifecycle'
 import { GroupContext, type GroupScope, useGroupScope } from './groupContext'
 
 /**
@@ -54,7 +55,7 @@ export function GroupScopeRoute() {
       allMembers,
       me,
       isOwner: me?.role === 'OWNER',
-      isOpen: query.data.archived_at === null,
+      isOpen: isGroupOpen(query.data),
     }
   }, [query.data, groupId, user?.id])
 

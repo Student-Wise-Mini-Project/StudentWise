@@ -132,5 +132,12 @@
     "tooBig": "That photo is over 5 MB.",
     "header": "Receipt",
     "formatNote": "JPEG, PNG or WebP, up to 5 MB. The server checks the actual bytes rather than trusting the file name, and only members of this group can see it."
+  },
+  "repeats": {
+    "label": "Repeats",
+    "never": "Doesn't repeat",
+    "hint": "Sets up a repeating bill starting one period after this one.",
+    "scheduleFailed": "Expense saved, but the repeat wasn't set up.",
+    "retry": "Try the repeat again"
   }
 }
