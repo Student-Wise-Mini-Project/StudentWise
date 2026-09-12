@@ -5,7 +5,6 @@
   "emptyBody": "Rent, the electricity, a subscription. Set one up and it posts itself — or reminds someone when the amount varies.",
   "emptyAction": "Set one up",
   "varies": "Varies",
-  "variesNote": "The amount changes, so this one waits for somebody to enter it.",
   "nextDue": "Next {date}",
   "dueNow": "Due now",
   "paused": "Paused",

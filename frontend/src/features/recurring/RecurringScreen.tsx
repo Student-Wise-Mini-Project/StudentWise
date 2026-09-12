@@ -10,7 +10,7 @@ import { EmptyState, ErrorState, ListRowSkeleton } from '@/components/feedback'
 import { Stack } from '@/components/layout'
 import { useGroupScope } from '@/features/groups/groupContext'
 import { useT } from '@/i18n/i18nContext'
-import { formatDay } from '@/lib/dates'
+import { formatDay, today } from '@/lib/dates'
 
 import { BillEditorSheet } from './BillEditorSheet'
 import { PostNowSheet } from './PostNowSheet'
@@ -78,9 +78,19 @@ export function RecurringScreen() {
                 <>
                   {frequencyLabel(t, bill.frequency)}
                   {' · '}
-                  {bill.active
-                    ? t('recurring.nextDue', { date: formatDay(bill.next_due_on) })
-                    : t('recurring.paused')}
+                  {!bill.active ? (
+                    t('recurring.paused')
+                  ) : bill.next_due_on <= today() ? (
+                    // A bill that has already come due and is still sitting
+                    // here is one `run` could not post on its own -- which for
+                    // a varying bill means it is waiting on a person. This is
+                    // what gives RunResult.awaiting_amount somewhere to land;
+                    // "Next 1 Oct" on a bill that was due in March says the
+                    // opposite of what is true.
+                    <span className="text-debt font-semibold">{t('recurring.dueNow')}</span>
+                  ) : (
+                    t('recurring.nextDue', { date: formatDay(bill.next_due_on) })
+                  )}
                 </>
               }
               meta={

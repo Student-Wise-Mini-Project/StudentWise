@@ -126,6 +126,23 @@ describe('the recurring bills screen', () => {
     expect(screen.getByRole('button', { name: 'Resume' })).toBeInTheDocument()
   })
 
+  it('marks a bill that has already come due', async () => {
+    // This is what makes RunResult.awaiting_amount visible: a varying bill
+    // that is due has nothing to post itself with and is waiting on a person.
+    // "Next 1 Oct" on a bill that was due in March says the opposite.
+    renderScreen([
+      bill({ title: 'Electricity', amount: null, posts_itself: false, next_due_on: '2020-01-01' }),
+    ])
+
+    expect(await screen.findByText(/Due now/)).toBeInTheDocument()
+  })
+
+  it('does not mark one that is still in the future', async () => {
+    renderScreen([bill({ next_due_on: '2099-01-01' })])
+    expect(await screen.findByText(/Next/)).toBeInTheDocument()
+    expect(screen.queryByText(/Due now/)).not.toBeInTheDocument()
+  })
+
   it('empty until somebody sets one up', async () => {
     renderScreen([])
     expect(await screen.findByText('Nothing repeats yet')).toBeInTheDocument()
