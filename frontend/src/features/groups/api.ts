@@ -78,6 +78,43 @@ export function useDeleteGroup() {
 }
 
 /**
+ * Close a group, and reopen it.
+ *
+ * Both invalidate the whole `groups` tree rather than the one group. Closing
+ * moves a group between two sections of the list and changes whether the `+`
+ * bar offers it at all, so the list is exactly as stale as the group itself.
+ *
+ * Closing is allowed while balances are outstanding -- the confirm sheet names
+ * what is still owed and the decision stays with the person. Settlements keep
+ * working on a closed group, so that debt can still be paid off.
+ */
+export function useCloseGroup() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (groupId: string) =>
+      unwrap<Group>(
+        api.POST('/api/groups/{group_id}/close', { params: { path: { group_id: groupId } } }),
+      ),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: qk.groups.all() })
+    },
+  })
+}
+
+export function useReopenGroup() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (groupId: string) =>
+      unwrap<Group>(
+        api.POST('/api/groups/{group_id}/reopen', { params: { path: { group_id: groupId } } }),
+      ),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: qk.groups.all() })
+    },
+  })
+}
+
+/**
  * Find someone to add to a group.
  *
  * The backend requires at least three characters, so the query is disabled below

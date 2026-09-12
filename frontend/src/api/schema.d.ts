@@ -135,6 +135,53 @@ export interface paths {
         patch: operations["update_group_api_groups__group_id__patch"];
         trace?: never;
     };
+    "/api/groups/{group_id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Close Group
+         * @description End a group without erasing it.
+         *
+         *     A closed group stays fully readable and keeps every expense in it; it takes
+         *     no new spending. **Settlements stay open**, because closing is allowed while
+         *     money is still outstanding and that money has to remain payable.
+         *
+         *     A dedicated verb rather than a flag on `PATCH`: closing a group should not
+         *     be something a rename can do by accident. Reversible with `/reopen`.
+         */
+        post: operations["close_group_api_groups__group_id__close_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/groups/{group_id}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reopen Group
+         * @description Put a closed group back into service.
+         */
+        post: operations["reopen_group_api_groups__group_id__reopen_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/groups/{group_id}/members": {
         parameters: {
             query?: never;
@@ -1443,6 +1490,8 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Archived At */
+            archived_at?: string | null;
             /**
              * Members
              * @default []
@@ -2332,6 +2381,68 @@ export interface operations {
                 "application/json": components["schemas"]["GroupUpdate"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    close_group_api_groups__group_id__close_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reopen_group_api_groups__group_id__reopen_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
