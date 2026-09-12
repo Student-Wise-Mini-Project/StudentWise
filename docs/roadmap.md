@@ -34,17 +34,17 @@ touch the same file.
 |---|---:|---:|---|
 | 0. Ways of working | 5 | 2 | 🔨 invites sent, not yet accepted |
 | 1. Backend foundation | 5 | 0 | ✅ complete |
-| 2. Core domain (Splitwise parity) | 13 | 0 | ✅ complete |
+| 2. Core domain (Splitwise parity) | 14 | 0 | ✅ complete |
 | 3. Algorithms | 4 | 0 | ✅ complete |
 | 4. Analytics & intelligence | 5 | 1 | 🚫 only 4.4, blocked on a key |
 | 5. AI ingestion (Module 1) | 1 | 8 | started |
 | 6. Recurring & automation | 4 | 0 | ✅ complete |
 | 7. Payments (Bit / PayBox) | 0 | 3 | ⬜ not started |
 | 8. AI chat assistant / RAG | 0 | 4 | ⬜ not started |
-| 9. Frontend | 9 | 3 | 🔨 the app works end to end |
+| 9. Frontend | 14 | 3 | 🔨 the app works end to end |
 | 10. Deployment | 0 | 6 | ⬜ not started |
 | 11. Academic deliverables | 1 | 4 | started |
-| **Total** | **38** | **40** | |
+| **Total** | **43** | **40** | |
 
 **The honest read:** the backend is essentially done. Epics 1, 2, 3 and 6 are
 complete and Epic 4 has only its blocked mission left. Everything remaining is
@@ -117,6 +117,7 @@ nothing blocking them. There is a great deal of API and still no interface.
 | 2.11 | **Receipt image upload + storage** (feeds 5.4) | M | Gal | ✅ |
 | 2.12 | Comments / notes thread on an expense | M | Gal | ✅ |
 | 2.13 | In-app notifications + reminders | L | Gal | ✅ |
+| 2.14 | **Close a group** (`archived_at`) + reopen, and what a closed group refuses | M | Gal | ✅ |
 
 **Epic 2 is complete. Splitwise parity is done.**
 
@@ -244,7 +245,9 @@ from an image that is already on the server.**
 | 6.3 | Generate the next expense when a bill falls due | M | Gal | ✅ |
 | 6.4 | Due-date reminders | M | Gal | ✅ |
 
-**Epic 6 is complete.**
+**Epic 6 is complete**, and since 9.17 it has a UI. The backend was finished
+first and sat unreachable: the tab, the editor and the "repeats" toggle in the
+expense form are what turned it into a feature people can use.
 
 > **The distinction the epic turns on:** a bill's `amount` may be null. Rent is
 > 3600 every month and posts itself; electricity is whatever the meter says, so
@@ -318,13 +321,25 @@ with no interface is hard to demo whatever the API does.
 | 9.11 | PWA: manifest, service worker, iOS install | M | #3 | ✅ |
 | 9.12 | Android APK wrapper | M | #3 | ⬜ |
 | 9.13 | Hebrew + i18n: catalogue, typed `t()`, RTL switch | L | Gal | ✅ |
+| 9.14 | Close / delete a group, and a Closed section in the list | M | Gal | ✅ |
+| 9.15 | The `+` bar picks a group instead of falling back to the list | S | Gal | ✅ |
+| 9.16 | Member suggestions from your other groups | S | Gal | ✅ |
+| 9.17 | **Recurring bills UI** — the tab, the editor, and a repeats toggle | L | Gal | ✅ |
 
-> **10 of 13 done.** You can sign in, create a flat, add flatmates and weights,
+> **14 of 17 done.** You can sign in, create a flat, add flatmates and weights,
 > add an expense in any of the four split modes, see balances, settle up,
 > comment, attach a receipt, read your alerts, see where the money goes, install
 > it to an iOS home screen, **and run the whole thing in Hebrew**. What is left
 > is the natural-language Ask screen (9.9), anomaly alerts (9.10) and the APK
 > (9.12).
+>
+> **9.14–9.17 came from using the app, not from reading the code**, and three of
+> the four were a screen that was never built rather than a decision that was
+> never made. Epic 6 had been complete on the backend for two days with no way
+> to reach it from the UI — 9.17 is that gap closed, and it is the reason the
+> roadmap now carries a frontend mission for a backend epic that was already
+> ticked. The `+` bar (9.15) used to hand you the groups list when you were not
+> inside a group, which throws away the intention you tapped it with.
 >
 > **Hebrew is 9.13 and it is done.** The RTL groundwork paid off: the layout
 > axis was finished in advance, so this was only the words. No i18n library --
