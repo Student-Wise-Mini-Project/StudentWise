@@ -60,6 +60,30 @@ def delete_group(membership: GroupMembership, db: DbSession) -> None:
     group_service.delete_group(db, membership.group)
 
 
+@router.post("/{group_id}/close", response_model=GroupOut)
+def close_group(membership: GroupMembership, db: DbSession) -> GroupOut:
+    """End a group without erasing it.
+
+    A closed group stays fully readable and keeps every expense in it; it takes
+    no new spending. **Settlements stay open**, because closing is allowed while
+    money is still outstanding and that money has to remain payable.
+
+    A dedicated verb rather than a flag on `PATCH`: closing a group should not
+    be something a rename can do by accident. Reversible with `/reopen`.
+    """
+    group_service.require_owner(membership)
+    group = group_service.close_group(db, membership.group)
+    return GroupOut.model_validate(group)
+
+
+@router.post("/{group_id}/reopen", response_model=GroupOut)
+def reopen_group(membership: GroupMembership, db: DbSession) -> GroupOut:
+    """Put a closed group back into service."""
+    group_service.require_owner(membership)
+    group = group_service.reopen_group(db, membership.group)
+    return GroupOut.model_validate(group)
+
+
 @router.post(
     "/{group_id}/members", response_model=GroupMemberOut, status_code=status.HTTP_201_CREATED
 )

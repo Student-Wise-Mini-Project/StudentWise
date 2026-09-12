@@ -19,6 +19,22 @@ def require_owner(membership: GroupMember) -> None:
         raise ForbiddenError("Only a group owner can do that")
 
 
+def require_open(group: Group) -> None:
+    """A closed group takes no new spending.
+
+    Called explicitly at the top of each write service rather than wired up as a
+    FastAPI dependency. Two reasons. `PATCH /expenses/{id}` and its siblings
+    resolve through `ExpenseForMember`, not `GroupMembership`, so no single
+    dependency reaches every write. And an explicit call is greppable: the
+    answer to "what does closing actually block?" is one `rg require_open` away,
+    where a dependency would have to be read off a dozen route signatures.
+
+    Deliberately *not* called by `settlement_service`. See the note there.
+    """
+    if not group.is_open:
+        raise ConflictError("This group is closed")
+
+
 def get_group(db: Session, group_id: uuid.UUID) -> Group:
     group = GroupRepository(db).get(group_id)
     if group is None:
@@ -67,6 +83,33 @@ def update_group(
 def delete_group(db: Session, group: Group) -> None:
     GroupRepository(db).delete(group)
     db.commit()
+
+
+def close_group(db: Session, group: Group) -> Group:
+    """End a trip without erasing it.
+
+    Deliberately allowed while balances are outstanding. Real trips end with
+    somebody paying in cash outside the app, and a group that cannot be closed
+    until the app agrees it is square is a group nobody can ever close. The
+    client warns and names what is owed; the decision stays with the person.
+
+    What that costs is a rule elsewhere: settlements stay open on a closed
+    group, or the ₪120 this group closed owing could never be paid off.
+    """
+    require_open(group)
+    group.archived_at = datetime.now(UTC)
+    db.commit()
+    db.refresh(group)
+    return group
+
+
+def reopen_group(db: Session, group: Group) -> Group:
+    if group.is_open:
+        raise ConflictError("This group is not closed")
+    group.archived_at = None
+    db.commit()
+    db.refresh(group)
+    return group
 
 
 def add_member(
