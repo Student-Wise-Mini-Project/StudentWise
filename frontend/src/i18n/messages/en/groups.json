@@ -65,5 +65,22 @@
     "weightLabel": "Share",
     "weightHint": "Bigger room, bigger number.",
     "weightError": "Has to be a number above zero."
+  },
+  "danger": {
+    "header": "Danger zone",
+    "close": "Close group",
+    "closeTitle": "Close this group?",
+    "closeBody": "No new expenses can be added. You can reopen it at any time, and anything still owed can still be settled.",
+    "closeOutstandingHeader": "Still outstanding",
+    "closeOutstanding": "{from} owes {to}",
+    "closeAnyway": "Close anyway",
+    "closeSquare": "Everyone is square.",
+    "reopenTitle": "Reopen this group?",
+    "reopenBody": "It goes back to taking new expenses.",
+    "delete": "Delete group",
+    "deleteTitle": "Delete this group?",
+    "deleteBody": "Every expense, split and settlement in it goes too. This cannot be undone. To keep the record, close the group instead.",
+    "deleteConfirmLabel": "Type the group's name to confirm",
+    "deleteSubmit": "Delete permanently"
   }
 }
