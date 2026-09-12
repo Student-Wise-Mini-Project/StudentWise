@@ -13,10 +13,11 @@ import { EmptyState, ErrorState, ListRowSkeleton } from '@/components/feedback'
 import { ChevronEnd, GroupsIcon } from '@/components/icons'
 import { Page, Stack } from '@/components/layout'
 import { detailOf } from '@/api/errors'
+import { useAuth } from '@/features/auth/authContext'
 import { useT } from '@/i18n/i18nContext'
 import { groupTypeLabel } from '@/lib/labels'
 
-import { useCreateGroup, useGroups } from './api'
+import { useCreateGroup, useGroups, useReopenGroup } from './api'
 
 export function GroupListScreen() {
   const t = useT()
@@ -56,12 +57,18 @@ export function GroupListScreen() {
         )}
 
         {open.length > 0 && (
-          <ListSection className="pt-2">{open.map((group) => groupRow(t, group))}</ListSection>
+          <ListSection className="pt-2">
+            {open.map((group) => (
+              <GroupRow key={group.id} group={group} />
+            ))}
+          </ListSection>
         )}
 
         {closed.length > 0 && (
           <ListSection header={t('groups.closed.sectionHeader')}>
-            {closed.map((group) => groupRow(t, group, true))}
+            {closed.map((group) => (
+              <GroupRow key={group.id} group={group} closed />
+            ))}
           </ListSection>
         )}
       </Page>
@@ -77,12 +84,23 @@ export function GroupListScreen() {
  * A closed group is dimmed and carries "Closed" where an open one carries its
  * kind -- the badge slot says the most useful thing about the group, and once
  * it is closed that is no longer "Trip".
+ *
+ * Its owner gets Reopen here rather than only inside the group. Reopening is
+ * the answer to "I closed the wrong one", and that is realised while looking
+ * at the list, not after walking into the group to find out.
  */
-function groupRow(t: ReturnType<typeof useT>, group: Group, closed = false) {
+function GroupRow({ group, closed = false }: { group: Group; closed?: boolean }) {
+  const t = useT()
+  const { user } = useAuth()
+  const reopen = useReopenGroup()
+
   const active = group.members.filter((member) => member.left_at === null)
+  const isOwner = group.members.some(
+    (member) => member.user.id === user?.id && member.role === 'OWNER',
+  )
+
   return (
     <ListRow
-      key={group.id}
       to={`/groups/${group.id}`}
       title={group.name}
       subtitle={t('groups.list.memberCount', { count: active.length })}
@@ -94,7 +112,26 @@ function groupRow(t: ReturnType<typeof useT>, group: Group, closed = false) {
         />
       }
       meta={<Badge>{closed ? t('groups.closed.badge') : groupTypeLabel(t, group.type)}</Badge>}
-      trailing={<ChevronEnd />}
+      trailing={
+        closed && isOwner ? (
+          <Button
+            size="sm"
+            variant="secondary"
+            loading={reopen.isPending}
+            onClick={(event) => {
+              // The whole row is a link to the group; reopening is not a
+              // reason to also walk into it.
+              event.preventDefault()
+              event.stopPropagation()
+              reopen.mutate(group.id)
+            }}
+          >
+            {t('groups.closed.reopen')}
+          </Button>
+        ) : (
+          <ChevronEnd />
+        )
+      }
     />
   )
 }
