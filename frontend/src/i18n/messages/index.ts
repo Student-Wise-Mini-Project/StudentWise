@@ -10,6 +10,7 @@ import errorsEn from './en/errors.json'
 import expensesEn from './en/expenses.json'
 import groupsEn from './en/groups.json'
 import notificationsEn from './en/notifications.json'
+import recurringEn from './en/recurring.json'
 import settingsEn from './en/settings.json'
 import activityHe from './he/activity.json'
 import analyticsHe from './he/analytics.json'
@@ -20,6 +21,7 @@ import errorsHe from './he/errors.json'
 import expensesHe from './he/expenses.json'
 import groupsHe from './he/groups.json'
 import notificationsHe from './he/notifications.json'
+import recurringHe from './he/recurring.json'
 import settingsHe from './he/settings.json'
 
 /**
@@ -39,6 +41,7 @@ export const en = {
   expenses: expensesEn,
   groups: groupsEn,
   notifications: notificationsEn,
+  recurring: recurringEn,
   settings: settingsEn,
 } as const
 
@@ -56,6 +59,7 @@ export const he: Widen<typeof en> = {
   expenses: expensesHe,
   groups: groupsHe,
   notifications: notificationsHe,
+  recurring: recurringHe,
   settings: settingsHe,
 }
 

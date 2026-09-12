@@ -1,0 +1,56 @@
+{
+  "title": "Repeating bills",
+  "add": "New bill",
+  "emptyTitle": "Nothing repeats yet",
+  "emptyBody": "Rent, the electricity, a subscription. Set one up and it posts itself — or reminds someone when the amount varies.",
+  "emptyAction": "Set one up",
+  "varies": "Varies",
+  "variesNote": "The amount changes, so this one waits for somebody to enter it.",
+  "nextDue": "Next {date}",
+  "dueNow": "Due now",
+  "paused": "Paused",
+  "postNow": "Post now",
+  "pause": "Pause",
+  "resume": "Resume",
+  "frequency": {
+    "MONTHLY": "Monthly",
+    "EVERY_2_MONTHS": "Every 2 months",
+    "QUARTERLY": "Quarterly",
+    "YEARLY": "Yearly"
+  },
+  "editor": {
+    "newTitle": "New repeating bill",
+    "editTitle": "Edit this bill",
+    "description": "It posts on its own when the amount is fixed.",
+    "titleLabel": "What is it?",
+    "titleHint": "Rent, electricity, Netflix.",
+    "frequencyLabel": "How often?",
+    "firstDueLabel": "First due on",
+    "firstDueHint": "Cannot be in the past — a new schedule should not conjure up back-dated months.",
+    "firstDuePast": "Pick today or later.",
+    "nextDueLabel": "Next due on",
+    "payerLabel": "Who pays it?",
+    "variesLabel": "The amount varies",
+    "variesHint": "Leave the amount out and this reminds somebody instead of posting itself.",
+    "amountLabel": "How much?",
+    "categoryLabel": "Category",
+    "categoryNone": "No category",
+    "splitLabel": "How is it split?",
+    "splitHint": "Across everyone in the group, or by their shares. Uneven splits are set per expense.",
+    "reminderLabel": "Remind this many days before",
+    "save": "Save"
+  },
+  "post": {
+    "title": "Post {title}",
+    "description": "This creates the expense and moves the schedule on.",
+    "amountLabel": "How much this time?",
+    "dateLabel": "Dated",
+    "submit": "Post it",
+    "alreadyPosted": "This bill has already been posted for that date."
+  },
+  "delete": {
+    "title": "Delete this bill?",
+    "body": "The schedule stops. Expenses it has already posted are kept.",
+    "submit": "Delete"
+  }
+}

@@ -90,6 +90,7 @@ const TABS: { to: string; label: MessageKey; end?: boolean }[] = [
   { to: '', label: 'groups.tabs.expenses', end: true },
   { to: 'balances', label: 'groups.tabs.balances' },
   { to: 'members', label: 'groups.tabs.members' },
+  { to: 'recurring', label: 'groups.tabs.recurring' },
   { to: 'insights', label: 'groups.tabs.insights' },
 ]
 
@@ -149,7 +150,9 @@ export function GroupTabsLayout() {
         </div>
 
         <nav
-          className="border-line flex gap-1 border-b px-2"
+          // Five tabs do not fit 360px. They scroll rather than wrap: a
+          // wrapped second row of tabs reads as a different kind of control.
+          className="border-line flex gap-1 overflow-x-auto border-b px-2 whitespace-nowrap"
           aria-label={t('groups.scope.sections')}
         >
           {TABS.map((tab) => (

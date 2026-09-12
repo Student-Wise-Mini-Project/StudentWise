@@ -19,6 +19,7 @@ import { InsightsScreen } from '@/features/analytics/InsightsScreen'
 import { BalancesScreen } from '@/features/balances/BalancesScreen'
 import { MembersScreen } from '@/features/groups/MembersScreen'
 import { NotificationsScreen } from '@/features/notifications/NotificationsScreen'
+import { RecurringScreen } from '@/features/recurring/RecurringScreen'
 import { env } from '@/lib/env'
 
 /**
@@ -54,6 +55,7 @@ export function AppRoutes() {
               <Route path="balances" element={<BalancesScreen />} />
               <Route path="insights" element={<InsightsScreen />} />
               <Route path="members" element={<MembersScreen />} />
+              <Route path="recurring" element={<RecurringScreen />} />
             </Route>
 
             <Route path="expenses/new" element={<NewExpenseScreen />} />
