@@ -386,6 +386,15 @@ function ExpenseForm({
             </LabelRow>
           )}
 
+          {mode === 'create' && repeats !== '' && (
+            // Worth saying: the expense being added is this period's, so the
+            // schedule starts on the next one. Otherwise adding September's
+            // rent and seeing "next due October" reads as an off-by-one.
+            <p className="text-muted px-4 pb-3 text-xs" dir="auto">
+              {t('expenses.repeats.hint')}
+            </p>
+          )}
+
           <LabelRow label={t('expenses.editor.note')}>
             <input
               value={form.notes}

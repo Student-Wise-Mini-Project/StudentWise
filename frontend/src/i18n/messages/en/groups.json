@@ -79,8 +79,6 @@
     "closeOutstanding": "{from} owes {to}",
     "closeAnyway": "Close anyway",
     "closeSquare": "Everyone is square.",
-    "reopenTitle": "Reopen this group?",
-    "reopenBody": "It goes back to taking new expenses.",
     "delete": "Delete group",
     "deleteTitle": "Delete this group?",
     "deleteBody": "Every expense, split and settlement in it goes too. This cannot be undone. To keep the record, close the group instead.",

@@ -128,6 +128,17 @@ mount the editor only while open and key it by bill — is shorter than the effe
 was, and "fresh state for a different bill" is something React gives you for
 free as a remount.
 
+**Rebasing the stack silently dropped two commits.** Moving a late fix down to
+`feat/close-groups` and replaying the stack, `git rebase --onto <new-base>
+<bad-upstream> feat/group-picker` reported *"Successfully rebased"* and left
+`feat/group-picker` byte-identical to its base — both picker commits gone. The
+originals were still reachable, so the stack was rebuilt by cherry-picking and
+each branch's ancestry checked with `git merge-base --is-ancestor`. Worth
+recording because **nothing failed at the time**: the rebase claimed success,
+and only a later `tsc` error (`Cannot find module '@/features/groups/
+GroupPickerSheet'`) revealed it. Check `git rev-list --count` per branch after
+any `--onto`.
+
 **Three test failures in a row were the tests being wrong, not the code.**
 "Rent" matched both a row and a category `<option>`; "Closed" appeared as both a
 section heading and a badge; `3600` came back as `3600.00` because `MoneyInput`
@@ -136,11 +147,34 @@ normalises. Worth noting because each one looked like a bug for about a minute.
 ## Verification
 
 - Backend: **591 passed**, `ruff check` clean.
-- Frontend: **244 passed** across 33 files — including all three guards
+- Frontend: **248 passed** across 33 files — including all three guards
   (design tokens, logical properties, no bare strings) — `eslint` clean,
   `tsc -b` clean, `npm run build` clean.
+- Stack ancestry checked with `git merge-base --is-ancestor`: 9 ⊂ 11 ⊂ 13 ⊂ 19
+  commits.
+- No catalogue key added this session is unrendered (scanned; three were, and
+  were either wired up or deleted).
 - `schema.d.ts` regenerated from `app.main`: 111 lines, additions only.
 - `node scripts/check-roadmap-sync.mjs`: in sync, 84 missions, 53 done.
+
+## Caught on a second pass, after claiming it was finished
+
+Re-reading the spec rather than the diff turned up three things, all now fixed:
+
+- **Reopen belonged in the Closed list section**, not only in the danger zone
+  inside the group. Reopening is the answer to "I closed the wrong one", and
+  that is realised while looking at the list.
+- **`awaiting_amount` had nowhere to land after all.** A varying bill past its
+  due date rendered identically to one due next month. Overdue bills now read
+  **Due now**; the commit message had claimed this before it was true.
+- **Three keys were written and never rendered** (`recurring.variesNote`,
+  `groups.danger.reopenTitle`/`reopenBody`, `expenses.repeats.hint`). Two were
+  deleted; the third said something genuinely non-obvious — that the schedule
+  starts *next* period — so it is now shown under the Repeats row.
+
+The lesson is cheap and repeatable: a passing suite says the code does what the
+tests say, not what the spec says. The gaps were all in places no test was
+looking, and a key that is never rendered is invisible to every guard we have.
 
 ## Not done / next
 
