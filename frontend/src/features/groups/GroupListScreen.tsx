@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { GROUP_TYPES, type GroupType } from '@/api/types'
+import { GROUP_TYPES, type Group, type GroupType } from '@/api/types'
 import { AppBar } from '@/app/layouts/AppBar'
 import { AvatarStack } from '@/components/Avatar'
 import { Badge } from '@/components/Badge'
@@ -22,6 +22,12 @@ export function GroupListScreen() {
   const t = useT()
   const groups = useGroups()
   const [creating, setCreating] = useState(false)
+
+  // Closed groups stay on this screen rather than disappearing from it. A trip
+  // that ended is still a thing that happened, and may still owe somebody
+  // money -- it just belongs under its own heading, below the live ones.
+  const open = groups.data?.filter((group) => group.archived_at === null) ?? []
+  const closed = groups.data?.filter((group) => group.archived_at !== null) ?? []
 
   return (
     <>
@@ -49,28 +55,47 @@ export function GroupListScreen() {
           />
         )}
 
-        {groups.data && groups.data.length > 0 && (
-          <ListSection className="pt-2">
-            {groups.data.map((group) => {
-              const active = group.members.filter((member) => member.left_at === null)
-              return (
-                <ListRow
-                  key={group.id}
-                  to={`/groups/${group.id}`}
-                  title={group.name}
-                  subtitle={t('groups.list.memberCount', { count: active.length })}
-                  leading={<AvatarStack users={active.map((member) => member.user)} max={3} />}
-                  meta={<Badge>{groupTypeLabel(t, group.type)}</Badge>}
-                  trailing={<ChevronEnd />}
-                />
-              )
-            })}
+        {open.length > 0 && (
+          <ListSection className="pt-2">{open.map((group) => groupRow(t, group))}</ListSection>
+        )}
+
+        {closed.length > 0 && (
+          <ListSection header={t('groups.closed.sectionHeader')}>
+            {closed.map((group) => groupRow(t, group, true))}
           </ListSection>
         )}
       </Page>
 
       <CreateGroupSheet open={creating} onClose={() => setCreating(false)} />
     </>
+  )
+}
+
+/**
+ * One row shape for both sections.
+ *
+ * A closed group is dimmed and carries "Closed" where an open one carries its
+ * kind -- the badge slot says the most useful thing about the group, and once
+ * it is closed that is no longer "Trip".
+ */
+function groupRow(t: ReturnType<typeof useT>, group: Group, closed = false) {
+  const active = group.members.filter((member) => member.left_at === null)
+  return (
+    <ListRow
+      key={group.id}
+      to={`/groups/${group.id}`}
+      title={group.name}
+      subtitle={t('groups.list.memberCount', { count: active.length })}
+      leading={
+        <AvatarStack
+          users={active.map((member) => member.user)}
+          max={3}
+          className={closed ? 'opacity-50' : undefined}
+        />
+      }
+      meta={<Badge>{closed ? t('groups.closed.badge') : groupTypeLabel(t, group.type)}</Badge>}
+      trailing={<ChevronEnd />}
+    />
   )
 }
 

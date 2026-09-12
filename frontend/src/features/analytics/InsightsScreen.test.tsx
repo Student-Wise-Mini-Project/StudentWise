@@ -126,6 +126,7 @@ function renderScreen() {
               allMembers: GROUP.members,
               me: GROUP.members[0],
               isOwner: false,
+              isOpen: true,
             }}
           >
             <InsightsScreen />
@@ -240,6 +241,7 @@ describe('a group with nothing in it', () => {
                 allMembers: GROUP.members,
                 me: GROUP.members[0],
                 isOwner: false,
+                isOpen: true,
               }}
             >
               <InsightsScreen />

@@ -22,7 +22,7 @@ import { useGroupScope } from './groupContext'
 
 export function MembersScreen() {
   const t = useT()
-  const { activeMembers, allMembers, isOwner, groupId, currency } = useGroupScope()
+  const { activeMembers, allMembers, isOwner, isOpen, groupId, currency } = useGroupScope()
   const { user } = useAuth()
   const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState<GroupMember | null>(null)
@@ -42,9 +42,11 @@ export function MembersScreen() {
       <ListSection
         header={t('groups.members.header')}
         action={
-          <Button size="sm" variant="secondary" onClick={() => setAdding(true)}>
-            {t('groups.members.addSomeone')}
-          </Button>
+          isOpen ? (
+            <Button size="sm" variant="secondary" onClick={() => setAdding(true)}>
+              {t('groups.members.addSomeone')}
+            </Button>
+          ) : undefined
         }
       >
         {activeMembers.map((member) => {

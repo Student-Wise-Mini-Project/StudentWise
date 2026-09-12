@@ -48,6 +48,7 @@ export function GroupScopeRoute() {
       allMembers,
       me,
       isOwner: me?.role === 'OWNER',
+      isOpen: query.data.archived_at === null,
     }
   }, [query.data, groupId, user?.id])
 
@@ -89,7 +90,7 @@ const TABS: { to: string; label: MessageKey; end?: boolean }[] = [
 /** The group's own chrome: its name, where you stand in it, and the four views. */
 export function GroupTabsLayout() {
   const t = useT()
-  const { group, groupId, activeMembers } = useGroupScope()
+  const { group, groupId, activeMembers, isOpen } = useGroupScope()
   const { user } = useAuth()
   const balances = useBalances(groupId)
   const mine = balances.data?.balances.find((row) => row.user.id === user?.id)
@@ -98,6 +99,17 @@ export function GroupTabsLayout() {
     <>
       <AppBar title={group.name} back="/groups" />
       <Page width="narrow">
+        {/* A closed group still shows everything it ever held. The banner says
+         * what changed, and says the one thing that has not: a debt left over
+         * from a trip that ended can still be settled. */}
+        {!isOpen && (
+          <p className="bg-sunken text-muted border-line border-b px-4 py-2.5 text-sm" dir="auto">
+            {mine && !isZero(mine.net)
+              ? t('groups.closed.bannerSettling')
+              : t('groups.closed.banner')}
+          </p>
+        )}
+
         {/* A surface strip, not a slab. The Balances tab below carries this
          * screen's one inverted block, and two of them on the same screen
          * would be two headlines competing. */}

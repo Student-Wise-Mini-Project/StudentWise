@@ -13,6 +13,14 @@ export type GroupScope = {
   allMembers: GroupMember[]
   me: GroupMember | undefined
   isOwner: boolean
+  /**
+   * False once the group is closed.
+   *
+   * A closed group is fully readable and every screen still renders it; what
+   * goes away is the offer to spend in it. Recording a payment deliberately
+   * stays, because a group may be closed while money is still outstanding.
+   */
+  isOpen: boolean
 }
 
 /**

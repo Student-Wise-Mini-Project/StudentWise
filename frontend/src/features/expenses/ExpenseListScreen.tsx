@@ -48,7 +48,7 @@ function useFilters(): [ExpenseFilters, (next: ExpenseFilters) => void] {
 
 export function ExpenseListScreen() {
   const t = useT()
-  const { groupId, currency, activeMembers } = useGroupScope()
+  const { groupId, currency, activeMembers, isOpen } = useGroupScope()
   const [filters, setFilters] = useFilters()
   const expenses = useExpenses(groupId, filters)
 
@@ -70,9 +70,11 @@ export function ExpenseListScreen() {
             </>
           )}
         </p>
-        <LinkButton to={`/groups/${groupId}/expenses/new`} size="sm">
-          {t('common.actions.add')}
-        </LinkButton>
+        {isOpen && (
+          <LinkButton to={`/groups/${groupId}/expenses/new`} size="sm">
+            {t('common.actions.add')}
+          </LinkButton>
+        )}
       </div>
 
       <div className="flex gap-2 overflow-x-auto px-4 pb-3">
@@ -159,10 +161,14 @@ export function ExpenseListScreen() {
               icon={<ReceiptIcon className="size-10" />}
               title={t('expenses.list.emptyTitle')}
               body={t('expenses.list.emptyBody')}
-              action={{
-                label: t('expenses.list.emptyAction'),
-                to: `/groups/${groupId}/expenses/new`,
-              }}
+              action={
+                isOpen
+                  ? {
+                      label: t('expenses.list.emptyAction'),
+                      to: `/groups/${groupId}/expenses/new`,
+                    }
+                  : undefined
+              }
             />
           )
         }

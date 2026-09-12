@@ -3,6 +3,7 @@ import { Link, Outlet, useMatch } from 'react-router'
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useT } from '@/i18n/i18nContext'
 import { PlusIcon } from '@/components/icons'
+import { useGroups } from '@/features/groups/api'
 import { useUnreadCount } from '@/features/notifications/api'
 import { IosInstallHint, UpdatePrompt } from '@/pwa/PwaPrompts'
 
@@ -37,6 +38,14 @@ export function AppShell() {
   const onEditExpense = useMatch('/groups/:groupId/expenses/:expenseId/edit')
   const onEditor = Boolean(onNewExpense ?? onEditExpense)
 
+  // A closed group takes no new expenses, so it is not offered one. The group
+  // list is already in cache from the screens that use it; this shell sits
+  // above `GroupScopeRoute` and so has no scope of its own to read.
+  const groups = useGroups()
+  const inClosedGroup = Boolean(
+    groupId && groups.data?.some((group) => group.id === groupId && group.archived_at !== null),
+  )
+
   return (
     <div className="min-h-dvh lg:ps-60">
       <OfflineBanner />
@@ -58,7 +67,7 @@ export function AppShell() {
        * what it does, is reachable by either thumb, and mirrors for free. The
        * `+` is its own flex child so it stays on the leading edge under `rtl`
        * rather than being swept to the end of the text run. */}
-      {!onEditor && (
+      {!onEditor && !inClosedGroup && (
         <div
           className="from-ground pointer-events-none fixed inset-x-0 z-30 bg-linear-to-t from-45% to-transparent px-4 pt-12 pb-2 lg:hidden"
           style={{ insetBlockEnd: 'calc(var(--sw-tabbar-height) + var(--sw-safe-block-end))' }}

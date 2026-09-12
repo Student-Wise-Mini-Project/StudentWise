@@ -100,6 +100,7 @@ function renderScreen(as = GAL) {
     allMembers: GROUP.members,
     me: GROUP.members.find((m) => m.user.id === as.id),
     isOwner: as.id === GAL.id,
+    isOpen: true,
   }
 
   return render(
@@ -228,6 +229,7 @@ describe('when everyone is square', () => {
                 allMembers: GROUP.members,
                 me: GROUP.members[0],
                 isOwner: true,
+                isOpen: true,
               }}
             >
               <BalancesScreen />

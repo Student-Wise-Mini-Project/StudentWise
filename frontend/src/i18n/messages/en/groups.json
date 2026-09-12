@@ -17,6 +17,13 @@
     "emptyAction": "Create a group",
     "memberCount": { "one": "{count} person", "other": "{count} people" }
   },
+  "closed": {
+    "sectionHeader": "Closed",
+    "badge": "Closed",
+    "banner": "This group is closed. Reopen it to add expenses.",
+    "bannerSettling": "This group is closed, but you can still record a payment.",
+    "reopen": "Reopen"
+  },
   "create": {
     "title": "New group",
     "description": "You can add the others once it exists.",
