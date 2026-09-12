@@ -527,7 +527,7 @@ function LabelRow({
 }) {
   const body = (
     <>
-      <span className="text-muted font-display text-2xs w-[4.5rem] shrink-0 font-extrabold tracking-[0.08em] uppercase">
+      <span className="text-muted font-display text-2xs w-18 shrink-0 font-extrabold tracking-[0.08em] uppercase">
         {label}
       </span>
       <span className="min-w-0 flex-1">{children}</span>

@@ -32,7 +32,7 @@ export function ReceiptSection({
 
   return (
     <section className="flex flex-col gap-3 px-4">
-      <h2 className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
+      <h2 className="text-muted font-display text-2xs font-extrabold tracking-widest uppercase">
         {t('expenses.receipts.header')}
       </h2>
 

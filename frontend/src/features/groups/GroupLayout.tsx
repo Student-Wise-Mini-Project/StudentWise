@@ -123,7 +123,7 @@ export function GroupTabsLayout() {
          * would be two headlines competing. */}
         <div className="bg-surface border-line flex items-center gap-4 border-b px-4 py-3.5">
           <div className="min-w-0 flex-1">
-            <p className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
+            <p className="text-muted font-display text-2xs font-extrabold tracking-widest uppercase">
               {mine && !isZero(mine.net)
                 ? isPositive(mine.net)
                   ? t('groups.header.owed')
@@ -138,7 +138,7 @@ export function GroupTabsLayout() {
                   amount={mine.net}
                   currency={group.currency}
                   tone="auto"
-                  className="text-3xl tracking-[-0.025em]"
+                  className="text-3xl tracking-tight"
                 />
               ) : (
                 <span className="font-display text-xl font-extrabold">

@@ -263,7 +263,7 @@ function CloseGroupSheet({ open, onClose }: { open: boolean; onClose: () => void
           <p className="text-muted text-sm">{t('groups.danger.closeSquare')}</p>
         ) : (
           <>
-            <p className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
+            <p className="text-muted font-display text-2xs font-extrabold tracking-widest uppercase">
               {t('groups.danger.closeOutstandingHeader')}
             </p>
             {transfers.map((transfer) => (

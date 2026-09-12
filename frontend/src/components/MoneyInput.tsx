@@ -88,7 +88,7 @@ export function MoneyInput({
     <div className="relative flex items-center">
       <span
         aria-hidden="true"
-        className="text-faint pointer-events-none absolute start-3.5 text-base"
+        className="text-faint pointer-events-none absolute inset-s-3.5 text-base"
       >
         {currencySymbol}
       </span>

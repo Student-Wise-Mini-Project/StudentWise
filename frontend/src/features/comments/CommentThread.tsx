@@ -32,7 +32,7 @@ export function CommentThread({ expenseId }: { expenseId: string }) {
 
   return (
     <section className="flex flex-col gap-3 px-4">
-      <h2 className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
+      <h2 className="text-muted font-display text-2xs font-extrabold tracking-widest uppercase">
         {thread.total > 0
           ? t('expenses.comments.headerWithCount', { count: thread.total })
           : t('expenses.comments.header')}

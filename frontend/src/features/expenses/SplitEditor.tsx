@@ -80,7 +80,7 @@ export function SplitEditor({
       {/* One header line that every mode keeps: how many people are on this,
        * and whether what has been typed adds up yet. */}
       <header className="flex items-baseline justify-between gap-3 px-4 pt-5 pb-2">
-        <h2 className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
+        <h2 className="text-muted font-display text-2xs font-extrabold tracking-widest uppercase">
           Split between {participants.length}
         </h2>
         <Summary

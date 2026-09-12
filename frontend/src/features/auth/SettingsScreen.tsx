@@ -41,7 +41,7 @@ export function SettingsScreen() {
           )}
 
           <div className="px-4">
-            <p className="text-muted font-display text-2xs mb-2 font-extrabold tracking-[0.1em] uppercase">
+            <p className="text-muted font-display text-2xs mb-2 font-extrabold tracking-widest uppercase">
               {t('settings.appearance')}
             </p>
             <SegmentedControl
@@ -60,7 +60,7 @@ export function SettingsScreen() {
            * of thing: a property of this phone, stored beside the theme, and
            * kept when you sign out. */}
           <div className="px-4">
-            <p className="text-muted font-display text-2xs mb-2 font-extrabold tracking-[0.1em] uppercase">
+            <p className="text-muted font-display text-2xs mb-2 font-extrabold tracking-widest uppercase">
               {t('settings.language')}
             </p>
             <SegmentedControl

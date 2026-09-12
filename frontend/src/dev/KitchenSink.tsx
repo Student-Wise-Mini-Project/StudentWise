@@ -62,7 +62,7 @@ export function KitchenSink() {
           {/* Exactly one of these per screen, carrying the number the user
            * opened the app for. It stays dark in both themes. */}
           <div className="bg-slab text-on-slab rounded-sm px-5 py-5">
-            <div className="font-display text-2xs text-faint font-extrabold tracking-[0.1em] uppercase">
+            <div className="font-display text-2xs text-faint font-extrabold tracking-widest uppercase">
               Overall you're owed
             </div>
             <div className="mt-1.5">
@@ -384,7 +384,7 @@ export function KitchenSink() {
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
+      <h2 className="text-muted font-display text-2xs font-extrabold tracking-widest uppercase">
         {title}
       </h2>
       {children}

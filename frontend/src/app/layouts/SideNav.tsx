@@ -12,7 +12,7 @@ export function SideNav({ unreadCount = 0 }: { unreadCount?: number }) {
   return (
     <nav
       aria-label={t('common.nav.main')}
-      className="border-line bg-surface fixed inset-y-0 start-0 z-30 hidden w-60 border-e lg:block"
+      className="border-line bg-surface fixed inset-y-0 inset-s-0 z-30 hidden w-60 border-e lg:block"
     >
       <div className="border-line flex h-13 items-center border-b px-5">
         <span className="font-display text-lg font-extrabold tracking-[-0.01em]">StudentWise</span>

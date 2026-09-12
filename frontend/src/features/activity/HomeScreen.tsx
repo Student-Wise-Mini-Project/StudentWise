@@ -47,7 +47,7 @@ export function HomeScreen() {
             {unread > 0 && (
               // A dot, not a count: the tab bar already carries the number, and
               // this only has to say "something is waiting".
-              <span className="bg-debt border-ground absolute end-1.5 top-1.5 size-2 rounded-sm border" />
+              <span className="bg-debt border-ground absolute inset-e-1.5 top-1.5 size-2 rounded-sm border" />
             )}
           </Link>
         }
@@ -81,7 +81,7 @@ export function HomeScreen() {
           </div>
         </div>
 
-        <div className="lg:col-start-1 lg:row-start-1 lg:max-w-[37.5rem]">
+        <div className="lg:col-start-1 lg:row-start-1 lg:max-w-150">
           {groups.data?.length === 0 ? (
             <EmptyState
               icon={<GroupsIcon className="size-5" />}
@@ -102,7 +102,7 @@ export function HomeScreen() {
                 return (
                   <div key={`${item.occurred_at}-${index}`}>
                     {opensDay && (
-                      <h2 className="text-muted font-display text-2xs px-4 pt-5 pb-2 font-extrabold tracking-[0.1em] uppercase">
+                      <h2 className="text-muted font-display text-2xs px-4 pt-5 pb-2 font-extrabold tracking-widest uppercase">
                         {day}
                       </h2>
                     )}

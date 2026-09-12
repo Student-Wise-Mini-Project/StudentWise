@@ -92,7 +92,7 @@ export function InsightsScreen() {
           <Card className="mx-4">
             <Stack gap={3}>
               <Stack gap={1} className="items-center text-center">
-                <p className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
+                <p className="text-muted font-display text-2xs font-extrabold tracking-widest uppercase">
                   {scope === 'group' ? t('analytics.totalSpent') : t('analytics.yourShare')}
                 </p>
                 <Money amount={summary.data.total_spent} currency={currency} size="display" />
@@ -233,7 +233,7 @@ function peakOf(months: { month: string; total: string }[], currency: string): s
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-2 px-4">
-      <h2 className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
+      <h2 className="text-muted font-display text-2xs font-extrabold tracking-widest uppercase">
         {title}
       </h2>
       {children}

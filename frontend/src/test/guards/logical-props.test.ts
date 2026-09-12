@@ -16,7 +16,7 @@ import { hits, sourceFiles } from './sourceFiles'
 const PHYSICAL: { bad: RegExp; use: string }[] = [
   { bad: /(?<![\w-])m[lr]-(?=[\w[])/, use: 'ms-* / me-*' },
   { bad: /(?<![\w-])p[lr]-(?=[\w[])/, use: 'ps-* / pe-*' },
-  { bad: /(?<![\w-])(?:left|right)-(?=[\w[])/, use: 'start-* / end-*' },
+  { bad: /(?<![\w-])(?:left|right)-(?=[\w[])/, use: 'inset-s-* / inset-e-*' },
   { bad: /(?<![\w-])text-(?:left|right)(?![\w-])/, use: 'text-start / text-end' },
   { bad: /(?<![\w-])border-[lr](?![\w-])/, use: 'border-s / border-e' },
   { bad: /(?<![\w-])rounded-[lr](?![\w-])/, use: 'rounded-s / rounded-e' },

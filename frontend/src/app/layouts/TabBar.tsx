@@ -43,7 +43,7 @@ export function TabBar({ unreadCount = 0 }: { unreadCount?: number }) {
                   <span className="relative">
                     <item.icon className={cn('size-6', isActive && 'stroke-[2.1]')} />
                     {item.badge === 'unread' && unreadCount > 0 && (
-                      <span className="absolute start-3 -top-1.5">
+                      <span className="absolute inset-s-3 -top-1.5">
                         <CountBadge count={unreadCount} />
                       </span>
                     )}

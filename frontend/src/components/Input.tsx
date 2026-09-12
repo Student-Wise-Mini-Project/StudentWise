@@ -17,7 +17,7 @@ export function Input({ slotStart, slotEnd, className, ...rest }: InputProps) {
   return (
     <div className="relative flex items-center">
       {slotStart && (
-        <span className="text-muted pointer-events-none absolute start-3 flex items-center">
+        <span className="text-muted pointer-events-none absolute inset-s-3 flex items-center">
           {slotStart}
         </span>
       )}
@@ -25,7 +25,9 @@ export function Input({ slotStart, slotEnd, className, ...rest }: InputProps) {
         className={cn(inputClasses, slotStart && 'ps-9', slotEnd && 'pe-9', className)}
         {...rest}
       />
-      {slotEnd && <span className="text-muted absolute end-3 flex items-center">{slotEnd}</span>}
+      {slotEnd && (
+        <span className="text-muted absolute inset-e-3 flex items-center">{slotEnd}</span>
+      )}
     </div>
   )
 }

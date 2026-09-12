@@ -189,7 +189,7 @@ function WhoIsWhere({
   return (
     <section className="flex flex-col">
       <header className="px-4 pt-5 pb-2">
-        <h2 className="text-muted font-display text-2xs font-extrabold tracking-[0.1em] uppercase">
+        <h2 className="text-muted font-display text-2xs font-extrabold tracking-widest uppercase">
           {t('balances.whoIsWhere')}
         </h2>
       </header>

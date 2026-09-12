@@ -90,7 +90,7 @@ export function ExpenseDetailScreen() {
               )}
             </Stack>
 
-            <h1 className="font-display mt-2.5 text-2xl font-black tracking-[-0.025em]" dir="auto">
+            <h1 className="font-display mt-2.5 text-2xl font-black tracking-tight" dir="auto">
               {expense.title}
             </h1>
             <p className="mt-1">
@@ -167,7 +167,7 @@ export function ExpenseDetailScreen() {
 
           {expense.notes && (
             <div className="px-4">
-              <p className="text-muted font-display text-2xs mb-1 font-extrabold tracking-[0.1em] uppercase">
+              <p className="text-muted font-display text-2xs mb-1 font-extrabold tracking-widest uppercase">
                 {t('expenses.detail.notes')}
               </p>
               <p className="text-base whitespace-pre-wrap">{expense.notes}</p>
