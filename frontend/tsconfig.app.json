@@ -19,7 +19,9 @@
     "skipLibCheck": true,
     "noEmit": true,
 
-    "baseUrl": ".",
+    // No `baseUrl`: deprecated in TS 5.9 and gone in 7.0. Without it, `paths`
+    // resolve relative to this file, which is what `./src/*` already means.
+    // Vite resolves `@` from its own `resolve.alias`, so nothing else moves.
     "paths": { "@/*": ["./src/*"] },
 
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo"
