@@ -38,13 +38,13 @@ touch the same file.
 | 3. Algorithms | 4 | 0 | ✅ complete |
 | 4. Analytics & intelligence | 5 | 1 | 🚫 only 4.4, blocked on a key |
 | 5. AI ingestion (Module 1) | 1 | 8 | started |
-| 6. Recurring & automation | 4 | 0 | ✅ complete |
+| 6. Recurring & automation | 5 | 0 | ✅ complete |
 | 7. Payments (Bit / PayBox) | 0 | 3 | ⬜ not started |
 | 8. AI chat assistant / RAG | 0 | 4 | ⬜ not started |
 | 9. Frontend | 14 | 3 | 🔨 the app works end to end |
 | 10. Deployment | 0 | 6 | ⬜ not started |
 | 11. Academic deliverables | 1 | 4 | started |
-| **Total** | **43** | **40** | |
+| **Total** | **44** | **40** | |
 
 **The honest read:** the backend is essentially done. Epics 1, 2, 3 and 6 are
 complete and Epic 4 has only its blocked mission left. Everything remaining is
@@ -244,10 +244,33 @@ from an image that is already on the server.**
 | 6.2 | Recurring bills CRUD (monthly / every 2 months / quarterly / yearly) | M | Gal | ✅ |
 | 6.3 | Generate the next expense when a bill falls due | M | Gal | ✅ |
 | 6.4 | Due-date reminders | M | Gal | ✅ |
+| 6.5 | **A bill can run a set number of times** (`occurrences_total`) | M | Gal | ✅ |
 
 **Epic 6 is complete**, and since 9.17 it has a UI. The backend was finished
 first and sat unreachable: the tab, the editor and the "repeats" toggle in the
 expense form are what turned it into a feature people can use.
+
+> **6.5 — a schedule can now end.** "Twelve months of rent" is a real
+> agreement, and until this every bill ran forever: the only way to stop one
+> was to remember to delete it. `occurrences_total` is NULL for forever, so
+> every existing bill is unchanged, and `occurrences_done` is counted in
+> `_post_one` -- the single place an occurrence happens, and *after* the
+> IntegrityError guard, so losing the race for one due date does not burn one
+> of the twelve.
+>
+> `is_finished` is derived, and deliberately **not** folded into `active`.
+> Pausing is something a person did and can undo; finishing is arithmetic.
+> Sharing one flag would mean Resume on a spent bill quietly posts a
+> thirteenth rent, which is the one thing the count exists to prevent.
+>
+> The catch-up loop re-checks the limit every turn rather than once. That loop
+> posts one expense per period missed, so a bill five months overdue with two
+> left has to stop at two -- it was the one place the count could have been
+> walked straight past, and there is a test named after exactly that.
+>
+> The migration backfills `occurrences_done` from the expenses each bill has
+> already posted. Starting everyone at zero would have handed extra months to
+> precisely the bills that had been running longest.
 
 > **The distinction the epic turns on:** a bill's `amount` may be null. Rent is
 > 3600 every month and posts itself; electricity is whatever the meter says, so

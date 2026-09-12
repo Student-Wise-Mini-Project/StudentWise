@@ -2,7 +2,8 @@
 
 **Date:** 2026-09-12
 **Branches:** `feat/close-groups` → `feat/group-picker` → `feat/member-suggestions`
-→ `feat/recurring-ui` (stacked, see *Not done* below)
+→ `feat/recurring-ui` (stacked), then `feat/bill-occurrences` off `main`.
+All merged to `main` as fast-forwards.
 **Spec:** `docs/superpowers/specs/2026-09-12-lifecycle-and-recurring-design.md`
 **Plan:** `docs/superpowers/plans/2026-09-12-lifecycle-and-recurring.md`
 
@@ -146,16 +147,55 @@ normalises. Worth noting because each one looked like a bug for about a minute.
 
 ## Verification
 
-- Backend: **591 passed**, `ruff check` clean.
-- Frontend: **248 passed** across 33 files — including all three guards
+- Backend: **600 passed**, `ruff check` clean, `alembic check` reports no new
+  upgrade operations.
+- Frontend: **253 passed** across 33 files — including all three guards
   (design tokens, logical properties, no bare strings) — `eslint` clean,
   `tsc -b` clean, `npm run build` clean.
 - Stack ancestry checked with `git merge-base --is-ancestor`: 9 ⊂ 11 ⊂ 13 ⊂ 19
-  commits.
+  commits, then all fast-forwarded onto `main`, plus 2 for 6.5.
 - No catalogue key added this session is unrendered (scanned; three were, and
   were either wired up or deleted).
 - `schema.d.ts` regenerated from `app.main`: 111 lines, additions only.
-- `node scripts/check-roadmap-sync.mjs`: in sync, 84 missions, 53 done.
+- `node scripts/check-roadmap-sync.mjs`: in sync, 85 missions, 54 done.
+
+## A fifth thing, asked for after the other four landed
+
+**6.5 — a recurring bill can run a set number of times.** "Twelve months of
+rent" is a real agreement, and until now every schedule ran forever: the only
+way to end one was to remember to delete it.
+
+`occurrences_total` is NULL for forever, so every existing bill is unchanged.
+`occurrences_done` is counted in `_post_one` — the single place an occurrence
+happens — and *after* the IntegrityError guard, so losing the race for one due
+date does not burn one of the twelve. It counts **postings, not surviving
+expenses**: deleting one of the twelve rents corrects that expense, it does not
+buy a thirteenth. Counting live rows instead would have silently extended the
+schedule every time somebody tidied up, and rule 5 makes expense deletion
+permanent.
+
+`is_finished` is derived and deliberately **not** folded into `active`. Pausing
+is something a person did and can undo; finishing is arithmetic. One flag for
+both would mean Resume on a spent bill quietly posts a thirteenth rent.
+
+Three things that needed care:
+
+- **The catch-up loop re-checks the limit every turn**, not once. It posts one
+  expense per period missed, so a bill five months overdue with two left must
+  stop at two. It was the one place the count could have been walked straight
+  past.
+- **The migration backfills `occurrences_done`** from the expenses each bill
+  already posted. Starting at zero would have handed extra months to exactly
+  the bills running longest.
+- **Autogenerate does not emit `CheckConstraint`.** The model grew
+  `occurrences_total > 0` and the generated migration said nothing about it —
+  the same trap `453f7823ac5b` records hitting with the VARCHAR enum
+  constraints. Written out by hand.
+
+One process note: the editor field got written before its test. Rather than let
+the test pass vacuously, the wiring was temporarily broken, the test watched to
+fail for the right reason, and then restored — so it is proven to catch a
+regression rather than merely to agree with the code.
 
 ## Caught on a second pass, after claiming it was finished
 
@@ -178,12 +218,11 @@ looking, and a key that is never rendered is invisible to every guard we have.
 
 ## Not done / next
 
-- **The four branches are stacked, not merged.** `main` is protected by
-  convention and each branch needs a teammate's approval, so `feat/group-picker`
-  sits on `feat/close-groups`, and so on. They must be merged **in order**.
-  Rebase-merging rewrites the SHA, so after each merge the next branch needs
-  `git rebase --onto origin/main <old base sha>`; and per CLAUDE.md, do not
-  delete a base branch while the next PR is still stacked on it.
+- **These went to `main` directly, not through PRs.** Asked for explicitly, and
+  worth recording rather than leaving to be discovered: the CLAUDE.md rule is
+  PR plus one teammate's approval, and five branches bypassed it. Every merge
+  was a fast-forward, so the history is linear and every commit message
+  survives.
 - **The danger zone is in the wrong place** and the code says so. "Members" is
   not where anyone looks for "close this group". It is there because there is no
   menu component and a new route for two buttons is worse. It moves in an
