@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { detailOf } from '@/api/errors'
 import type { GroupMember } from '@/api/types'
@@ -30,6 +30,8 @@ import {
   useUpdateMemberWeight,
 } from './api'
 import { useGroupScope } from './groupContext'
+import { SuggestionChips } from './SuggestionChips'
+import { useMemberSuggestions } from './suggestions'
 
 export function MembersScreen() {
   const t = useT()
@@ -362,9 +364,15 @@ function DeleteGroupSheet({ open, onClose }: { open: boolean; onClose: () => voi
 
 function AddMemberSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const t = useT()
-  const { groupId } = useGroupScope()
+  const { groupId, activeMembers } = useGroupScope()
   const add = useAddMember(groupId)
   const [email, setEmail] = useState('')
+
+  // Only the *active* members are excluded. Somebody who left is a fair
+  // suggestion: `add_member` revives their row rather than refusing it, and
+  // housemates do come back.
+  const alreadyHere = useMemo(() => activeMembers.map((member) => member.user.id), [activeMembers])
+  const suggestions = useMemberSuggestions(alreadyHere)
 
   function reset() {
     setEmail('')
@@ -400,6 +408,19 @@ function AddMemberSheet({ open, onClose }: { open: boolean; onClose: () => void 
             {detailOf(add.error)}
           </p>
         )}
+        {suggestions.length > 0 && (
+          <Field label={t('groups.suggestions.label')} hint={t('groups.suggestions.hint')}>
+            {() => (
+              <SuggestionChips
+                suggestions={suggestions}
+                selected={[]}
+                // One tap, no email round trip: the id is already in hand.
+                onToggle={(userId) => add.mutate({ user_id: userId }, { onSuccess: reset })}
+              />
+            )}
+          </Field>
+        )}
+
         <Field label={t('groups.members.addEmailLabel')} required>
           {(props) => (
             <Input

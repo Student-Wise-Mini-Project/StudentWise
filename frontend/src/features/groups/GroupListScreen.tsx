@@ -17,7 +17,9 @@ import { useAuth } from '@/features/auth/authContext'
 import { useT } from '@/i18n/i18nContext'
 import { groupTypeLabel } from '@/lib/labels'
 
-import { useCreateGroup, useGroups, useReopenGroup } from './api'
+import { useAddMemberToNewGroup, useCreateGroup, useGroups, useReopenGroup } from './api'
+import { SuggestionChips } from './SuggestionChips'
+import { useMemberSuggestions } from './suggestions'
 
 export function GroupListScreen() {
   const t = useT()
@@ -136,17 +138,64 @@ function GroupRow({ group, closed = false }: { group: Group; closed?: boolean })
   )
 }
 
+/** A stable empty array, so the suggestions memo is not rebuilt every render. */
+const NOBODY: string[] = []
+
 function CreateGroupSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const t = useT()
   const create = useCreateGroup()
+  const addMemberTo = useAddMemberToNewGroup()
   const [name, setName] = useState('')
   const [type, setType] = useState<GroupType>('SHARED_APARTMENT')
+  const [picked, setPicked] = useState<string[]>([])
+  const [failed, setFailed] = useState(0)
+  const [working, setWorking] = useState(false)
+
+  // Deliberately not excluding `picked`: a chip you tapped has to stay on
+  // screen showing itself as chosen. Selection is `selected`, not absence.
+  const suggestions = useMemberSuggestions(NOBODY)
 
   function reset() {
     setName('')
     setType('SHARED_APARTMENT')
+    setPicked([])
+    setFailed(0)
+    setWorking(false)
     create.reset()
     onClose()
+  }
+
+  /**
+   * Create, then add the people picked -- two requests, not one transaction.
+   *
+   * Sequentially rather than in parallel: three writes racing into a group
+   * that is one second old buys nothing, and a loop is what makes "2 of 3
+   * were added" a true statement rather than a guess.
+   */
+  async function submit() {
+    setWorking(true)
+    setFailed(0)
+    try {
+      const group = await create.mutateAsync({ name: name.trim(), type })
+
+      let failures = 0
+      for (const userId of picked) {
+        try {
+          await addMemberTo(group.id, userId)
+        } catch {
+          failures += 1
+        }
+      }
+
+      // A silent half-success would leave you believing somebody is in a group
+      // they are not in, so the sheet stays open and says so.
+      if (failures > 0) setFailed(failures)
+      else reset()
+    } catch {
+      /* `create.error` renders it. */
+    } finally {
+      setWorking(false)
+    }
   }
 
   return (
@@ -162,16 +211,9 @@ function CreateGroupSheet({ open, onClose }: { open: boolean; onClose: () => voi
           </Button>
           <Button
             fullWidth
-            loading={create.isPending}
+            loading={working}
             disabled={name.trim().length === 0}
-            onClick={() =>
-              create.mutate(
-                { name: name.trim(), type },
-                {
-                  onSuccess: reset,
-                },
-              )
-            }
+            onClick={() => void submit()}
           >
             {t('common.actions.create')}
           </Button>
@@ -182,6 +224,12 @@ function CreateGroupSheet({ open, onClose }: { open: boolean; onClose: () => voi
         {create.isError && (
           <p role="alert" className="bg-danger-soft text-danger rounded-sm px-3 py-2.5 text-sm">
             {detailOf(create.error)}
+          </p>
+        )}
+
+        {failed > 0 && (
+          <p role="alert" className="bg-danger-soft text-danger rounded-sm px-3 py-2.5 text-sm">
+            {t('groups.suggestions.partialFailure', { count: failed })}
           </p>
         )}
 
@@ -212,6 +260,24 @@ function CreateGroupSheet({ open, onClose }: { open: boolean; onClose: () => voi
             </Select>
           )}
         </Field>
+
+        {suggestions.length > 0 && (
+          <Field label={t('groups.suggestions.label')} hint={t('groups.suggestions.hint')}>
+            {() => (
+              <SuggestionChips
+                suggestions={suggestions}
+                selected={picked}
+                onToggle={(userId) =>
+                  setPicked((current) =>
+                    current.includes(userId)
+                      ? current.filter((id) => id !== userId)
+                      : [...current, userId],
+                  )
+                }
+              />
+            )}
+          </Field>
+        )}
       </Stack>
     </Sheet>
   )

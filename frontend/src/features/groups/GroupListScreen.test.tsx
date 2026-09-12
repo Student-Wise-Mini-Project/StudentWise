@@ -1,5 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { HttpResponse, http } from 'msw'
 import { MemoryRouter } from 'react-router'
@@ -22,6 +22,7 @@ const user = (id: string, name: string) => ({
 
 const GAL = user('u-gal', 'Gal')
 const MAYA = user('u-maya', 'Maya')
+const NOA = user('u-noa', 'Noa')
 
 const member = (u: ReturnType<typeof user>) => ({
   user: u,
@@ -103,5 +104,69 @@ describe('the group list', () => {
 
     expect(await screen.findByText('Eilat 2025')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Reopen' })).not.toBeInTheDocument()
+  })
+})
+
+describe('creating a group', () => {
+  it('suggests the people from your other groups', async () => {
+    renderScreen([group('g1', 'Dizengoff 5', [GAL, MAYA, NOA])])
+
+    await userEvent.click(await screen.findByRole('button', { name: 'New' }))
+    const sheet = within(await screen.findByRole('dialog'))
+
+    expect(await sheet.findByRole('button', { name: /Maya/ })).toBeInTheDocument()
+    expect(sheet.getByRole('button', { name: /Noa/ })).toBeInTheDocument()
+    // Never yourself: you are the owner of the group being created.
+    expect(sheet.queryByRole('button', { name: /^Gal/ })).not.toBeInTheDocument()
+  })
+
+  it('adds each picked person after creating the group', async () => {
+    const added: unknown[] = []
+    renderScreen(
+      [group('g1', 'Dizengoff 5', [GAL, MAYA])],
+      [
+        http.post(apiUrl('/api/groups'), () =>
+          HttpResponse.json(group('g9', 'Greece'), { status: 201 }),
+        ),
+        http.post(apiUrl('/api/groups/g9/members'), async ({ request }) => {
+          added.push(await request.json())
+          return HttpResponse.json({}, { status: 201 })
+        }),
+      ],
+    )
+
+    await userEvent.click(await screen.findByRole('button', { name: 'New' }))
+    const sheet = within(await screen.findByRole('dialog'))
+    await userEvent.type(sheet.getByLabelText(/Name/), 'Greece')
+    await userEvent.click(await sheet.findByRole('button', { name: /Maya/ }))
+    await userEvent.click(sheet.getByRole('button', { name: 'Create' }))
+
+    // By user_id, not by email: the id is already in hand, and an email round
+    // trip is a chance to mistype somebody who is already a known account.
+    await waitFor(() => expect(added).toEqual([{ user_id: 'u-maya', default_split_weight: '1' }]))
+  })
+
+  it('says so when the group was created but somebody could not be added', async () => {
+    // Two requests, not one transaction. A silent half-success would leave you
+    // believing Maya is in a group she is not in.
+    renderScreen(
+      [group('g1', 'Dizengoff 5', [GAL, MAYA])],
+      [
+        http.post(apiUrl('/api/groups'), () =>
+          HttpResponse.json(group('g9', 'Greece'), { status: 201 }),
+        ),
+        http.post(apiUrl('/api/groups/g9/members'), () =>
+          HttpResponse.json({ detail: 'Nope' }, { status: 500 }),
+        ),
+      ],
+    )
+
+    await userEvent.click(await screen.findByRole('button', { name: 'New' }))
+    const sheet = within(await screen.findByRole('dialog'))
+    await userEvent.type(sheet.getByLabelText(/Name/), 'Greece')
+    await userEvent.click(await sheet.findByRole('button', { name: /Maya/ }))
+    await userEvent.click(sheet.getByRole('button', { name: 'Create' }))
+
+    expect(await screen.findByText(/could not be added/)).toBeInTheDocument()
   })
 })

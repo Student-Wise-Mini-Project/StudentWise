@@ -15,7 +15,10 @@
     "emptyTitle": "No groups yet",
     "emptyBody": "A group is a flat, a trip, or the two of you. Everything else hangs off one.",
     "emptyAction": "Create a group",
-    "memberCount": { "one": "{count} person", "other": "{count} people" }
+    "memberCount": {
+      "one": "{count} person",
+      "other": "{count} people"
+    }
   },
   "closed": {
     "sectionHeader": "Closed",
@@ -82,5 +85,17 @@
     "deleteBody": "Every expense, split and settlement in it goes too. This cannot be undone. To keep the record, close the group instead.",
     "deleteConfirmLabel": "Type the group's name to confirm",
     "deleteSubmit": "Delete permanently"
+  },
+  "suggestions": {
+    "label": "Add people",
+    "hint": "People from your other groups. Anyone else, by email.",
+    "shared": {
+      "one": "{count} shared group",
+      "other": "{count} shared groups"
+    },
+    "partialFailure": {
+      "one": "Group created, but {count} person could not be added.",
+      "other": "Group created, but {count} people could not be added."
+    }
   }
 }

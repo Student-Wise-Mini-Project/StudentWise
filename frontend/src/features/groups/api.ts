@@ -148,6 +148,27 @@ export function useAddMember(groupId: string) {
   })
 }
 
+/**
+ * Add a member to a group whose id was not known when the component rendered.
+ *
+ * `useAddMember` binds its group at hook time, which the create-group sheet
+ * cannot do -- the group it is adding to does not exist until the moment
+ * before. This returns a plain async function instead, so the sheet can await
+ * one add per person and count the failures honestly.
+ */
+export function useAddMemberToNewGroup() {
+  const queryClient = useQueryClient()
+  return async function addMemberTo(groupId: string, userId: string) {
+    await unwrap(
+      api.POST('/api/groups/{group_id}/members', {
+        params: { path: { group_id: groupId } },
+        body: { user_id: userId, default_split_weight: '1' },
+      }),
+    )
+    invalidateMembership(queryClient, groupId)
+  }
+}
+
 export function useUpdateMemberWeight(groupId: string) {
   const queryClient = useQueryClient()
   return useMutation({
