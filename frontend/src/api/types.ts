@@ -32,6 +32,9 @@ export type AuthResponse = S['AuthResponse']
 export type SplitRule = S['SplitRuleOut']
 export type SplitRuleSummary = S['SplitRuleSummary']
 export type RecurringBill = S['RecurringBillOut']
+export type RecurringBillCreate = S['RecurringBillCreate']
+export type RecurringBillUpdate = S['RecurringBillUpdate']
+export type RecurrenceFrequency = S['RecurrenceFrequency']
 export type RunResult = S['RunResultOut']
 
 export type Summary = S['SummaryOut']
@@ -106,6 +109,13 @@ export const EXPENSE_CATEGORIES = allOf<ExpenseCategory>()([
 export const SPLIT_TYPES = allOf<SplitType>()(['EQUAL', 'EXACT', 'PERCENTAGE', 'WEIGHT'])
 
 export const SETTLEMENT_METHODS = allOf<SettlementMethod>()(['MANUAL', 'BIT', 'PAYBOX'])
+
+export const RECURRENCE_FREQUENCIES = allOf<RecurrenceFrequency>()([
+  'MONTHLY',
+  'EVERY_2_MONTHS',
+  'QUARTERLY',
+  'YEARLY',
+])
 
 export const EXPENSE_SOURCES = allOf<ExpenseSource>()([
   'MANUAL',
