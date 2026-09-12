@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import { Link, Outlet, useMatch } from 'react-router'
 
 import { OfflineBanner } from '@/components/OfflineBanner'
 import { useT } from '@/i18n/i18nContext'
 import { PlusIcon } from '@/components/icons'
 import { useGroups } from '@/features/groups/api'
+import { GroupPickerSheet } from '@/features/groups/GroupPickerSheet'
+import { openGroupsInPickOrder } from '@/features/groups/pickOrder'
 import { useUnreadCount } from '@/features/notifications/api'
 import { IosInstallHint, UpdatePrompt } from '@/pwa/PwaPrompts'
 
@@ -25,12 +28,9 @@ export function AppShell() {
   const unread = useUnreadCount()
   const unreadCount = unread.data?.unread ?? 0
 
-  // The bar is on every screen, so it has to read the screen. Inside a group it
-  // opens that group's form; everywhere else there is no group to add to yet, so
-  // it goes to the list to pick one.
+  // The bar is on every screen, so it has to read the screen.
   const inGroup = useMatch('/groups/:groupId/*')
   const groupId = inGroup?.params.groupId
-  const addExpenseTo = groupId ? `/groups/${groupId}/expenses/new` : '/groups'
 
   // ...and on the form itself it would point at the page it is already on, over
   // a screen whose whole job is to be finished or cancelled.
@@ -45,6 +45,28 @@ export function AppShell() {
   const inClosedGroup = Boolean(
     groupId && groups.data?.some((group) => group.id === groupId && group.archived_at !== null),
   )
+
+  // Outside a group the bar has to find one. Three cases, and only the middle
+  // one needs a sheet:
+  //
+  //   no groups at all -> the groups list, whose empty state says what to do
+  //   exactly one open -> straight into its form, no tap spent confirming
+  //   two or more     -> the picker
+  //
+  // The old fallback was the groups list in every case, which threw away the
+  // intention you tapped the bar with.
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const pickable = openGroupsInPickOrder(groups.data)
+  const addExpenseTo = groupId
+    ? `/groups/${groupId}/expenses/new`
+    : pickable.length === 1
+      ? `/groups/${pickable[0]?.id}/expenses/new`
+      : '/groups'
+  const needsPicker = !groupId && pickable.length > 1
+
+  // One class for all three, so a button and a link cannot drift apart.
+  const barClass =
+    'bg-accent text-on-accent shadow-float font-display pointer-events-auto mx-auto flex h-13 w-full max-w-2xl items-center justify-center gap-2 rounded-full text-lg font-extrabold transition-transform active:scale-[0.98]'
 
   return (
     <div className="min-h-dvh lg:ps-60">
@@ -72,15 +94,21 @@ export function AppShell() {
           className="from-ground pointer-events-none fixed inset-x-0 z-30 bg-linear-to-t from-45% to-transparent px-4 pt-12 pb-2 lg:hidden"
           style={{ insetBlockEnd: 'calc(var(--sw-tabbar-height) + var(--sw-safe-block-end))' }}
         >
-          <Link
-            to={addExpenseTo}
-            className="bg-accent text-on-accent shadow-float font-display pointer-events-auto mx-auto flex h-13 max-w-2xl items-center justify-center gap-2 rounded-full text-lg font-extrabold transition-transform active:scale-[0.98]"
-          >
-            <PlusIcon className="size-5" />
-            {t('common.shell.addExpense')}
-          </Link>
+          {needsPicker ? (
+            <button type="button" onClick={() => setPickerOpen(true)} className={barClass}>
+              <PlusIcon className="size-5" />
+              {t('common.shell.addExpense')}
+            </button>
+          ) : (
+            <Link to={addExpenseTo} className={barClass}>
+              <PlusIcon className="size-5" />
+              {t('common.shell.addExpense')}
+            </Link>
+          )}
         </div>
       )}
+
+      <GroupPickerSheet open={pickerOpen} onClose={() => setPickerOpen(false)} />
 
       <TabBar unreadCount={unreadCount} />
 

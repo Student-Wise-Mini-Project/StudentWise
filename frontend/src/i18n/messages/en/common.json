@@ -68,5 +68,9 @@
     "iosBefore": "Tap the Share button, then ",
     "iosControl": "Add to Home Screen",
     "iosAfter": ". It opens full screen and works without a signal."
+  },
+  "picker": {
+    "title": "Add to which group?",
+    "description": "Pick one and we'll open its expense form."
   }
 }
