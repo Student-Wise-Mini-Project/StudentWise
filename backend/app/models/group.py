@@ -36,6 +36,16 @@ class Group(Base):
         DateTime(timezone=True), server_default=func.clock_timestamp(), nullable=False
     )
 
+    #: Set when the group is closed -- a trip that ended, a flat everyone moved
+    #: out of. A closed group is fully readable and fully visible; it just takes
+    #: no new spending. Deliberately *not* soft delete: nothing is hidden, and
+    #: `delete_group` still exists for the case where you really do mean it.
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    @property
+    def is_open(self) -> bool:
+        return self.archived_at is None
+
     # Ordered, because this relationship *is* the member list the API serves and
     # an unordered SELECT hands back heap order -- which reshuffles the moment a
     # row is updated. `joined_at` alone is not enough: it is now(), the

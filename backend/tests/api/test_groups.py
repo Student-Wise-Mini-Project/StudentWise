@@ -273,3 +273,9 @@ def test_members_come_back_in_a_stable_order(client, group, bob, make_user):
     )
     assert patched.status_code == 200, patched.text
     assert member_ids() == before
+
+
+def test_a_new_group_is_open(group):
+    """`archived_at` is how a closed group is told from an open one."""
+    body, _ = group
+    assert body["archived_at"] is None

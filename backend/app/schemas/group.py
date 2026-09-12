@@ -56,4 +56,6 @@ class GroupOut(BaseModel):
     currency: str
     created_by: uuid.UUID
     created_at: datetime
+    #: Null while the group is open. Set once it is closed.
+    archived_at: datetime | None = None
     members: list[GroupMemberOut] = []
