@@ -36,8 +36,16 @@ class Group(Base):
         DateTime(timezone=True), server_default=func.clock_timestamp(), nullable=False
     )
 
+    # Ordered, because this relationship *is* the member list the API serves and
+    # an unordered SELECT hands back heap order -- which reshuffles the moment a
+    # row is updated. `joined_at` alone is not enough: it is now(), the
+    # transaction's start time, so everyone added in one transaction ties
+    # exactly. The user id breaks the tie stably.
     members: Mapped[list["GroupMember"]] = relationship(
-        back_populates="group", cascade="all, delete-orphan", lazy="selectin"
+        back_populates="group",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+        order_by="(GroupMember.joined_at, GroupMember.user_id)",
     )
 
     def __repr__(self) -> str:

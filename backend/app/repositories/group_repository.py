@@ -29,15 +29,27 @@ class GroupRepository:
     def get_membership(self, group_id: uuid.UUID, user_id: uuid.UUID) -> GroupMember | None:
         return self.db.get(GroupMember, (group_id, user_id))
 
+    # Join order, with the user id breaking the tie -- `joined_at` is now(), the
+    # transaction's start time, so a group seeded in one transaction has none.
+    # Balances and analytics are built by walking these, and a list that comes
+    # back in a different order on every request is a list that cannot be read.
+    _MEMBER_ORDER = (GroupMember.joined_at, GroupMember.user_id)
+
     def all_memberships(self, group_id: uuid.UUID) -> list[GroupMember]:
         """Every membership row, including people who have left -- leaving does
         not erase a debt, so balances still need them."""
-        stmt = select(GroupMember).where(GroupMember.group_id == group_id)
+        stmt = (
+            select(GroupMember)
+            .where(GroupMember.group_id == group_id)
+            .order_by(*self._MEMBER_ORDER)
+        )
         return list(self.db.scalars(stmt))
 
     def active_members(self, group_id: uuid.UUID) -> list[GroupMember]:
-        stmt = select(GroupMember).where(
-            GroupMember.group_id == group_id, GroupMember.left_at.is_(None)
+        stmt = (
+            select(GroupMember)
+            .where(GroupMember.group_id == group_id, GroupMember.left_at.is_(None))
+            .order_by(*self._MEMBER_ORDER)
         )
         return list(self.db.scalars(stmt))
 

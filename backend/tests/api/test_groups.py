@@ -226,3 +226,50 @@ def test_user_search_finds_by_email_fragment(client, alice, bob):
     _user, headers = alice
     results = client.get("/api/users/search?email=bob@", headers=headers).json()
     assert [u["email"] for u in results] == ["bob@example.com"]
+
+
+def test_members_come_back_in_a_stable_order(client, group, bob, make_user):
+    """The member list is a list, not a set.
+
+    An unordered SELECT hands back heap order, and heap order changes the moment
+    a row is rewritten -- so the same group could serve its members in a
+    different order on two consecutive requests. The frontend reads position: the
+    avatar stack, the payer filters and the split rows are all built by walking
+    this list.
+    """
+    body, headers = group
+    gid = body["id"]
+    for email, name in (
+        ("bob@example.com", "Bob"),
+        ("carol@example.com", "Carol"),
+        ("dan@example.com", "Dan"),
+        ("erin@example.com", "Erin"),
+    ):
+        if email != "bob@example.com":
+            make_user(email=email, name=name)
+        added = client.post(f"/api/groups/{gid}/members", json={"email": email}, headers=headers)
+        assert added.status_code == 201, added.text
+
+    def member_ids() -> list[str]:
+        response = client.get(f"/api/groups/{gid}", headers=headers)
+        assert response.status_code == 200, response.text
+        return [member["user"]["id"] for member in response.json()["members"]]
+
+    before = member_ids()
+    assert len(before) == 5
+
+    # Every row here was written inside the test's single transaction, so
+    # `joined_at` -- now(), the transaction's start time -- ties for all five and
+    # the whole order falls to the tie-breaker. In production the timestamps
+    # differ and this is join order.
+    assert before == sorted(before)
+
+    # Rewriting a row is what moves its tuple to the end of the heap, which is
+    # how an unordered list reshuffles itself in the first place.
+    patched = client.patch(
+        f"/api/groups/{gid}/members/{before[0]}",
+        json={"default_split_weight": "2"},
+        headers=headers,
+    )
+    assert patched.status_code == 200, patched.text
+    assert member_ids() == before
