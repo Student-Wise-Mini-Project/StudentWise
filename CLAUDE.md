@@ -186,7 +186,7 @@ npm run gen:icons                     # PWA icons, from one SVG
 ## Ownership (so we don't collide)
 
 - **Gal** — `models/`, `repositories/`, `services/`, `domain/`, migrations. The core.
-- **Teammate 2** — `app/ai/` package + `api/ai.py` (OCR, voice, Text-to-SQL,
+- **Teammate 2** — `app/ai/` package + `api/ai.py` (OCR, Gmail bills, Text-to-SQL,
   anomalies). Calls `expense_service` functions; never touches models or repositories.
 - **Teammate 3** — `frontend/`. Builds against `docs/api-contract.md` and `/docs`.
   The scaffold, design system, auth, groups, expenses, balances, charts, i18n
@@ -194,7 +194,7 @@ npm run gen:icons                     # PWA icons, from one SVG
 
 **Epic 5 in practice (2026-09-27):** #3 built receipt scanning (5.1-5.5) and
 Gmail bills (5.8-5.10) in `app/ai/`, including model and migration changes
-in Gal's layers that he should review. Voice (5.6-5.7) is still #2's.
+in Gal's layers that he should review. Voice entry was dropped; Epic 5 is complete.
 
 Onboarding docs are nobody's exclusive property: if you hit something that cost
 you an hour and is not written down, write it down in the file where you would

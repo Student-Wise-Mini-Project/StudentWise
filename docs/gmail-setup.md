@@ -70,6 +70,10 @@ Restart uvicorn; settings are read at startup.
 
 ## 5. Use it
 
+A brand-new account is offered this once, right after sign-up ("Bring your
+bills in from Gmail?"), and comes back to Home after Google. The steps below
+are the same from Settings at any time.
+
 1. **Members** tab of your flat → **Address**: type it the way your bills print
    it, in Hebrew (`דיזנגוף 5, תל אביב`). This is what picks the flat when you
    live in more than one.
@@ -109,8 +113,7 @@ The others wait for the next check. It remembers *which* emails it read, not
 
 **Known limits:** someone away for more than 45 days misses bills older than
 that, and an inbox with more than 50 bill-like emails in 45 days can leave older
-ones outside the window. Paging through all matches, and looking back to the
-last check after a long absence, would close both.
+ones outside the window. Both are accepted limits for now.
 
 ## Running it on a schedule
 

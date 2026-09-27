@@ -217,11 +217,10 @@ have taken.
 
 **Receipt scanning (5.1-5.5) and Gmail bills (5.8-5.10) are already built**
 (2026-09-27) -- read `docs/sessions/2026-09-27-receipt-ocr.md` and
-`2026-09-27-gmail-bills.md` first. What is left for you is **voice: 5.6
-speech-to-text and 5.7 "85₪ cleaning stuff, everyone except Yossi" -> an
-expense**. Copy the shape of `app/ai/bill_parser.py`: one model call behind a
-function the tests replace, amounts as strings parsed to `Decimal`, and the
-result going to a person to confirm before `expense_service` writes it.
+`2026-09-27-gmail-bills.md` first. **Epic 5 is complete** -- voice entry was
+dropped. What the finished product still needs is in `roadmap.md` under
+"what matters now"; measuring the AI on real receipts and bills (and 4.4,
+Text-to-SQL quality) is the natural next piece for whoever owns the AI side.
 
 **The one constraint in Epic 5 that is not negotiable:** items and their splits
 must compute and write ordinary `expense_splits` rows. Balances, settlement and

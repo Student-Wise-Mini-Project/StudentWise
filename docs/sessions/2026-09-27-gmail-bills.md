@@ -109,9 +109,22 @@ stubbed test could have found:
   sender is not a utility -- with Dizengoff 5 suggested; approving it made a
   normal expense split 139.42 × 3.
 
-## Not done / next
+## Later the same day
 
-- The post-sign-up "Connect Gmail?" step.
+- **5.11, the offer after sign-up.** A new account lands on "Bring your bills
+  in from Gmail?" (Connect / Not now), skipped when the server has no Gmail
+  set up. Connecting from there comes back to Home: `connect` takes
+  `return_to=home|settings`, carried *inside* the signed state as a name from a
+  fixed list, so the callback can never redirect to another site.
+- **A race the test caught:** the instant sign-up succeeded, the guard that
+  moves signed-in users off `/register` sent them home before the sign-up
+  screen could send them to the offer. The auth context now knows a new
+  account from a returning one, and the guard sends each to the right place.
+- **Voice entry (5.6-5.7) was dropped** from the product, and the Gmail
+  catch-up improvements (paging past 50, looking back past 45 days) are not
+  planned. Epic 5 is complete.
+
+## Not done / next
 - Real-bill accuracy is measured on one generated bill, not on a set.
 - Link-only bills (a portal link, no attachment) can only be typed in.
 - The trusted-sender list is a starting guess at Israeli utility domains and

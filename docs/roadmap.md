@@ -3,8 +3,8 @@
 Everything the project needs, A to Z, split into **epics** (features) and
 **missions** (a task one person can finish and merge).
 
-**Status as of 2026-09-27:** 71 endpoints · 18 tables · 867 backend tests ·
-301 frontend tests · 14 migrations · CI green.
+**Status as of 2026-09-27:** 71 endpoints · 18 tables · 870 backend tests ·
+306 frontend tests · 14 migrations · CI green.
 
 **New here?** This file is status, not instructions. Start at
 [`onboarding.md`](onboarding.md), then [`testing.md`](testing.md), then come
@@ -41,14 +41,14 @@ touch the same file.
 | 2. Core domain (Splitwise parity) | 14 | 0 | ✅ complete |
 | 3. Algorithms | 4 | 0 | ✅ complete |
 | 4. Analytics & intelligence | 5 | 1 | 🚫 only 4.4, blocked on a key |
-| 5. AI ingestion (Module 1) | 8 | 2 | 🔨 receipts and Gmail bills done; voice left |
+| 5. AI ingestion (Module 1) | 9 | 0 | ✅ complete (voice dropped) |
 | 6. Recurring & automation | 5 | 0 | ✅ complete |
 | 7. Payments (Bit / PayBox) | 0 | 3 | ⬜ not started |
 | 8. AI chat assistant / RAG | 0 | 4 | ⬜ not started |
 | 9. Frontend | 14 | 3 | 🔨 the app works end to end |
 | 10. Deployment | 0 | 6 | ⬜ not started |
 | 11. Academic deliverables | 1 | 4 | 🔨 started |
-| **Total** | **62** | **25** | |
+| **Total** | **63** | **23** | |
 
 **The honest read:** the app works end to end. You can sign in, create a flat,
 add flatmates and weights, add an expense in any of the four split modes, see
@@ -60,8 +60,8 @@ left, and Epic 9 is 14 of 17.
 **And since 2026-09-27, the AI headline works:** photograph a receipt, check
 what Claude read, tap who had which line, save -- and connect Gmail so utility
 bills arrive and split themselves in the right flat. Both were tested on real
-input (a real receipt photo; a real PDF in a real inbox). Epic 5 has only voice
-(5.6-5.7) left.
+input (a real receipt photo; a real PDF in a real inbox). Epic 5 is complete;
+voice entry was dropped.
 
 **So the constraint is no longer code — it is the two people who cannot yet see
 it.** 0.5 has been the top of this list for days and it is still the only thing
@@ -248,11 +248,10 @@ The largest remaining backend chunk, and the headline "AI" of the project.
 | 5.3 | Receipt upload endpoint + object storage | M | #2 | ✅ |
 | 5.4 | Vision OCR: receipt image → items + amounts | L | #3 | ✅ |
 | 5.5 | Review-and-confirm flow for extracted receipts | M | #3 | ✅ |
-| 5.6 | Speech-to-text: audio → transcript | M | #2 | ⬜ |
-| 5.7 | Voice NLP: "85₪ cleaning stuff, everyone except Yossi" → expense | L | #2 | ⬜ |
 | 5.8 | Gmail OAuth + read-only inbox access | L | #3 | ✅ |
 | 5.9 | Bill extraction from Gmail (incl. PDF attachments) | L | #3 | ✅ |
 | 5.10 | **Route an emailed bill to the right flat** (address, trusted senders, review) | M | #3 | ✅ |
+| 5.11 | **Offer to connect Gmail right after sign-up** | S | #3 | ✅ |
 
 **Design constraint, already decided and load-bearing:** items and their splits
 must **compute and write ordinary `expense_splits` rows**. Balances, settlement
@@ -260,7 +259,7 @@ and analytics must never learn that items exist. Break this and every algorithm
 in Epic 3 and 4 needs reworking.
 
 > **5.1–5.5 are done: a receipt can be scanned end to end** (2026-09-27, built
-> by #3, so #2 starts from voice and Gmail). Photograph it, check what was
+> by #3). Photograph it, check what was
 > read, tap the lines each person shared, save. The constraint held: the lines
 > are turned into an ordinary `EXACT` split, and nothing downstream changed.
 >
@@ -320,8 +319,10 @@ in Epic 3 and 4 needs reworking.
 > to review with the amount to type. Tested end to end with real Claude on a
 > real PDF bill; the real-Google leg needs the setup above.
 
-**Order for what is left:** 5.6 → 5.7 (voice) write through the same
-`expense_service` path.
+> **Epic 5 is complete.** Voice entry (speech-to-text, then "85₪ cleaning
+> stuff, everyone except Yossi") was dropped on 2026-09-27: receipts and Gmail
+> cover how bills actually arrive. 5.11 offers Gmail once, right after
+> sign-up, and brings the user back home afterwards.
 
 **5.3 was delivered as mission 2.11.** Upload, storage, authorized retrieval and
 deletion all work; the store sits behind a small interface (`core/storage.py`)
@@ -549,14 +550,12 @@ already exist (9.9, 9.10) and the APK (9.12).
 >
 > 1. **Get those two branches reviewed and merged** -- two stacked PRs, a
 >    teammate approves each.
-> 2. **5.6 + 5.7 -- voice** *(Hila; writes through the same `expense_service`
->    path the receipt and Gmail flows use)*.
-> 3. **9.9 + 9.10 -- the Ask screen and anomaly alerts** *(Dana)*.
-> 4. **Measure the AI on real input** -- ~20 receipts and a handful of real
+> 2. **9.9 + 9.10 -- the Ask screen and anomaly alerts** *(Dana)*.
+> 3. **Measure the AI on real input** -- ~20 receipts and a handful of real
 >    utility bills with known answers, like 4.4 for Text-to-SQL. The key exists
 >    now, so 4.4 itself is unblocked too.
-> 5. **10.1 -- ask the lecturer about hosting**, then 10.2-10.4.
-> 6. **11.2-11.5 -- diagrams, report, demo script, slides.** The session files
+> 4. **10.1 -- ask the lecturer about hosting**, then 10.2-10.4.
+> 5. **11.2-11.5 -- diagrams, report, demo script, slides.** The session files
 >    in `docs/sessions/` are most of the report's raw material.
 >
 > The original plan follows, for the record.
