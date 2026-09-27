@@ -17,6 +17,8 @@ tutorial. If you are new, read them in this order:
 | [`docs/roadmap.md`](docs/roadmap.md) | Every epic and mission, with owners and status |
 | [`docs/api-contract.md`](docs/api-contract.md) | The endpoint contract, before building any UI |
 | [`frontend/README.md`](frontend/README.md) | The four frontend rules, and why each is a test |
+| [`docs/gmail-setup.md`](docs/gmail-setup.md) | The one-time Google Cloud setup for importing bills from Gmail |
+| [`docs/sessions/`](docs/sessions/) | What each session built and why -- the latest say what is newest |
 
 **The thirty-second version.** Postgres in Docker on port 5434; backend is
 Python 3.12 + FastAPI in `backend/` with a venv you must activate every
@@ -36,6 +38,8 @@ ships with its migration; every endpoint ships with its test.
 | Migrations | Alembic |
 | Validation | Pydantic v2 + pydantic-settings |
 | Auth | PyJWT + `pwdlib[argon2]` |
+| AI | `anthropic` SDK, `messages.parse` with a Pydantic schema. Default model `claude-sonnet-5` (per-feature setting) |
+| Gmail | `google-auth`, `google-auth-oauthlib`, `google-api-python-client`; `cryptography` (Fernet) for stored tokens; `rapidfuzz` for addresses |
 | Tests | pytest + FastAPI TestClient |
 | Lint | ruff (lint + format). No mypy, no pre-commit hooks. |
 | DB | Postgres 16 via `docker compose up -d` |
@@ -188,6 +192,10 @@ npm run gen:icons                     # PWA icons, from one SVG
   The scaffold, design system, auth, groups, expenses, balances, charts, i18n
   and PWA exist; see `frontend/README.md`.
 
+**Epic 5 in practice (2026-09-27):** #3 built receipt scanning (5.1-5.5) and
+Gmail bills (5.8-5.10) in `app/ai/`, including model and migration changes
+in Gal's layers that he should review. Voice (5.6-5.7) is still #2's.
+
 Onboarding docs are nobody's exclusive property: if you hit something that cost
 you an hour and is not written down, write it down in the file where you would
 have looked for it.
@@ -230,6 +238,33 @@ status page.
 - **Notification wording is never stored.** A row keeps `kind` plus a `payload`
   of plain facts; `render()` turns that into words at read time, so the app can
   be shown in Hebrew without a migration.
+### AI ingestion (Epic 5)
+
+- **Model calls live in `app/ai/`** (`receipt_ocr`, `bill_parser`, `gmail`),
+  each behind one function the tests replace -- no test needs a key or a
+  network. Amounts come back from the model as **strings** and are parsed to
+  `Decimal`; never a float. Text in an image, PDF or email is data, never
+  instructions, and every prompt says so.
+- **Nothing a model read touches money until it is decided.** A receipt scan is
+  a stateless draft a person checks. A bill from Gmail waits in
+  `ingested_bills` until its flat is certain or a person approves it, and only
+  then becomes an expense through `expense_service`. **Never add a status
+  column to `expenses`** -- seventeen modules read it as money.
+- **Items explain a split; they are not the split.** `expense_items` produce an
+  ordinary `EXACT` split. A PATCH that changes the split drops the items.
+- **A Gmail bill is split without a person only when** the sender is a known
+  utility (`BILL_TRUSTED_SENDER_DOMAINS`), the amount was read, the mailbox
+  owner has exactly one matching open `SHARED_APARTMENT` (by address when there
+  are several -- house numbers must match exactly), there is no fixed-amount
+  recurring bill of that kind, and the currency matches. Anything else goes to
+  review. Anyone can email a convincing "לתשלום".
+- **Gmail refresh tokens are Fernet-encrypted** (`TOKEN_ENCRYPTION_KEY`), and
+  the OAuth `state` JWT carries its own audience so it can never sign anyone in.
+- **Nothing reads email on a schedule.** Opening the app syncs once per session;
+  `fetch_new_bills.py` exists for a real cron.
+
+### Files
+
 - **Uploaded bytes decide what a file is, not its `Content-Type`.** Receipt
   storage keys are generated from the expense UUID and re-checked against a
   pattern before they become a path — nothing a user typed reaches the

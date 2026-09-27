@@ -156,6 +156,12 @@ The honest loop, in order:
 | Schema is wrong, data is disposable | `docker compose down -v` then `up -d`, `alembic upgrade head`, `python seed.py` |
 | Just pulled changes that touch models | `alembic upgrade head` then `python seed.py` |
 
+`python seed.py` also clears Gmail connections and bills imported from Gmail,
+so anyone who connected Gmail connects again afterwards. The demo world itself
+has no Gmail data: connecting needs a real Google client, which
+[`gmail-setup.md`](gmail-setup.md) walks through. Every Gmail test in `pytest`
+stubs Google and Claude, so the suites need neither.
+
 `docker compose down -v` drops the volume. Everything in the database goes,
 including the test database — which is fine, the init script recreates it on the
 next boot.
