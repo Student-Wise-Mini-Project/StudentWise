@@ -29,6 +29,7 @@ import {
   useReopenGroup,
   useUpdateMemberWeight,
 } from './api'
+import { FlatAddressSection } from './FlatAddressSection'
 import { useGroupScope } from './groupContext'
 import { SuggestionChips } from './SuggestionChips'
 import { useMemberSuggestions } from './suggestions'
@@ -147,6 +148,8 @@ export function MembersScreen() {
           {detailOf(remove.error)}
         </p>
       )}
+
+      <FlatAddressSection />
 
       {isOwner && <DangerZone />}
 

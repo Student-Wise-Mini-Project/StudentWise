@@ -13,12 +13,12 @@ import {
 } from '@/api/types'
 import { AppBar } from '@/app/layouts/AppBar'
 import { Avatar } from '@/components/Avatar'
-import { Button } from '@/components/Button'
+import { Button, LinkButton } from '@/components/Button'
 import { MoneyInput } from '@/components/MoneyInput'
 import { Sheet } from '@/components/Sheet'
 import { Spinner } from '@/components/Spinner'
 import { ErrorState } from '@/components/feedback'
-import { CheckIcon, ChevronEnd } from '@/components/icons'
+import { CheckIcon, ChevronEnd, ReceiptIcon } from '@/components/icons'
 import { Page } from '@/components/layout'
 import { useGroupScope } from '@/features/groups/groupContext'
 import { cn } from '@/lib/cn'
@@ -26,7 +26,7 @@ import { today } from '@/lib/dates'
 import { createIdempotencyTracker } from '@/lib/idempotency'
 import { useT } from '@/i18n/i18nContext'
 import { categoryLabel } from '@/lib/labels'
-import { isPositive, isValidAmount } from '@/lib/money'
+import { compare, isPositive, isValidAmount } from '@/lib/money'
 
 import { useCreateBill } from '@/features/recurring/api'
 import { frequencyLabel } from '@/features/recurring/labels'
@@ -166,10 +166,40 @@ export function EditExpenseScreen() {
   }
 
   const expense = query.data
+  const itemized = expense.items.length > 0
+
+  /**
+   * The form always sends the split, and the API rebuilds the split whenever it
+   * is sent -- which, for an expense split line by line, also drops the lines.
+   * So when the split has not actually changed, it is left out, and renaming a
+   * receipt keeps its lines.
+   */
+  const splitUnchanged = (input: {
+    total_amount: string
+    payer_id: string
+    split_type: SplitType
+    participants: { user_id: string; share_value?: string }[]
+  }) => {
+    const before = expense.splits
+      .map((split) => `${split.user.id}:${split.owed_amount}`)
+      .sort()
+      .join(',')
+    const after = input.participants
+      .map((participant) => `${participant.user_id}:${participant.share_value ?? ''}`)
+      .sort()
+      .join(',')
+    return (
+      compare(input.total_amount, expense.total_amount) === 0 &&
+      input.payer_id === expense.payer.id &&
+      input.split_type === expense.split_type &&
+      before === after
+    )
+  }
 
   return (
     <ExpenseForm
       mode="edit"
+      itemized={itemized}
       members={activeMembers}
       currency={currency}
       pending={update.isPending}
@@ -192,11 +222,16 @@ export function EditExpenseScreen() {
         })),
       }}
       onCancel={() => navigate(`/groups/${groupId}/expenses/${expense.id}`)}
-      onSubmit={(input) =>
-        update.mutate(input, {
+      onSubmit={(input) => {
+        const { total_amount, payer_id, split_type, participants, ...rest } = input
+        const body =
+          itemized && splitUnchanged(input)
+            ? rest
+            : { ...rest, total_amount, payer_id, split_type, participants }
+        update.mutate(body, {
           onSuccess: () => navigate(`/groups/${groupId}/expenses/${expense.id}`, { replace: true }),
         })
-      }
+      }}
     />
   )
 }
@@ -224,6 +259,7 @@ type FormState = {
  */
 function ExpenseForm({
   mode,
+  itemized = false,
   members,
   currency,
   initial,
@@ -233,6 +269,8 @@ function ExpenseForm({
   onCancel,
 }: {
   mode: 'create' | 'edit'
+  /** Split line by line from a receipt: editing the split replaces the lines. */
+  itemized?: boolean
   members: GroupMember[]
   currency: string
   initial?: FormState
@@ -312,6 +350,26 @@ function ExpenseForm({
             dir="auto"
           >
             {detailOf(error)}
+          </p>
+        )}
+
+        {mode === 'create' && (
+          <LinkButton
+            to={`/groups/${group.id}/expenses/scan`}
+            variant="secondary"
+            className="mx-4 mt-3 flex"
+          >
+            <ReceiptIcon className="size-5" aria-hidden="true" />
+            {t('scan.entry')}
+          </LinkButton>
+        )}
+
+        {itemized && (
+          <p
+            role="status"
+            className="bg-warn-soft text-warn mx-4 mt-3 rounded-sm px-3 py-2.5 text-sm"
+          >
+            {t('scan.editor.itemizedWarning')}
           </p>
         )}
 
@@ -516,7 +574,7 @@ function ExpenseForm({
  * rest. The labels share a column so the values line up, which is what makes
  * four rows read as one object rather than four fields.
  */
-function LabelRow({
+export function LabelRow({
   label,
   onClick,
   children,

@@ -247,6 +247,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/groups/{group_id}/expenses/item-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Item Splits
+         * @description What each person would owe if these lines were saved. Writes nothing.
+         *
+         *     For a review screen that shows per-person totals while lines are still
+         *     being assigned: the client never divides money, so it asks the server,
+         *     which answers with the same arithmetic the save will use.
+         */
+        post: operations["preview_item_splits_api_groups__group_id__expenses_item_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/expenses/{expense_id}": {
         parameters: {
             query?: never;
@@ -936,6 +960,151 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/groups/{group_id}/receipts/scan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Scan Receipt
+         * @description Read a receipt photo into a draft expense. Stores nothing.
+         *
+         *     The lines, total, date and category come back for a person to correct;
+         *     `warnings` names what could not be read. 503 when scanning is not
+         *     configured on this server.
+         */
+        post: operations["scan_receipt_api_groups__group_id__receipts_scan_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/integrations/gmail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Status */
+        get: operations["get_status_api_integrations_gmail_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Disconnect
+         * @description Revoke the grant at Google and forget it. Bills already imported stay.
+         */
+        delete: operations["disconnect_api_integrations_gmail_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/integrations/gmail/connect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Connect
+         * @description The address of Google's consent page. Only read access is asked for.
+         */
+        post: operations["connect_api_integrations_gmail_connect_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/integrations/gmail/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sync
+         * @description Look for new bills now. Safe to call repeatedly: an email is read once.
+         *
+         *     Bills from a known utility for a flat that is certain are split straight
+         *     away; everything else waits in `GET /bills`.
+         */
+        post: operations["sync_api_integrations_gmail_sync_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Bills
+         * @description Bills waiting for review by default. `total` is the badge count.
+         */
+        get: operations["list_bills_api_bills_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bills/{bill_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve
+         * @description Split the bill in the chosen flat, among its members, paid by the caller.
+         */
+        post: operations["approve_api_bills__bill_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bills/{bill_id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dismiss */
+        post: operations["dismiss_api_bills__bill_id__dismiss_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1036,6 +1205,28 @@ export interface components {
             token_type: string;
             user: components["schemas"]["UserOut"];
         };
+        /** BillApprove */
+        BillApprove: {
+            /**
+             * Group Id
+             * Format: uuid
+             */
+            group_id: string;
+            /** Total Amount */
+            total_amount?: number | string | null;
+        };
+        /** BillGroupOut */
+        BillGroupOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Currency */
+            currency: string;
+        };
         /** BillParticipantIn */
         BillParticipantIn: {
             /**
@@ -1052,6 +1243,13 @@ export interface components {
             /** Share Value */
             share_value?: string | null;
         };
+        /**
+         * BillReviewReason
+         * @description Why a bill was not split automatically. A code, so the client can say it
+         *     in either language.
+         * @enum {string}
+         */
+        BillReviewReason: "NOT_A_BILL" | "UNREADABLE" | "NO_AMOUNT" | "NO_FLAT" | "AMBIGUOUS_FLAT" | "UNKNOWN_SENDER" | "RECURRING_CONFLICT" | "CURRENCY_MISMATCH" | "DUPLICATE";
         /** Body_login_api_auth_login_post */
         Body_login_api_auth_login_post: {
             /** Grant Type */
@@ -1075,6 +1273,14 @@ export interface components {
              * Format: password
              */
             client_secret?: string | null;
+        };
+        /** Body_scan_receipt_api_groups__group_id__receipts_scan_post */
+        Body_scan_receipt_api_groups__group_id__receipts_scan_post: {
+            /**
+             * File
+             * @description A JPEG, PNG or WebP photo of the receipt.
+             */
+            file: string;
         };
         /** Body_upload_receipt_api_expenses__expense_id__receipt_put */
         Body_upload_receipt_api_expenses__expense_id__receipt_put: {
@@ -1334,6 +1540,26 @@ export interface components {
              * @default true
              */
             apply_split_rule: boolean;
+            /** Items */
+            items?: components["schemas"]["ItemIn"][] | null;
+            /** Ai Metadata */
+            ai_metadata?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /** ExpenseItemOut */
+        ExpenseItemOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Amount */
+            amount: string;
+            /** Users */
+            users: components["schemas"]["UserOut"][];
         };
         /** ExpenseOut */
         ExpenseOut: {
@@ -1388,6 +1614,11 @@ export interface components {
              */
             splits: components["schemas"]["ExpenseSplitOut"][];
             /**
+             * Items
+             * @default []
+             */
+            items: components["schemas"]["ExpenseItemOut"][];
+            /**
              * Receipt Url
              * @description Where to fetch the receipt, or null if there isn't one.
              *
@@ -1435,6 +1666,42 @@ export interface components {
             amount?: number | string | null;
             /** Expense Date */
             expense_date?: string | null;
+        };
+        /** GmailConnectOut */
+        GmailConnectOut: {
+            /** Authorization Url */
+            authorization_url: string;
+        };
+        /** GmailStatusOut */
+        GmailStatusOut: {
+            /** Available */
+            available: boolean;
+            /** Connected */
+            connected: boolean;
+            /** Google Email */
+            google_email?: string | null;
+            /** Connected At */
+            connected_at?: string | null;
+            /** Last Synced At */
+            last_synced_at?: string | null;
+            /**
+             * Needs Reconnect
+             * @default false
+             */
+            needs_reconnect: boolean;
+        };
+        /** GmailSyncOut */
+        GmailSyncOut: {
+            /** Checked */
+            checked: number;
+            /** Imported */
+            imported: number;
+            /** Needs Review */
+            needs_review: number;
+            /** Skipped */
+            skipped: number;
+            /** Needs Reconnect */
+            needs_reconnect: boolean;
         };
         /** GroupBalancesOut */
         GroupBalancesOut: {
@@ -1485,6 +1752,8 @@ export interface components {
             type: components["schemas"]["GroupType"];
             /** Currency */
             currency: string;
+            /** Address */
+            address?: string | null;
             /**
              * Created By
              * Format: uuid
@@ -1514,11 +1783,101 @@ export interface components {
             name?: string | null;
             /** Currency */
             currency?: string | null;
+            /** Address */
+            address?: string | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** IngestedBillOut */
+        IngestedBillOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            status: components["schemas"]["IngestedBillStatus"];
+            review_reason?: components["schemas"]["BillReviewReason"] | null;
+            /** Sender */
+            sender?: string | null;
+            /** Subject */
+            subject?: string | null;
+            /** Received At */
+            received_at?: string | null;
+            /** Provider Name */
+            provider_name?: string | null;
+            /** Total Amount */
+            total_amount?: string | null;
+            /** Currency */
+            currency?: string | null;
+            /** Due Date */
+            due_date?: string | null;
+            /** Billed To Name */
+            billed_to_name?: string | null;
+            /** Service Address */
+            service_address?: string | null;
+            /** Invoice Number */
+            invoice_number?: string | null;
+            category?: components["schemas"]["ExpenseCategory"] | null;
+            group?: components["schemas"]["BillGroupOut"] | null;
+            /** Address Score */
+            address_score?: number | null;
+            /** Expense Id */
+            expense_id?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /**
+         * IngestedBillStatus
+         * @description Where a bill found in someone's email has got to.
+         *
+         *     Only IMPORTED and APPROVED have an expense. Everything else is outside the
+         *     money entirely -- balances, analytics and settle-up never see it.
+         * @enum {string}
+         */
+        IngestedBillStatus: "IMPORTED" | "PENDING_REVIEW" | "APPROVED" | "DISMISSED" | "SKIPPED";
+        /**
+         * ItemIn
+         * @description One receipt line. `user_ids` names who shared it; empty means everyone.
+         */
+        ItemIn: {
+            /** Name */
+            name: string;
+            /** Amount */
+            amount: number | string;
+            /** User Ids */
+            user_ids?: string[];
+        };
+        /** ItemPreviewOut */
+        ItemPreviewOut: {
+            /** Splits */
+            splits: components["schemas"]["ItemPreviewSplit"][];
+            /** Items Total */
+            items_total: string;
+            /** Adjustment */
+            adjustment: string;
+        };
+        /** ItemPreviewRequest */
+        ItemPreviewRequest: {
+            /** Total Amount */
+            total_amount: number | string;
+            /** Items */
+            items: components["schemas"]["ItemIn"][];
+        };
+        /** ItemPreviewSplit */
+        ItemPreviewSplit: {
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** Owed Amount */
+            owed_amount: string;
         };
         /** MarkAllReadOut */
         MarkAllReadOut: {
@@ -1673,6 +2032,19 @@ export interface components {
             /** Has More */
             readonly has_more: boolean;
         };
+        /** Page[IngestedBillOut] */
+        Page_IngestedBillOut_: {
+            /** Items */
+            items: components["schemas"]["IngestedBillOut"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            /** Has More */
+            readonly has_more: boolean;
+        };
         /** Page[NotificationOut] */
         Page_NotificationOut_: {
             /** Items */
@@ -1719,6 +2091,40 @@ export interface components {
             to_user: components["schemas"]["UserOut"];
             /** Amount */
             amount: string;
+        };
+        /** ReceiptLineOut */
+        ReceiptLineOut: {
+            /** Name */
+            name: string;
+            /** Amount */
+            amount: string;
+        };
+        /**
+         * ReceiptScanOut
+         * @description A draft for a person to check. Nothing has been saved.
+         *
+         *     Confirm it by creating an expense with `items`, `split_type: EXACT`,
+         *     `source: OCR` and this `ai_metadata`, then attach the photo with
+         *     `PUT /expenses/{id}/receipt`.
+         */
+        ReceiptScanOut: {
+            /** Merchant */
+            merchant: string | null;
+            /** Expense Date */
+            expense_date: string | null;
+            /** Total Amount */
+            total_amount: string;
+            /** Currency */
+            currency: string | null;
+            category: components["schemas"]["ExpenseCategory"] | null;
+            /** Lines */
+            lines: components["schemas"]["ReceiptLineOut"][];
+            /** Warnings */
+            warnings: components["schemas"]["ScanWarning"][];
+            /** Ai Metadata */
+            ai_metadata: {
+                [key: string]: unknown;
+            };
         };
         /**
          * RecurrenceFrequency
@@ -1890,6 +2296,14 @@ export interface components {
             /** Reminded */
             reminded: components["schemas"]["RecurringBillOut"][];
         };
+        /**
+         * ScanWarning
+         * @description Something a person should look at before saving.
+         *
+         *     Codes rather than sentences: the client renders them in English or Hebrew.
+         * @enum {string}
+         */
+        ScanWarning: "NO_ITEMS" | "TOTAL_MISSING" | "DATE_MISSING" | "LINES_UNREADABLE" | "CURRENCY_MISMATCH";
         /** SettlementCreate */
         SettlementCreate: {
             /**
@@ -2660,6 +3074,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExpenseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_item_splits_api_groups__group_id__expenses_item_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ItemPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemPreviewOut"];
                 };
             };
             /** @description Validation Error */
@@ -4145,6 +4594,218 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["NotificationOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    scan_receipt_api_groups__group_id__receipts_scan_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_scan_receipt_api_groups__group_id__receipts_scan_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptScanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_status_api_integrations_gmail_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GmailStatusOut"];
+                };
+            };
+        };
+    };
+    disconnect_api_integrations_gmail_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    connect_api_integrations_gmail_connect_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GmailConnectOut"];
+                };
+            };
+        };
+    };
+    sync_api_integrations_gmail_sync_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GmailSyncOut"];
+                };
+            };
+        };
+    };
+    list_bills_api_bills_get: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["IngestedBillStatus"] | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_IngestedBillOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    approve_api_bills__bill_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bill_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillApprove"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dismiss_api_bills__bill_id__dismiss_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bill_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IngestedBillOut"];
                 };
             };
             /** @description Validation Error */

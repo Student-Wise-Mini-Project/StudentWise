@@ -19,6 +19,8 @@ import { InsightsScreen } from '@/features/analytics/InsightsScreen'
 import { BalancesScreen } from '@/features/balances/BalancesScreen'
 import { MembersScreen } from '@/features/groups/MembersScreen'
 import { NotificationsScreen } from '@/features/notifications/NotificationsScreen'
+import { ScanReceiptScreen } from '@/features/receipts/ScanReceiptScreen'
+import { BillsScreen } from '@/features/bills/BillsScreen'
 import { RecurringScreen } from '@/features/recurring/RecurringScreen'
 import { env } from '@/lib/env'
 
@@ -59,12 +61,14 @@ export function AppRoutes() {
             </Route>
 
             <Route path="expenses/new" element={<NewExpenseScreen />} />
+            <Route path="expenses/scan" element={<ScanReceiptScreen />} />
             <Route path="expenses/:expenseId" element={<ExpenseDetailScreen />} />
             <Route path="expenses/:expenseId/edit" element={<EditExpenseScreen />} />
           </Route>
 
           <Route path="expenses/:expenseId" element={<ExpenseRedirect />} />
           <Route path="notifications" element={<NotificationsScreen />} />
+          <Route path="bills" element={<BillsScreen />} />
           <Route path="settings" element={<SettingsScreen />} />
 
           {/* Dev only. `env.DEV` is statically false in a production build, so

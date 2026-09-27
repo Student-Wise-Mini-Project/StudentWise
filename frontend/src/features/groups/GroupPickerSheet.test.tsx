@@ -69,6 +69,10 @@ function renderShell(groups: ReturnType<typeof group>[]) {
     http.get(apiUrl('/api/auth/me'), () => HttpResponse.json(GAL)),
     http.get(apiUrl('/api/groups'), () => HttpResponse.json(groups)),
     http.get(apiUrl('/api/notifications/unread-count'), () => HttpResponse.json({ unread: 0 })),
+    // Home checks whether Gmail is connected, to fetch bills once per session.
+    http.get(apiUrl('/api/integrations/gmail'), () =>
+      HttpResponse.json({ available: false, connected: false, needs_reconnect: false }),
+    ),
     http.get(apiUrl('/api/activity'), () =>
       HttpResponse.json({ items: [], total: 0, limit: 20, offset: 0, has_more: false }),
     ),

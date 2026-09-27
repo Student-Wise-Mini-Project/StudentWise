@@ -15,6 +15,7 @@ import { useGroups } from '@/features/groups/api'
 import { useUnreadCount } from '@/features/notifications/api'
 import { cn } from '@/lib/cn'
 import { formatDayHeader } from '@/lib/dates'
+import { PendingBillsBanner } from '@/features/bills/PendingBillsBanner'
 import { useT } from '@/i18n/i18nContext'
 import { groupTypeLabel } from '@/lib/labels'
 import { abs, addAll, compare, isPositive, isZero, subtract } from '@/lib/money'
@@ -62,6 +63,7 @@ export function HomeScreen() {
         <div className="lg:col-start-2 lg:row-start-1">
           <div className="lg:sticky lg:top-20">
             <Position loading={position.loading || groups.isLoading} perGroup={position.perGroup} />
+            <PendingBillsBanner />
             {(groups.data?.length ?? 0) > 0 && (
               <div className="hidden lg:block">
                 <ListSection header={t('activity.yourGroups')}>

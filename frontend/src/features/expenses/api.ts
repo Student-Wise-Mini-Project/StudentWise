@@ -4,7 +4,15 @@ import { api, unwrap } from '@/api/client'
 import { invalidateLedger } from '@/api/invalidate'
 import { usePagedQuery } from '@/api/paged'
 import { qk } from '@/api/queryKeys'
-import type { Expense, ExpenseCategory, Page, ParticipantIn, SplitType } from '@/api/types'
+import type {
+  Expense,
+  ExpenseCategory,
+  ExpenseSource,
+  ItemIn,
+  Page,
+  ParticipantIn,
+  SplitType,
+} from '@/api/types'
 
 export type ExpenseFilters = {
   category?: ExpenseCategory
@@ -50,6 +58,10 @@ export type ExpenseInput = {
   category?: ExpenseCategory | null
   notes?: string | null
   apply_split_rule?: boolean
+  source?: ExpenseSource
+  /** Split line by line. Needs `split_type: 'EXACT'` and no `participants`. */
+  items?: ItemIn[] | null
+  ai_metadata?: Record<string, unknown> | null
 }
 
 export function useCreateExpense(groupId: string) {

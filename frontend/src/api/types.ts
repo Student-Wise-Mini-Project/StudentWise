@@ -36,6 +36,16 @@ export type RecurringBillCreate = S['RecurringBillCreate']
 export type RecurringBillUpdate = S['RecurringBillUpdate']
 export type RecurrenceFrequency = S['RecurrenceFrequency']
 export type RunResult = S['RunResultOut']
+export type ItemIn = S['ItemIn']
+export type ExpenseItem = S['ExpenseItemOut']
+export type ItemPreview = S['ItemPreviewOut']
+export type ReceiptScan = S['ReceiptScanOut']
+export type ScanWarning = S['ScanWarning']
+export type GmailStatus = S['GmailStatusOut']
+export type GmailSync = S['GmailSyncOut']
+export type IngestedBill = S['IngestedBillOut']
+export type IngestedBillStatus = S['IngestedBillStatus']
+export type BillReviewReason = S['BillReviewReason']
 
 export type Summary = S['SummaryOut']
 export type CategoryBreakdown = S['CategoryBreakdownOut']
@@ -123,6 +133,27 @@ export const EXPENSE_SOURCES = allOf<ExpenseSource>()([
   'OCR',
   'GMAIL_API',
   'RECURRING',
+])
+
+export const SCAN_WARNINGS = allOf<ScanWarning>()([
+  'NO_ITEMS',
+  'TOTAL_MISSING',
+  'DATE_MISSING',
+  'LINES_UNREADABLE',
+  'CURRENCY_MISMATCH',
+])
+
+/** Every reason must have words in both catalogues; this is what makes a new one a build error. */
+export const BILL_REVIEW_REASONS = allOf<BillReviewReason>()([
+  'NOT_A_BILL',
+  'UNREADABLE',
+  'NO_AMOUNT',
+  'NO_FLAT',
+  'AMBIGUOUS_FLAT',
+  'UNKNOWN_SENDER',
+  'RECURRING_CONFLICT',
+  'CURRENCY_MISMATCH',
+  'DUPLICATE',
 ])
 
 export const NOTIFICATION_KINDS = allOf<NotificationKind>()([

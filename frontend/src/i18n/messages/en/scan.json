@@ -1,0 +1,83 @@
+{
+  "entry": "Scan a receipt",
+  "entryHint": "Read the lines from a photo and split them item by item.",
+  "defaultTitle": "Receipt",
+  "pick": {
+    "title": "Scan a receipt",
+    "heading": "Photograph the receipt",
+    "body": "Lay it flat, fill the frame, and make sure the total is in the picture.",
+    "takePhoto": "Take a photo",
+    "choosePhoto": "Choose a photo",
+    "typeInstead": "Type it in instead",
+    "reading": "Reading the receipt…",
+    "readingHint": "This can take up to half a minute.",
+    "tryAgain": "Try another photo"
+  },
+  "photo": {
+    "alt": "The receipt you photographed",
+    "show": "Show the photo",
+    "hide": "Hide the photo"
+  },
+  "check": {
+    "title": "Check the receipt",
+    "hint": "Fix anything the camera got wrong. Nothing is saved yet.",
+    "total": "Total",
+    "totalAria": "Receipt total",
+    "linesHeader": "Lines on the receipt",
+    "lineNameAria": "Line {n} name",
+    "lineAmountAria": "Line {n} amount",
+    "removeLine": "Remove line {n}",
+    "addLine": "Add a line",
+    "linesTotal": "Lines add up to",
+    "gapDiscount": "Discount, shared in proportion",
+    "gapExtra": "Extra — service, tip or a missed line — shared in proportion",
+    "gapNone": "The lines match the total",
+    "next": "Next: who had what"
+  },
+  "problems": {
+    "title": "Give it a name.",
+    "total": "The total has to be more than zero.",
+    "payer": "Pick who paid.",
+    "date": "Pick a date.",
+    "noLines": "Add at least one line.",
+    "lineName": "Every line needs a name.",
+    "lineAmount": "Every line needs an amount above zero."
+  },
+  "warnings": {
+    "NO_ITEMS": "The lines couldn't be read, so the whole total is one line. Split it as it is, or add the lines.",
+    "TOTAL_MISSING": "The total couldn't be read, so it is the lines added up. Check it against the receipt.",
+    "DATE_MISSING": "The date couldn't be read, so it is set to today.",
+    "LINES_UNREADABLE": "Some lines couldn't be read and were left out. Add them if they matter.",
+    "CURRENCY_MISMATCH": "This receipt looks like it is in {currency}, but the group is in {groupCurrency}. Nothing is converted."
+  },
+  "split": {
+    "title": "Who had what",
+    "hint": "Pick a name, then tap the lines that person shared. A line with no names on it is split between everyone.",
+    "noBrushHint": "Tap a line to choose names for it.",
+    "everyone": "Everyone",
+    "lineSheetTitle": "Who is on “{name}”?",
+    "lineSheetHint": "A line with no names on it is split between everyone.",
+    "setEveryone": "Everyone",
+    "done": "Done",
+    "perPerson": "What everyone owes",
+    "previewLoading": "Working it out",
+    "previewError": "Couldn't work out the split. Check the lines.",
+    "adjustmentDiscount": "Includes a {amount} discount, shared in proportion to each person's lines.",
+    "adjustmentExtra": "Includes {amount} extra, shared in proportion to each person's lines.",
+    "back": "Back",
+    "save": "Save expense"
+  },
+  "attach": {
+    "failed": "The expense is saved, but the photo didn't upload.",
+    "retry": "Try the photo again",
+    "skip": "Skip the photo"
+  },
+  "detail": {
+    "linesHeader": "Receipt lines",
+    "linesNote": "The amounts above were worked out from these lines.",
+    "everyone": "Everyone"
+  },
+  "editor": {
+    "itemizedWarning": "This expense was split line by line from a receipt. Changing the amount, who paid or the split below replaces those lines."
+  }
+}

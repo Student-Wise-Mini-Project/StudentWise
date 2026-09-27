@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router'
 
 import { detailOf } from '@/api/errors'
 import { AppBar } from '@/app/layouts/AppBar'
-import { Avatar } from '@/components/Avatar'
+import { Avatar, AvatarStack } from '@/components/Avatar'
 import { Badge } from '@/components/Badge'
 import { Button, LinkButton } from '@/components/Button'
 import { ListRow, ListSection } from '@/components/ListRow'
@@ -29,7 +29,7 @@ export function ExpenseDetailScreen() {
   const { expenseId } = useParams<{ expenseId: string }>()
   const navigate = useNavigate()
   const query = useExpense(expenseId)
-  const { groupId, group, currency } = useGroupScope()
+  const { groupId, group, currency, activeMembers } = useGroupScope()
   const { user } = useAuth()
   const meId = user?.id
   const remove = useDeleteExpense(groupId)
@@ -164,6 +164,31 @@ export function ExpenseDetailScreen() {
           </ListSection>
 
           <p className="text-muted px-4 text-xs">{t('expenses.detail.roundingNote')}</p>
+
+          {expense.items.length > 0 && (
+            <ListSection header={t('scan.detail.linesHeader')}>
+              {expense.items.map((item) => (
+                <ListRow
+                  key={item.id}
+                  dense
+                  title={<bdi>{item.name}</bdi>}
+                  subtitle={
+                    // Stored with everyone named when nobody was marked, so
+                    // "the whole group" is recognised rather than listed.
+                    item.users.length === activeMembers.length ? (
+                      t('scan.detail.everyone')
+                    ) : (
+                      <AvatarStack users={item.users} size="sm" max={6} className="mt-1" />
+                    )
+                  }
+                  meta={<Money amount={item.amount} currency={currency} size="md" />}
+                />
+              ))}
+            </ListSection>
+          )}
+          {expense.items.length > 0 && (
+            <p className="text-muted px-4 text-xs">{t('scan.detail.linesNote')}</p>
+          )}
 
           {expense.notes && (
             <div className="px-4">
