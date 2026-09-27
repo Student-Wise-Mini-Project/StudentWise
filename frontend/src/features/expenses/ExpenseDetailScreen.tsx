@@ -12,6 +12,7 @@ import { Sheet } from '@/components/Sheet'
 import { Spinner } from '@/components/Spinner'
 import { ErrorState } from '@/components/feedback'
 import { Page, Stack } from '@/components/layout'
+import { ExpenseAlerts } from '@/features/analytics/ExpenseAlerts'
 import { useAuth } from '@/features/auth/authContext'
 import { CommentThread } from '@/features/comments/CommentThread'
 import { useGroupScope } from '@/features/groups/groupContext'
@@ -128,6 +129,8 @@ export function ExpenseDetailScreen() {
               </p>
             )}
           </header>
+
+          <ExpenseAlerts expenseId={expense.id} />
 
           {expense.split_rule && (
             <p className="text-muted px-4 text-xs">

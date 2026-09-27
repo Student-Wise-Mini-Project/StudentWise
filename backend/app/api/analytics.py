@@ -253,12 +253,15 @@ def ask_question(
 
     Returns 503 when the server has no Anthropic API key configured.
     """
-    result = nl_query_service.ask(readonly, membership.group, question=payload.question)
+    result = nl_query_service.ask(
+        readonly, membership.group, question=payload.question, language=payload.language
+    )
     return AskResponse(
         question=result.question,
         sql=result.sql,
         explanation=result.explanation,
         columns=result.columns,
+        column_labels=result.column_labels,
         rows=result.rows,
         row_count=result.row_count,
         truncated=result.truncated,

@@ -1171,6 +1171,12 @@ export interface components {
         AskRequest: {
             /** Question */
             question: string;
+            /**
+             * Language
+             * @default en
+             * @enum {string}
+             */
+            language: "en" | "he";
         };
         /** AskResponse */
         AskResponse: {
@@ -1182,6 +1188,13 @@ export interface components {
             explanation: string;
             /** Columns */
             columns: string[];
+            /**
+             * Column Labels
+             * @default {}
+             */
+            column_labels: {
+                [key: string]: string;
+            };
             /** Rows */
             rows: {
                 [key: string]: unknown;

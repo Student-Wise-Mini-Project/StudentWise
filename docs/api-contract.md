@@ -726,11 +726,19 @@ dates, so a pair is kept when either side falls in range.
 
 ### Ask a question (natural language)
 
-`POST /groups/{group_id}/analytics/ask` with `{"question": "..."}` (3-500 chars).
+`POST /groups/{group_id}/analytics/ask` with `{"question": "...", "language": "en" | "he"}`
+(question 3-500 chars; `language` defaults to `"en"`, anything else is 422).
 
 ```
-AskResponse = { question, sql, explanation, columns, rows, row_count, truncated }
+AskResponse = { question, sql, explanation, columns, column_labels, rows, row_count, truncated }
 ```
+
+**`language` is the app's language, not the question's.** Send the locale the
+screen is shown in: `explanation` and `column_labels` come back in it, so a
+Hebrew question typed in the English app still gets an English answer.
+`column_labels` maps a column name to a short heading (`{"total_paid": "Total
+paid"}`); it may miss a column, so fall back to the column name. The column
+names themselves stay snake_case English in both languages.
 
 Claude translates the question into a single PostgreSQL SELECT. **The SQL that
 ran comes back in the response** — show it, so an answer can be checked rather

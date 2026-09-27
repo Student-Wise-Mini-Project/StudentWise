@@ -3,8 +3,8 @@
 Everything the project needs, A to Z, split into **epics** (features) and
 **missions** (a task one person can finish and merge).
 
-**Status as of 2026-09-27:** 71 endpoints · 18 tables · 870 backend tests ·
-306 frontend tests · 14 migrations · CI green.
+**Status as of 2026-09-27:** 71 endpoints · 18 tables · 873 backend tests ·
+336 frontend tests · 14 migrations · CI green.
 
 **New here?** This file is status, not instructions. Start at
 [`onboarding.md`](onboarding.md), then [`testing.md`](testing.md), then come
@@ -422,9 +422,8 @@ expense form are what turned it into a feature people can use.
 
 ## Epic 9 — Frontend 🔨
 
-**Was the critical path; no longer is.** 14 of 17 are merged and the app runs
-end to end in two languages. What is left is two screens against endpoints that
-already exist (9.9, 9.10) and the APK (9.12).
+**Was the critical path; no longer is.** 16 of 17 are done and the app runs
+end to end in two languages. What is left is the APK (9.12).
 
 | # | Mission | Size | Owner | Status |
 |---|---|---|---|---|
@@ -436,8 +435,8 @@ already exist (9.9, 9.10) and the APK (9.12).
 | 9.6 | Add / edit expense, all four split types | L | #3 | ✅ |
 | 9.7 | Balances screen + settle-up plan | M | #3 | ✅ |
 | 9.8 | Charts: category pie, monthly trend, per-member bars | L | #3 | ✅ |
-| 9.9 | "Ask" screen for natural-language questions | M | #3 | ⬜ |
-| 9.10 | Anomaly alerts surfaced in the UI | S | #3 | ⬜ |
+| 9.9 | "Ask" screen for natural-language questions | M | #3 | ✅ |
+| 9.10 | Anomaly alerts surfaced in the UI | S | #3 | ✅ |
 | 9.11 | PWA: manifest, service worker, iOS install | M | #3 | ✅ |
 | 9.12 | Android APK wrapper | M | #3 | ⬜ |
 | 9.13 | Hebrew + i18n: catalogue, typed `t()`, RTL switch | L | Gal | ✅ |
@@ -446,12 +445,13 @@ already exist (9.9, 9.10) and the APK (9.12).
 | 9.16 | Member suggestions from your other groups | S | Gal | ✅ |
 | 9.17 | **Recurring bills UI** — the tab, the editor, and a repeats toggle | L | Gal | ✅ |
 
-> **14 of 17 done.** You can sign in, create a flat, add flatmates and weights,
+> **16 of 17 done.** You can sign in, create a flat, add flatmates and weights,
 > add an expense in any of the four split modes, see balances, settle up,
 > comment, attach a receipt, read your alerts, see where the money goes, install
-> it to an iOS home screen, **and run the whole thing in Hebrew**. What is left
-> is the natural-language Ask screen (9.9), anomaly alerts (9.10) and the APK
-> (9.12).
+> it to an iOS home screen, **and run the whole thing in Hebrew**. Ask a question
+> in your own words and get a table back, in the app's language (9.9); an
+> unusual bill or a suspected double payment is flagged on Insights and on the
+> expense itself (9.10). What is left is the APK (9.12).
 >
 > **9.14–9.17 came from using the app, not from reading the code**, and three of
 > the four were a screen that was never built rather than a decision that was
@@ -550,7 +550,8 @@ already exist (9.9, 9.10) and the APK (9.12).
 >
 > 1. **Get those two branches reviewed and merged** -- two stacked PRs, a
 >    teammate approves each.
-> 2. **9.9 + 9.10 -- the Ask screen and anomaly alerts** *(Dana)*.
+> 2. ~~9.9 + 9.10 -- the Ask screen and anomaly alerts~~ -- done 27 Sep, on
+>    `feat/ask-and-anomalies` (stacked on `feat/gmail-bills`).
 > 3. **Measure the AI on real input** -- ~20 receipts and a handful of real
 >    utility bills with known answers, like 4.4 for Text-to-SQL. The key exists
 >    now, so 4.4 itself is unblocked too.

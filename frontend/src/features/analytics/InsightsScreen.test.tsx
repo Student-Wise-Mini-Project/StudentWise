@@ -102,6 +102,13 @@ function renderScreen() {
   window.localStorage.setItem('sw.token', 'tok')
 
   server.use(
+    // The unusual-expense and double-payment reports (9.10); nothing to flag here.
+    http.get(apiUrl('/api/groups/g1/analytics/anomalies'), () =>
+      HttpResponse.json({ group_id: 'g1', currency: 'ILS', anomalies: [] }),
+    ),
+    http.get(apiUrl('/api/groups/g1/analytics/duplicates'), () =>
+      HttpResponse.json({ group_id: 'g1', currency: 'ILS', window_days: 3, pairs: [] }),
+    ),
     http.get(apiUrl('/api/auth/me'), () => HttpResponse.json(GAL)),
     http.get(apiUrl('/api/groups/g1/analytics/summary'), ({ request }) => {
       const userId = new URL(request.url).searchParams.get('user_id')
@@ -206,6 +213,12 @@ describe('a group with nothing in it', () => {
     window.localStorage.setItem('sw.token', 'tok')
     server.use(
       http.get(apiUrl('/api/auth/me'), () => HttpResponse.json(GAL)),
+      http.get(apiUrl('/api/groups/g1/analytics/anomalies'), () =>
+        HttpResponse.json({ group_id: 'g1', currency: 'ILS', anomalies: [] }),
+      ),
+      http.get(apiUrl('/api/groups/g1/analytics/duplicates'), () =>
+        HttpResponse.json({ group_id: 'g1', currency: 'ILS', window_days: 3, pairs: [] }),
+      ),
       http.get(apiUrl('/api/groups/g1/analytics/summary'), () =>
         HttpResponse.json({
           ...GROUP_SUMMARY,

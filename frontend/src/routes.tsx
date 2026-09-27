@@ -15,6 +15,7 @@ import { ExpenseRedirect } from '@/features/expenses/ExpenseRedirect'
 import { GroupScopeRoute, GroupTabsLayout } from '@/features/groups/GroupLayout'
 import { GroupListScreen } from '@/features/groups/GroupListScreen'
 import { HomeScreen } from '@/features/activity/HomeScreen'
+import { AskScreen } from '@/features/analytics/AskScreen'
 import { InsightsScreen } from '@/features/analytics/InsightsScreen'
 import { BalancesScreen } from '@/features/balances/BalancesScreen'
 import { MembersScreen } from '@/features/groups/MembersScreen'
@@ -63,6 +64,7 @@ export function AppRoutes() {
               <Route path="recurring" element={<RecurringScreen />} />
             </Route>
 
+            <Route path="ask" element={<AskScreen />} />
             <Route path="expenses/new" element={<NewExpenseScreen />} />
             <Route path="expenses/scan" element={<ScanReceiptScreen />} />
             <Route path="expenses/:expenseId" element={<ExpenseDetailScreen />} />

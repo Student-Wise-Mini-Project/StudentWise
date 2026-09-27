@@ -80,6 +80,13 @@ function renderAt(path: string) {
   window.localStorage.setItem('sw.token', 'tok')
   const patches: Record<string, unknown>[] = []
   server.use(
+    // The unusual-expense and double-payment reports (9.10); nothing to flag here.
+    http.get(apiUrl('/api/groups/g1/analytics/anomalies'), () =>
+      HttpResponse.json({ group_id: 'g1', currency: 'ILS', anomalies: [] }),
+    ),
+    http.get(apiUrl('/api/groups/g1/analytics/duplicates'), () =>
+      HttpResponse.json({ group_id: 'g1', currency: 'ILS', window_days: 3, pairs: [] }),
+    ),
     http.get(apiUrl('/api/auth/me'), () => HttpResponse.json(GAL)),
     http.get(apiUrl('/api/groups'), () => HttpResponse.json([GROUP])),
     http.get(apiUrl('/api/groups/g1'), () => HttpResponse.json(GROUP)),

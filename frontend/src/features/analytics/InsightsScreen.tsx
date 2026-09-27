@@ -7,7 +7,7 @@ import { Money } from '@/components/Money'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { DonutChart, PairedBars, TrendChart } from '@/components/charts'
 import { EmptyState, ErrorState, Skeleton } from '@/components/feedback'
-import { ReceiptIcon } from '@/components/icons'
+import { ChevronEnd, ReceiptIcon } from '@/components/icons'
 import { Stack } from '@/components/layout'
 import { useAuth } from '@/features/auth/authContext'
 import { useGroupScope } from '@/features/groups/groupContext'
@@ -16,6 +16,9 @@ import { useT } from '@/i18n/i18nContext'
 import { categoryLabelOf } from '@/lib/labels'
 import { formatMoney } from '@/lib/money'
 
+import { Link } from 'react-router'
+
+import { WorthALook } from './WorthALook'
 import { useByCategory, useByMember, useByMonth, useSummary } from './api'
 
 type Scope = 'group' | 'me'
@@ -75,6 +78,21 @@ export function InsightsScreen() {
           {scope === 'group' ? t('analytics.scopeGroupHint') : t('analytics.scopeMeHint')}
         </p>
       </div>
+
+      <Link
+        to={`/groups/${groupId}/ask`}
+        className="bg-accent-soft text-accent mx-4 flex items-center justify-between gap-3 rounded-sm px-4 py-3"
+      >
+        <span className="flex flex-col">
+          <span className="font-display text-base font-extrabold">
+            {t('analytics.ask.entryTitle')}
+          </span>
+          <span className="text-sm">{t('analytics.ask.entryBody')}</span>
+        </span>
+        <ChevronEnd className="size-5 shrink-0" />
+      </Link>
+
+      <WorthALook />
 
       {loading && <LoadingBlocks />}
 
