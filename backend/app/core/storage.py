@@ -51,6 +51,23 @@ def sniff_image_type(data: bytes) -> str | None:
     return None
 
 
+def validate_receipt_image(data: bytes) -> str:
+    """The content type of an acceptable receipt photo, or a 400 saying why not.
+
+    Shared by storing a receipt and scanning one, so both refuse the same files.
+    """
+    if not data:
+        raise BadRequestError("The uploaded file is empty")
+    if len(data) > settings.receipt_max_bytes:
+        limit_mb = settings.receipt_max_bytes // (1024 * 1024)
+        raise BadRequestError(f"Receipts must be {limit_mb} MB or smaller")
+
+    content_type = sniff_image_type(data)
+    if content_type is None:
+        raise BadRequestError("Upload a JPEG, PNG or WebP image")
+    return content_type
+
+
 def content_type_for(key: str) -> str:
     extension = key.rsplit(".", 1)[-1]
     for content_type, ext in ALLOWED_IMAGE_TYPES.items():
@@ -77,16 +94,7 @@ class LocalReceiptStore:
         return self.root / Path(key).name
 
     def save(self, *, expense_id: uuid.UUID, data: bytes) -> str:
-        if not data:
-            raise BadRequestError("The uploaded file is empty")
-        if len(data) > settings.receipt_max_bytes:
-            limit_mb = settings.receipt_max_bytes // (1024 * 1024)
-            raise BadRequestError(f"Receipts must be {limit_mb} MB or smaller")
-
-        content_type = sniff_image_type(data)
-        if content_type is None:
-            raise BadRequestError("Upload a JPEG, PNG or WebP image")
-
+        content_type = validate_receipt_image(data)
         key = f"receipts/{expense_id}.{ALLOWED_IMAGE_TYPES[content_type]}"
         path = self._path(key)
         path.parent.mkdir(parents=True, exist_ok=True)

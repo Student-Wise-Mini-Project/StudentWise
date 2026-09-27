@@ -55,6 +55,7 @@ const EXPENSE = {
   created_at: '2026-09-09T10:00:00Z',
   updated_at: '2026-09-09T10:00:00Z',
   splits: [{ user: GAL, owed_amount: '212.30', share_value: null }],
+  items: [],
   receipt_url: null,
 }
 
@@ -62,6 +63,13 @@ function renderAt(path: string) {
   resetRunTracking()
   window.localStorage.setItem('sw.token', 'tok')
   server.use(
+    // The unusual-expense and double-payment reports (9.10); nothing to flag here.
+    http.get(apiUrl('/api/groups/g1/analytics/anomalies'), () =>
+      HttpResponse.json({ group_id: 'g1', currency: 'ILS', anomalies: [] }),
+    ),
+    http.get(apiUrl('/api/groups/g1/analytics/duplicates'), () =>
+      HttpResponse.json({ group_id: 'g1', currency: 'ILS', window_days: 3, pairs: [] }),
+    ),
     http.get(apiUrl('/api/auth/me'), () => HttpResponse.json(GAL)),
     http.get(apiUrl('/api/groups'), () => HttpResponse.json([GROUP])),
     http.get(apiUrl('/api/groups/g1'), () => HttpResponse.json(GROUP)),
@@ -73,6 +81,10 @@ function renderAt(path: string) {
       HttpResponse.json({ items: [], total: 0, limit: 20, offset: 0, has_more: false }),
     ),
     http.get(apiUrl('/api/notifications/unread-count'), () => HttpResponse.json({ unread: 0 })),
+    // Home checks whether Gmail is connected, to fetch bills once per session.
+    http.get(apiUrl('/api/integrations/gmail'), () =>
+      HttpResponse.json({ available: false, connected: false, needs_reconnect: false }),
+    ),
     http.get(apiUrl('/api/groups/g1/balances'), () =>
       HttpResponse.json({
         group_id: 'g1',
@@ -220,6 +232,13 @@ describe('the add-expense bar', () => {
   it('is gone while editing an expense', async () => {
     renderAt('/groups/g1/expenses/e1/edit')
     await screen.findByRole('heading', { name: 'Edit expense' })
+    expect(screen.queryByRole('link', { name: /add expense/i })).not.toBeInTheDocument()
+  })
+
+  it('is gone while scanning a receipt', async () => {
+    // Tapping it mid-scan would throw away the reading and the lines marked so far.
+    renderAt('/groups/g1/expenses/scan')
+    await screen.findByRole('heading', { name: 'Photograph the receipt' })
     expect(screen.queryByRole('link', { name: /add expense/i })).not.toBeInTheDocument()
   })
 })

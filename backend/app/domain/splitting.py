@@ -125,3 +125,73 @@ def compute_splits(
         )
         for participant, amount in zip(ordered, cents, strict=True)
     ]
+
+
+# --- receipt lines ----------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class ItemInput:
+    """One receipt line and the people sharing it. Nobody is ever implied: the
+    caller has already turned "nobody marked this line" into a list of names."""
+
+    amount: Decimal
+    user_ids: tuple[uuid.UUID, ...]
+
+
+def compute_item_splits(total: Decimal, items: list[ItemInput]) -> list[ComputedSplit]:
+    """What each person owes on a receipt split line by line.
+
+    Each line is split equally among the people on it. Whatever separates the
+    lines from the total -- a discount, a service charge, a tip, a line the
+    camera missed -- is then spread in proportion to what each person's lines
+    came to, which is how a bill split by hand usually treats tax and tip.
+
+    The result is exact amounts that sum to `total` to the cent, sorted by user
+    id, with nobody listed who owes nothing. It is meant to be stored as an
+    ordinary EXACT split, so nothing downstream needs to know items existed.
+    """
+    if not items:
+        raise BadRequestError("A receipt needs at least one line")
+
+    if total <= 0:
+        raise BadRequestError("Expense total must be greater than zero")
+    total_cents = _to_cents(total, "Expense total")
+
+    subtotals: dict[uuid.UUID, int] = {}
+    for item in items:
+        if item.amount <= 0:
+            raise BadRequestError("Every line must be greater than zero")
+        if not item.user_ids:
+            raise BadRequestError("Every line needs at least one person")
+        if len(set(item.user_ids)) != len(item.user_ids):
+            raise BadRequestError("A person may only appear once on a line")
+
+        people = sorted(item.user_ids)
+        shares = _allocate(_to_cents(item.amount, "Line amount"), [Decimal(1)] * len(people))
+        for user_id, share in zip(people, shares, strict=True):
+            subtotals[user_id] = subtotals.get(user_id, 0) + share
+
+    people = sorted(subtotals)
+    owed = [subtotals[user_id] for user_id in people]
+    lines_cents = sum(owed)
+
+    adjustment = total_cents - lines_cents
+    if adjustment:
+        # Proportional to each subtotal. A discount is spread the same way and
+        # subtracted: a positive total means it is smaller than the lines, so
+        # each person's part of it is under their subtotal, and rounding it up
+        # by one cent cannot take it past that. Nobody ends up owed money.
+        spread = _allocate(abs(adjustment), [Decimal(cents) for cents in owed])
+        sign = 1 if adjustment > 0 else -1
+        owed = [cents + sign * part for cents, part in zip(owed, spread, strict=True)]
+
+    return [
+        ComputedSplit(
+            user_id=user_id,
+            owed_amount=(Decimal(cents) / 100).quantize(CENT),
+            share_value=(Decimal(cents) / 100).quantize(CENT),
+        )
+        for user_id, cents in zip(people, owed, strict=True)
+        if cents > 0
+    ]

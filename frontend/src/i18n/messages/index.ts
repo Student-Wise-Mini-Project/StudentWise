@@ -5,23 +5,27 @@ import activityEn from './en/activity.json'
 import analyticsEn from './en/analytics.json'
 import authEn from './en/auth.json'
 import balancesEn from './en/balances.json'
+import billsEn from './en/bills.json'
 import commonEn from './en/common.json'
 import errorsEn from './en/errors.json'
 import expensesEn from './en/expenses.json'
 import groupsEn from './en/groups.json'
 import notificationsEn from './en/notifications.json'
 import recurringEn from './en/recurring.json'
+import scanEn from './en/scan.json'
 import settingsEn from './en/settings.json'
 import activityHe from './he/activity.json'
 import analyticsHe from './he/analytics.json'
 import authHe from './he/auth.json'
 import balancesHe from './he/balances.json'
+import billsHe from './he/bills.json'
 import commonHe from './he/common.json'
 import errorsHe from './he/errors.json'
 import expensesHe from './he/expenses.json'
 import groupsHe from './he/groups.json'
 import notificationsHe from './he/notifications.json'
 import recurringHe from './he/recurring.json'
+import scanHe from './he/scan.json'
 import settingsHe from './he/settings.json'
 
 /**
@@ -36,12 +40,14 @@ export const en = {
   analytics: analyticsEn,
   auth: authEn,
   balances: balancesEn,
+  bills: billsEn,
   common: commonEn,
   errors: errorsEn,
   expenses: expensesEn,
   groups: groupsEn,
   notifications: notificationsEn,
   recurring: recurringEn,
+  scan: scanEn,
   settings: settingsEn,
 } as const
 
@@ -54,12 +60,14 @@ export const he: Widen<typeof en> = {
   analytics: analyticsHe,
   auth: authHe,
   balances: balancesHe,
+  bills: billsHe,
   common: commonHe,
   errors: errorsHe,
   expenses: expensesHe,
   groups: groupsHe,
   notifications: notificationsHe,
   recurring: recurringHe,
+  scan: scanHe,
   settings: settingsHe,
 }
 

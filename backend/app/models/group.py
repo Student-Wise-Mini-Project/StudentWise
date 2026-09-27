@@ -25,6 +25,9 @@ class Group(Base):
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     type: Mapped[GroupType] = mapped_column(enum_column(GroupType), nullable=False)
+    #: The flat's street address, as it appears on its bills. Used to tell which
+    #: flat a bill from email belongs to when someone lives in more than one.
+    address: Mapped[str | None] = mapped_column(String(300), nullable=True)
     currency: Mapped[str] = mapped_column(String(3), nullable=False, server_default="ILS")
 
     created_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)

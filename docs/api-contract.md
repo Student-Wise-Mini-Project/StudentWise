@@ -110,13 +110,20 @@ User = { id, name, email, phone_number, created_at }
 | GET | `/groups` | — | Groups you're an active member of |
 | POST | `/groups` | `{name, type, currency?}` | You become OWNER. `currency` defaults to `ILS` |
 | GET | `/groups/{group_id}` | — | Includes `members` |
-| PATCH | `/groups/{group_id}` | `{name?, currency?}` | OWNER only |
+| PATCH | `/groups/{group_id}` | `{name?, currency?, address?}` | OWNER only. `address: ""` clears it |
 | DELETE | `/groups/{group_id}` | — | OWNER only. 204. Cascades to expenses and settlements |
 
 `type` is one of `SHARED_APARTMENT`, `COUPLE`, `SOLO`, `TRIP`.
 
 ```
-Group = { id, name, type, currency, created_by, created_at, members: GroupMember[] }
+Group = { id, name, type, currency, address, created_by, created_at, members: GroupMember[] }
+```
+
+`address` is the flat's street address as its bills print it (in Hebrew, for
+Israeli bills). It is what tells a bill from Gmail which flat it belongs to
+when someone lives in more than one; see Bills from Gmail.
+
+```
 GroupMember = { user: User, role: "OWNER"|"MEMBER", default_split_weight, joined_at, left_at }
 ```
 
@@ -150,7 +157,9 @@ ExpenseCreate = {
   participants?: [{ user_id, share_value? }],           // omit = everyone active
   category?: ExpenseCategory,                           // omit = null
   notes?, source?: "MANUAL"|"VOICE"|"OCR"|"GMAIL_API"|"RECURRING",
-  apply_split_rule?: boolean                            // default true
+  apply_split_rule?: boolean,                           // default true
+  items?: [{ name, amount, user_ids?: [uuid] }],        // split line by line, see below
+  ai_metadata?: object                                  // what ingestion read, <= 16 KB
 }
 ```
 
@@ -205,13 +214,48 @@ Expense = {
   split_type, source, notes, receipt_url, ai_metadata,
   split_rule: SplitRuleSummary | null,
   created_by, created_at, updated_at,
-  splits: [{ user: User, owed_amount, share_value }]
+  splits: [{ user: User, owed_amount, share_value }],
+  items: [{ id, name, amount, users: [User] }]          // [] unless split by items
 }
 ```
 
 `receipt_url` is `null` until a receipt is uploaded, and otherwise the path to
-fetch it (see below). `ai_metadata` is always `null` for now; the Step 3 AI
-ingestion modules will populate it.
+fetch it (see below). `ai_metadata` is `null` for a hand-entered expense; a
+scanned receipt stores what OCR read there, before anyone corrected it.
+
+### Splitting line by line (`items`)
+
+Send `items` instead of `participants` to split a receipt line by line. Send
+`split_type: "EXACT"` with it; `participants` alongside `items` is a 422.
+
+- Each line is split **equally among its `user_ids`**. An empty `user_ids`
+  means everyone active in the group, and is stored with every name written
+  out, so the line does not change meaning when someone joins later.
+- Every line must be greater than zero. A discount is not a line: it is the
+  gap between the lines and `total_amount`, and that gap -- a discount if
+  negative, a service charge or tip if positive -- is spread **in proportion
+  to what each person's lines came to**.
+- The result is stored as an ordinary `EXACT` split. `splits` is still the
+  answer to "who owes what"; `items` only explains it. Balances, settle-up and
+  analytics never look at items.
+- A PATCH that changes the split (amount, payer, split type or participants)
+  **removes the items**, since they would no longer add up to it. A PATCH that
+  touches only the title, date, category or notes keeps them.
+
+| Method | Path | Body | Notes |
+|---|---|---|---|
+| POST | `/groups/{group_id}/expenses/item-preview` | `{total_amount, items}` | Writes nothing |
+
+```
+ItemPreview = {
+  splits: [{ user_id, owed_amount }],   // exactly what saving would store
+  items_total, adjustment               // adjustment = total_amount - items_total
+}
+```
+
+The preview is how a review screen shows exact per-person amounts while lines
+are being assigned. It runs the same arithmetic as the save, so the two cannot
+disagree -- and the client still never divides money.
 
 ### Receipts
 
@@ -234,6 +278,36 @@ bought and where they were. In an `<img>` tag that means fetching the blob
 yourself rather than pointing `src` straight at the URL.
 
 404 if the expense has no receipt. Deleting the expense deletes the file.
+
+### Scanning a receipt
+
+| Method | Path | Body | Notes |
+|---|---|---|---|
+| POST | `/groups/{group_id}/receipts/scan` | multipart `file` | Stores nothing. 503 without `ANTHROPIC_API_KEY` |
+
+Reads a receipt photo with Claude and returns a **draft** for a person to
+check. Same file rules as receipt upload (JPEG, PNG or WebP by their bytes, up
+to 5 MB). 409 in a closed group; 400 if the photo is not a receipt or nothing
+on it can be read.
+
+```
+ReceiptScan = {
+  merchant, expense_date, total_amount, currency, category,   // any may be null but the total
+  lines: [{ name, amount }],                                  // positive lines only
+  warnings: ["NO_ITEMS"|"TOTAL_MISSING"|"DATE_MISSING"|"LINES_UNREADABLE"|"CURRENCY_MISMATCH"],
+  ai_metadata: object                                         // send back on create
+}
+```
+
+Warnings are codes, not sentences, so the client can say them in either
+language. Discount lines on the receipt are not returned as lines; they are
+already in `total_amount`, and show up as the gap between it and the lines.
+
+To confirm a draft: `POST /groups/{id}/expenses` with `items`,
+`split_type: "EXACT"`, `source: "OCR"` and the `ai_metadata`, then
+`PUT /expenses/{id}/receipt` with the same photo. Two requests: the receipt
+store names files after the expense, which does not exist until the first one
+returns.
 
 ## Settlements
 
@@ -652,11 +726,19 @@ dates, so a pair is kept when either side falls in range.
 
 ### Ask a question (natural language)
 
-`POST /groups/{group_id}/analytics/ask` with `{"question": "..."}` (3-500 chars).
+`POST /groups/{group_id}/analytics/ask` with `{"question": "...", "language": "en" | "he"}`
+(question 3-500 chars; `language` defaults to `"en"`, anything else is 422).
 
 ```
-AskResponse = { question, sql, explanation, columns, rows, row_count, truncated }
+AskResponse = { question, sql, explanation, columns, column_labels, rows, row_count, truncated }
 ```
+
+**`language` is the app's language, not the question's.** Send the locale the
+screen is shown in: `explanation` and `column_labels` come back in it, so a
+Hebrew question typed in the English app still gets an English answer.
+`column_labels` maps a column name to a short heading (`{"total_paid": "Total
+paid"}`); it may miss a column, so fall back to the column name. The column
+names themselves stay snake_case English in both languages.
 
 Claude translates the question into a single PostgreSQL SELECT. **The SQL that
 ran comes back in the response** — show it, so an answer can be checked rather
@@ -680,12 +762,76 @@ trusted component — remember it is fed user-written expense titles:
 
 `truncated: true` means there were more rows than the server returns.
 
+## Bills from Gmail
+
+Reads utility bills from the signed-in user's Gmail (read-only), and splits
+them. Setup, including the Google Cloud side: `docs/gmail-setup.md`. Without a
+Google client or `TOKEN_ENCRYPTION_KEY`, the endpoints below return 503 and
+`GET /integrations/gmail` says `available: false`.
+
+| Method | Path | Body | Notes |
+|---|---|---|---|
+| GET | `/integrations/gmail` | -- | `GmailStatus` |
+| POST | `/integrations/gmail/connect` | -- | `{authorization_url}`. Send the browser there |
+| DELETE | `/integrations/gmail` | -- | 204. Revokes at Google; imported bills stay |
+| POST | `/integrations/gmail/sync` | -- | `GmailSync`. Safe to repeat: each email is read once |
+| GET | `/bills` | Query: `status` (default `PENDING_REVIEW`), `limit`, `offset` | `Page<IngestedBill>`, the caller's own |
+| POST | `/bills/{bill_id}/approve` | `{group_id, total_amount?}` | `Expense`. 409 if already dealt with |
+| POST | `/bills/{bill_id}/dismiss` | -- | `IngestedBill` |
+
+```
+GmailStatus = { available, connected, google_email?, connected_at?, last_synced_at?, needs_reconnect }
+GmailSync   = { checked, imported, needs_review, skipped, needs_reconnect }
+IngestedBill = {
+  id, status: "IMPORTED"|"PENDING_REVIEW"|"APPROVED"|"DISMISSED"|"SKIPPED",
+  review_reason: "NOT_A_BILL"|"UNREADABLE"|"NO_AMOUNT"|"NO_FLAT"|"AMBIGUOUS_FLAT"
+               |"UNKNOWN_SENDER"|"RECURRING_CONFLICT"|"CURRENCY_MISMATCH"|"DUPLICATE" | null,
+  sender, subject, received_at, provider_name, total_amount, currency, due_date,
+  billed_to_name, service_address, invoice_number, category,
+  group: {id, name, currency} | null,   // where it went, or the suggestion
+  address_score, expense_id, created_at
+}
+```
+
+**Connecting.** `connect` returns Google's consent address rather than
+redirecting, because a redirect cannot carry the `Authorization` header. The
+`state` in it is a signed, ten-minute token for this purpose only -- it cannot
+be used to sign in. Google sends the browser to
+`/integrations/gmail/callback`, which always ends on
+`{FRONTEND_URL}/settings?gmail=connected|denied|failed`. The refresh token is
+stored encrypted and never returned.
+
+**What happens to each email.** It becomes an ordinary expense -- split among
+the flat's active members at their `default_split_weight`, paid by the mailbox
+owner, `source: GMAIL_API`, `category` from the bill or `UTILITIES` -- only when:
+
+1. the amount was read;
+2. the mailbox owner has an open `SHARED_APARTMENT` group (trips, couples and
+   solo groups are never candidates);
+3. with more than one, the bill's service address clearly matches one flat's
+   `address` (house numbers must match exactly);
+4. the sender's domain is a known utility (`BILL_TRUSTED_SENDER_DOMAINS`);
+5. that flat has no fixed-amount recurring bill of the same category (it would
+   be charged twice);
+6. the currency matches the flat's.
+
+Anything else waits in `GET /bills` with its `review_reason` and, when there is
+one, a suggested `group`. Nothing waiting is in any balance, total or chart --
+pending bills are not expenses. An email that is not a bill is `SKIPPED` and
+none of its content is kept. The same provider and invoice number already split
+in that flat -- from a flatmate's mailbox, say -- is `SKIPPED` as `DUPLICATE`.
+
+**Approving.** `group_id` must be an open group the caller is active in.
+`total_amount` is required when the amount could not be read, and otherwise
+replaces what was read.
+
 ## Not built yet (Step 3+)
 
 Do not build UI against these; they don't exist:
 
-- Receipt **OCR** (uploading a receipt image works; reading one does not),
-  voice entry, Gmail scraping, per-item splitting
+- Voice entry
+- Splitting one line by quantity or by uneven shares (a line is split equally
+  among the people on it)
 - Bit / PayBox deep links
 
 ## Demo data

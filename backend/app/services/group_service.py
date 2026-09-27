@@ -70,11 +70,14 @@ def update_group(
     *,
     name: str | None = None,
     currency: str | None = None,
+    address: str | None = None,
 ) -> Group:
     if name is not None:
         group.name = name.strip()
     if currency is not None:
         group.currency = currency.upper()
+    if address is not None:
+        group.address = " ".join(address.split()) or None
     db.commit()
     db.refresh(group)
     return group

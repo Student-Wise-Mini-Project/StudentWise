@@ -49,7 +49,11 @@ def get_group(membership: GroupMembership) -> GroupOut:
 def update_group(payload: GroupUpdate, membership: GroupMembership, db: DbSession) -> GroupOut:
     group_service.require_owner(membership)
     group = group_service.update_group(
-        db, membership.group, name=payload.name, currency=payload.currency
+        db,
+        membership.group,
+        name=payload.name,
+        currency=payload.currency,
+        address=payload.address,
     )
     return GroupOut.model_validate(group)
 

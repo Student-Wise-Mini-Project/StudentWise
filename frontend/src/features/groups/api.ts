@@ -53,7 +53,7 @@ export function useCreateGroup() {
 export function useUpdateGroup(groupId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (input: { name?: string; currency?: string }) =>
+    mutationFn: (input: { name?: string; currency?: string; address?: string }) =>
       unwrap<Group>(
         api.PATCH('/api/groups/{group_id}', {
           params: { path: { group_id: groupId } },

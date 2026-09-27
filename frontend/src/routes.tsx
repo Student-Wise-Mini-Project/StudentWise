@@ -15,10 +15,14 @@ import { ExpenseRedirect } from '@/features/expenses/ExpenseRedirect'
 import { GroupScopeRoute, GroupTabsLayout } from '@/features/groups/GroupLayout'
 import { GroupListScreen } from '@/features/groups/GroupListScreen'
 import { HomeScreen } from '@/features/activity/HomeScreen'
+import { AskScreen } from '@/features/analytics/AskScreen'
 import { InsightsScreen } from '@/features/analytics/InsightsScreen'
 import { BalancesScreen } from '@/features/balances/BalancesScreen'
 import { MembersScreen } from '@/features/groups/MembersScreen'
 import { NotificationsScreen } from '@/features/notifications/NotificationsScreen'
+import { ScanReceiptScreen } from '@/features/receipts/ScanReceiptScreen'
+import { BillsScreen } from '@/features/bills/BillsScreen'
+import { ConnectGmailOnboarding } from '@/features/bills/ConnectGmailOnboarding'
 import { RecurringScreen } from '@/features/recurring/RecurringScreen'
 import { env } from '@/lib/env'
 
@@ -45,6 +49,8 @@ export function AppRoutes() {
       </Route>
 
       <Route element={<RequireAuth />}>
+        {/* Right after sign-up, before the app: no tabs, one question. */}
+        <Route path="welcome/gmail" element={<ConnectGmailOnboarding />} />
         <Route element={<AppShell />}>
           <Route index element={<HomeScreen />} />
           <Route path="groups" element={<GroupListScreen />} />
@@ -58,13 +64,16 @@ export function AppRoutes() {
               <Route path="recurring" element={<RecurringScreen />} />
             </Route>
 
+            <Route path="ask" element={<AskScreen />} />
             <Route path="expenses/new" element={<NewExpenseScreen />} />
+            <Route path="expenses/scan" element={<ScanReceiptScreen />} />
             <Route path="expenses/:expenseId" element={<ExpenseDetailScreen />} />
             <Route path="expenses/:expenseId/edit" element={<EditExpenseScreen />} />
           </Route>
 
           <Route path="expenses/:expenseId" element={<ExpenseRedirect />} />
           <Route path="notifications" element={<NotificationsScreen />} />
+          <Route path="bills" element={<BillsScreen />} />
           <Route path="settings" element={<SettingsScreen />} />
 
           {/* Dev only. `env.DEV` is statically false in a production build, so

@@ -1,0 +1,79 @@
+{
+  "screen": {
+    "title": "Bills to review",
+    "intro": "Bills from your email that weren't split automatically. Pick the flat and split it, or dismiss it.",
+    "loading": "Loading bills",
+    "emptyTitle": "Nothing to review",
+    "emptyBody": "Bills from your email that can't be split automatically will wait here."
+  },
+  "card": {
+    "untitled": "A bill from email",
+    "due": "Due {date}",
+    "received": "Arrived {when}",
+    "address": "At {address}",
+    "from": "From {sender}",
+    "flat": "Split in",
+    "pickFlat": "Pick a flat",
+    "amount": "Amount",
+    "amountAria": "Bill amount",
+    "approve": "Split it",
+    "dismiss": "Dismiss"
+  },
+  "reasons": {
+    "NOT_A_BILL": "This doesn't look like a bill.",
+    "UNREADABLE": "The bill couldn't be read — it may be a password-protected file. Type the amount in.",
+    "NO_AMOUNT": "The amount couldn't be read. Type it in.",
+    "NO_FLAT": "There's no open flat to split it in.",
+    "AMBIGUOUS_FLAT": "It isn't clear which flat this is for. Adding each flat's address helps next time.",
+    "UNKNOWN_SENDER": "The sender isn't a known utility, so it wasn't split without a check.",
+    "RECURRING_CONFLICT": "This flat already has a fixed repeating bill of this kind. Splitting this too would charge twice.",
+    "CURRENCY_MISMATCH": "The bill is in a different currency from the flat.",
+    "DUPLICATE": "This bill was already split."
+  },
+  "banner": {
+    "pending": {
+      "one": "{count} bill from your email to review",
+      "other": "{count} bills from your email to review"
+    },
+    "reconnect": "Gmail needs connecting again to keep fetching bills."
+  },
+  "gmail": {
+    "header": "Bills from email",
+    "unavailable": "Gmail isn't set up on this server yet.",
+    "intro": "Connect Gmail and utility bills — electricity, water, arnona, internet — are read and split for you. Read-only: nothing is sent, and only the details of bills are kept.",
+    "connect": "Connect Gmail",
+    "connectedAs": "Connected: {email}",
+    "lastChecked": "Last checked {when}",
+    "neverChecked": "Not checked yet",
+    "checkNow": "Check for bills now",
+    "checked": "Checked {checked}: {imported} split, {needs_review} to review.",
+    "nothingNew": "No new bills.",
+    "reconnectNote": "Google stopped accepting this connection. Connect again to keep fetching bills.",
+    "reconnect": "Connect again",
+    "disconnect": "Disconnect Gmail",
+    "review": "Bills to review",
+    "resultConnected": "Gmail is connected. New bills are fetched whenever the app is opened.",
+    "resultDenied": "Gmail wasn't connected: access was not allowed.",
+    "resultFailed": "Gmail couldn't be connected. Try again."
+  },
+  "address": {
+    "header": "Address",
+    "hint": "As it appears on the flat's bills, in the same language. It tells which flat a bill from email belongs to.",
+    "placeholder": "e.g. דיזנגוף 5, תל אביב",
+    "aria": "Flat address",
+    "save": "Save address",
+    "saved": "Saved",
+    "none": "No address yet."
+  },
+  "onboarding": {
+    "title": "Bring your bills in from Gmail?",
+    "body": "Electricity, water, arnona and internet bills that arrive by email can be read and split with your flatmates for you.",
+    "point1": "Read-only access. Nothing is ever sent from your account.",
+    "point2": "Only emails that look like bills are read, and only the bill details are kept.",
+    "point3": "A bill that isn't clear-cut waits for you to check it before anything is split.",
+    "point4": "You can disconnect any time in Settings.",
+    "connect": "Connect Gmail",
+    "later": "Not now",
+    "laterNote": "You can connect later from Settings."
+  }
+}

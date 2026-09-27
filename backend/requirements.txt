@@ -21,6 +21,14 @@ sqlglot>=27                     # SQL parser for the generated-SQL guard
 pyjwt>=2.10
 pwdlib[argon2]>=0.2
 
+# Gmail bill ingestion
+google-auth>=2.35
+google-auth-oauthlib>=1.2      # the OAuth consent flow
+google-api-python-client>=2.150 # the Gmail API
+cryptography>=43               # refresh tokens are encrypted at rest (Fernet)
+requests>=2.32                 # revoking a Google grant
+rapidfuzz>=3.10                # matching a bill's address to a flat
+
 # Dev / test
 pytest>=8.3
 httpx2>=2.12                   # starlette TestClient backend (httpx is deprecated for this)

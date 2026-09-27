@@ -215,12 +215,12 @@ have taken.
 
 ### Hila — AI and ingestion (Epic 5)
 
-Start with **5.1 and 5.2**: the `expense_items` / `item_splits` tables and the
-per-item split API. They are pure backend with no AI in them, everything else in
-the epic writes through them, and they are a good way to meet the layering rules
-on something self-contained. Then **5.3/5.4**, receipt OCR — the headline demo
-moment. Receipt *upload* and storage already exist (mission 2.11), so 5.4 starts
-from an image that is already on the server.
+**Receipt scanning (5.1-5.5) and Gmail bills (5.8-5.10) are already built**
+(2026-09-27) -- read `docs/sessions/2026-09-27-receipt-ocr.md` and
+`2026-09-27-gmail-bills.md` first. **Epic 5 is complete** -- voice entry was
+dropped. What the finished product still needs is in `roadmap.md` under
+"what matters now"; measuring the AI on real receipts and bills (and 4.4,
+Text-to-SQL quality) is the natural next piece for whoever owns the AI side.
 
 **The one constraint in Epic 5 that is not negotiable:** items and their splits
 must compute and write ordinary `expense_splits` rows. Balances, settlement and
@@ -243,6 +243,9 @@ as Gal, add an expense, settle up, switch to Hebrew.
 Then pick up **9.9** (the natural-language Ask screen), **9.10** (anomaly alerts
 in the UI) or **9.12** (the Android APK wrapper). 9.9 and 9.10 are both new
 screens against endpoints that already exist and are already tested.
+
+*(Dana, 2026-09-27: set up, then built receipt scanning and Gmail bills from
+Epic 5 end to end, backend and frontend. 9.9 and 9.10 are still open.)*
 
 Four things that will bite if you miss them:
 

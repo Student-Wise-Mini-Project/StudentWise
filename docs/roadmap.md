@@ -3,8 +3,8 @@
 Everything the project needs, A to Z, split into **epics** (features) and
 **missions** (a task one person can finish and merge).
 
-**Status as of 2026-09-12:** 62 endpoints · 14 tables · 672 backend tests ·
-253 frontend tests · 12 migrations · CI green.
+**Status as of 2026-09-27:** 71 endpoints · 18 tables · 873 backend tests ·
+336 frontend tests · 14 migrations · CI green.
 
 **New here?** This file is status, not instructions. Start at
 [`onboarding.md`](onboarding.md), then [`testing.md`](testing.md), then come
@@ -41,14 +41,14 @@ touch the same file.
 | 2. Core domain (Splitwise parity) | 14 | 0 | ✅ complete |
 | 3. Algorithms | 4 | 0 | ✅ complete |
 | 4. Analytics & intelligence | 5 | 1 | 🚫 only 4.4, blocked on a key |
-| 5. AI ingestion (Module 1) | 1 | 8 | 🔨 5.3 landed early, as 2.11 |
+| 5. AI ingestion (Module 1) | 9 | 0 | ✅ complete (voice dropped) |
 | 6. Recurring & automation | 5 | 0 | ✅ complete |
 | 7. Payments (Bit / PayBox) | 0 | 3 | ⬜ not started |
 | 8. AI chat assistant / RAG | 0 | 4 | ⬜ not started |
 | 9. Frontend | 14 | 3 | 🔨 the app works end to end |
 | 10. Deployment | 0 | 6 | ⬜ not started |
 | 11. Academic deliverables | 1 | 4 | 🔨 started |
-| **Total** | **55** | **31** | |
+| **Total** | **63** | **23** | |
 
 **The honest read:** the app works end to end. You can sign in, create a flat,
 add flatmates and weights, add an expense in any of the four split modes, see
@@ -56,6 +56,12 @@ balances, settle up, comment, attach a receipt, read your alerts, see where the
 money goes, install it to an iOS home screen and **run the whole thing in
 Hebrew**. Epics 1, 2, 3 and 6 are complete, Epic 4 has only its blocked mission
 left, and Epic 9 is 14 of 17.
+
+**And since 2026-09-27, the AI headline works:** photograph a receipt, check
+what Claude read, tap who had which line, save -- and connect Gmail so utility
+bills arrive and split themselves in the right flat. Both were tested on real
+input (a real receipt photo; a real PDF in a real inbox). Epic 5 is complete;
+voice entry was dropped.
 
 **So the constraint is no longer code — it is the two people who cannot yet see
 it.** 0.5 has been the top of this list for days and it is still the only thing
@@ -237,23 +243,86 @@ The largest remaining backend chunk, and the headline "AI" of the project.
 
 | # | Mission | Size | Owner | Status |
 |---|---|---|---|---|
-| 5.1 | `expense_items` + `item_splits` tables + migration | M | #2 | ⬜ |
-| 5.2 | Per-item split API — write into `expense_splits` | L | #2 | ⬜ |
+| 5.1 | `expense_items` + `item_splits` tables + migration | M | #3 | ✅ |
+| 5.2 | Per-item split API — write into `expense_splits` | L | #3 | ✅ |
 | 5.3 | Receipt upload endpoint + object storage | M | #2 | ✅ |
-| 5.4 | Vision OCR: receipt image → items + amounts | L | #2 | ⬜ |
-| 5.5 | Review-and-confirm flow for extracted receipts | M | #2 | ⬜ |
-| 5.6 | Speech-to-text: audio → transcript | M | #2 | ⬜ |
-| 5.7 | Voice NLP: "85₪ cleaning stuff, everyone except Yossi" → expense | L | #2 | ⬜ |
-| 5.8 | Gmail OAuth + read-only inbox access | L | #2 | ⬜ |
-| 5.9 | Bill extraction from Gmail (incl. PDF attachments) | L | #2 | ⬜ |
+| 5.4 | Vision OCR: receipt image → items + amounts | L | #3 | ✅ |
+| 5.5 | Review-and-confirm flow for extracted receipts | M | #3 | ✅ |
+| 5.8 | Gmail OAuth + read-only inbox access | L | #3 | ✅ |
+| 5.9 | Bill extraction from Gmail (incl. PDF attachments) | L | #3 | ✅ |
+| 5.10 | **Route an emailed bill to the right flat** (address, trusted senders, review) | M | #3 | ✅ |
+| 5.11 | **Offer to connect Gmail right after sign-up** | S | #3 | ✅ |
 
 **Design constraint, already decided and load-bearing:** items and their splits
 must **compute and write ordinary `expense_splits` rows**. Balances, settlement
 and analytics must never learn that items exist. Break this and every algorithm
 in Epic 3 and 4 needs reworking.
 
-**Order:** 5.1 → 5.2 first. They are pure backend with no AI, and everything
-else in this epic writes through them.
+> **5.1–5.5 are done: a receipt can be scanned end to end** (2026-09-27, built
+> by #3). Photograph it, check what was
+> read, tap the lines each person shared, save. The constraint held: the lines
+> are turned into an ordinary `EXACT` split, and nothing downstream changed.
+>
+> Decisions worth keeping:
+>
+> - **The scan is stateless.** It returns a draft and stores nothing; the photo
+>   is attached after the expense exists. Storing drafts would need something
+>   to delete the ones nobody confirmed, and nothing here runs on a scheduler.
+> - **A discount is not a line.** It is the gap between the lines and the
+>   total, spread in proportion to what each person's lines came to, as a
+>   service charge or tip is. Put on a line, it would go to whoever happened to
+>   be marked on the discount line.
+> - **An unmarked line is stored with every name written out**, not with none,
+>   so a receipt does not change meaning when somebody joins the flat later.
+> - **The review screen asks the server for per-person totals**
+>   (`item-preview`) rather than dividing on the client, so the preview is the
+>   same arithmetic as the save.
+> - **OCR warnings are codes, not sentences** (`TOTAL_MISSING`, ...), so the
+>   Hebrew screen can say them in Hebrew.
+>
+> **Unmeasured:** how well the model actually reads real receipts. Every test
+> stubs the call; like 4.4, it needs an `ANTHROPIC_API_KEY` and a set of real
+> receipts with known answers.
+
+> **5.8–5.10 are done: utility bills arrive from Gmail** (2026-09-27, built by
+> #3). Connect Gmail read-only, and a bill from a known utility for a flat that
+> is certain is split on its own; everything else waits under "Bills to
+> review" with the reason. Setup: [`gmail-setup.md`](gmail-setup.md).
+>
+> Where the original spec was overruled, and why:
+>
+> - **No Celery.** Nothing here runs on a scheduler. The sync is triggered --
+>   opening the app, "Check now", or `fetch_new_bills.py` from cron -- and is
+>   safe to repeat because every email is recorded once.
+> - **Anthropic, not OpenAI**, through the same `messages.parse` pattern as
+>   receipts. Claude reads PDF bills directly.
+> - **No `status` on expenses.** Seventeen modules read expenses as money; an
+>   unapproved bill would have had to be filtered out of every one. Pending
+>   bills live in `ingested_bills` and become ordinary expenses only once their
+>   flat is decided.
+> - **The bill belongs to the mailbox owner**, not to whoever `billed_to_name`
+>   fuzzy-matches: we know whose inbox it came from, and the printed name rarely
+>   matches the app name.
+> - **Only open shared apartments are candidates.** Counting trips and couples
+>   would have made "the user is in one group" almost never true.
+> - **House numbers match exactly** before any fuzzy comparison: דיזנגוף 5 and
+>   דיזנגוף 50 are one keystroke apart.
+> - **Only known utility senders are split unasked.** Anyone can email a
+>   convincing "לתשלום"; the domain list is in `config.py`.
+> - A **fixed-amount recurring bill** of the same kind sends the email bill to
+>   review, since splitting both would charge the month twice.
+> - The refresh token is **Fernet-encrypted**, in its own table; the OAuth
+>   `state` carries its own JWT audience so it can never be used to sign in.
+>
+> **Limits worth knowing:** Google's Testing mode expires tokens after 7 days
+> (the app asks to reconnect); link-only bills and password-protected PDFs go
+> to review with the amount to type. Tested end to end with real Claude on a
+> real PDF bill; the real-Google leg needs the setup above.
+
+> **Epic 5 is complete.** Voice entry (speech-to-text, then "85₪ cleaning
+> stuff, everyone except Yossi") was dropped on 2026-09-27: receipts and Gmail
+> cover how bills actually arrive. 5.11 offers Gmail once, right after
+> sign-up, and brings the user back home afterwards.
 
 **5.3 was delivered as mission 2.11.** Upload, storage, authorized retrieval and
 deletion all work; the store sits behind a small interface (`core/storage.py`)
@@ -353,9 +422,8 @@ expense form are what turned it into a feature people can use.
 
 ## Epic 9 — Frontend 🔨
 
-**Was the critical path; no longer is.** 14 of 17 are merged and the app runs
-end to end in two languages. What is left is two screens against endpoints that
-already exist (9.9, 9.10) and the APK (9.12).
+**Was the critical path; no longer is.** 16 of 17 are done and the app runs
+end to end in two languages. What is left is the APK (9.12).
 
 | # | Mission | Size | Owner | Status |
 |---|---|---|---|---|
@@ -367,8 +435,8 @@ already exist (9.9, 9.10) and the APK (9.12).
 | 9.6 | Add / edit expense, all four split types | L | #3 | ✅ |
 | 9.7 | Balances screen + settle-up plan | M | #3 | ✅ |
 | 9.8 | Charts: category pie, monthly trend, per-member bars | L | #3 | ✅ |
-| 9.9 | "Ask" screen for natural-language questions | M | #3 | ⬜ |
-| 9.10 | Anomaly alerts surfaced in the UI | S | #3 | ⬜ |
+| 9.9 | "Ask" screen for natural-language questions | M | #3 | ✅ |
+| 9.10 | Anomaly alerts surfaced in the UI | S | #3 | ✅ |
 | 9.11 | PWA: manifest, service worker, iOS install | M | #3 | ✅ |
 | 9.12 | Android APK wrapper | M | #3 | ⬜ |
 | 9.13 | Hebrew + i18n: catalogue, typed `t()`, RTL switch | L | Gal | ✅ |
@@ -377,12 +445,13 @@ already exist (9.9, 9.10) and the APK (9.12).
 | 9.16 | Member suggestions from your other groups | S | Gal | ✅ |
 | 9.17 | **Recurring bills UI** — the tab, the editor, and a repeats toggle | L | Gal | ✅ |
 
-> **14 of 17 done.** You can sign in, create a flat, add flatmates and weights,
+> **16 of 17 done.** You can sign in, create a flat, add flatmates and weights,
 > add an expense in any of the four split modes, see balances, settle up,
 > comment, attach a receipt, read your alerts, see where the money goes, install
-> it to an iOS home screen, **and run the whole thing in Hebrew**. What is left
-> is the natural-language Ask screen (9.9), anomaly alerts (9.10) and the APK
-> (9.12).
+> it to an iOS home screen, **and run the whole thing in Hebrew**. Ask a question
+> in your own words and get a table back, in the app's language (9.9); an
+> unusual bill or a suspected double payment is flagged on Insights and on the
+> expense itself (9.10). What is left is the APK (9.12).
 >
 > **9.14–9.17 came from using the app, not from reading the code**, and three of
 > the four were a screen that was never built rather than a decision that was
@@ -475,6 +544,22 @@ already exist (9.9, 9.10) and the APK (9.12).
 ---
 
 ## Suggested order for the next two weeks
+
+> **Updated 2026-09-27.** Receipts (5.1-5.5) and Gmail bills (5.8-5.10) are
+> done, on branches `feat/receipt-ocr` and `feat/gmail-bills`. What matters now:
+>
+> 1. **Get those two branches reviewed and merged** -- two stacked PRs, a
+>    teammate approves each.
+> 2. ~~9.9 + 9.10 -- the Ask screen and anomaly alerts~~ -- done 27 Sep, on
+>    `feat/ask-and-anomalies` (stacked on `feat/gmail-bills`).
+> 3. **Measure the AI on real input** -- ~20 receipts and a handful of real
+>    utility bills with known answers, like 4.4 for Text-to-SQL. The key exists
+>    now, so 4.4 itself is unblocked too.
+> 4. **10.1 -- ask the lecturer about hosting**, then 10.2-10.4.
+> 5. **11.2-11.5 -- diagrams, report, demo script, slides.** The session files
+>    in `docs/sessions/` are most of the report's raw material.
+>
+> The original plan follows, for the record.
 
 **Week 1 — get the other two people actually working**
 

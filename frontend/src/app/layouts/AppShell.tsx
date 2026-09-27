@@ -37,7 +37,11 @@ export function AppShell() {
   // a screen whose whole job is to be finished or cancelled.
   const onNewExpense = useMatch('/groups/:groupId/expenses/new')
   const onEditExpense = useMatch('/groups/:groupId/expenses/:expenseId/edit')
-  const onEditor = Boolean(onNewExpense ?? onEditExpense)
+  const onScanReceipt = useMatch('/groups/:groupId/expenses/scan')
+  // Ask has its own button beside the input, and on a phone the bar sat on top of
+  // the answer being read.
+  const onAsk = useMatch('/groups/:groupId/ask')
+  const onEditor = Boolean(onNewExpense ?? onEditExpense ?? onScanReceipt ?? onAsk)
 
   // A closed group takes no new expenses, so it is not offered one. The group
   // list is already in cache from the screens that use it; this shell sits

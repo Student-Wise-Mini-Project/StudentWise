@@ -3,7 +3,7 @@
 import uuid
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import (
     Date,
@@ -27,6 +27,9 @@ from app.models.group import Group
 from app.models.recurring_bill import RecurringBill
 from app.models.split_rule import SplitRule
 from app.models.user import User
+
+if TYPE_CHECKING:
+    from app.models.expense_item import ExpenseItem
 
 
 class Expense(Base):
@@ -103,6 +106,14 @@ class Expense(Base):
 
     splits: Mapped[list["ExpenseSplit"]] = relationship(
         back_populates="expense", cascade="all, delete-orphan", lazy="selectin"
+    )
+    #: Receipt lines, when the split was worked out line by line. Empty for
+    #: every other expense. Informational only: the money is in `splits`.
+    items: Mapped[list["ExpenseItem"]] = relationship(
+        back_populates="expense",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+        order_by="ExpenseItem.position",
     )
     split_rule: Mapped["SplitRule | None"] = relationship(lazy="joined")
     recurring_bill: Mapped["RecurringBill | None"] = relationship(lazy="joined")

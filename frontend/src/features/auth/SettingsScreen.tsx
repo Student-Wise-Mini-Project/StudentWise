@@ -7,6 +7,7 @@ import { Card } from '@/components/Card'
 import { ListRow, ListSection } from '@/components/ListRow'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { Page, Stack } from '@/components/layout'
+import { GmailSection } from '@/features/bills/GmailSection'
 import { useLocale, useT } from '@/i18n/i18nContext'
 import { applyTheme, readStoredTheme, type Theme } from '@/lib/prefs'
 
@@ -73,6 +74,8 @@ export function SettingsScreen() {
               ]}
             />
           </div>
+
+          <GmailSection />
 
           <ListSection header={t('settings.about')}>
             <ListRow title={t('common.appName')} subtitle={t('settings.aboutApp')} />

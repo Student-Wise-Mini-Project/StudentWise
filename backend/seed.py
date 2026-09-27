@@ -26,8 +26,11 @@ from app.models.enums import (
     SplitType,
 )
 from app.models.expense import Expense, ExpenseSplit
+from app.models.expense_item import ExpenseItem, ItemSplit
+from app.models.gmail_connection import GmailConnection
 from app.models.group import Group, GroupMember
 from app.models.idempotency import IdempotencyKey
+from app.models.ingested_bill import IngestedBill
 from app.models.notification import Notification
 from app.models.recurring_bill import RecurringBill, RecurringBillParticipant
 from app.models.settlement import Settlement
@@ -53,6 +56,8 @@ PASSWORD = "password123"
 def wipe(db) -> None:
     """Order matters: children before parents."""
     for model in (
+        IngestedBill,
+        GmailConnection,
         Notification,
         IdempotencyKey,
         Budget,
@@ -61,6 +66,8 @@ def wipe(db) -> None:
         RecurringBillParticipant,
         RecurringBill,
         ExpenseComment,
+        ItemSplit,
+        ExpenseItem,
         ExpenseSplit,
         Expense,
         Settlement,

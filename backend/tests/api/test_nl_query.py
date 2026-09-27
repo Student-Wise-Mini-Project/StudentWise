@@ -21,7 +21,7 @@ def stub_claude(monkeypatch):
         monkeypatch.setattr(
             nl_query_service,
             "generate_sql",
-            lambda question: GeneratedSql(sql=sql, explanation=explanation),
+            lambda question, language="en": GeneratedSql(sql=sql, explanation=explanation),
         )
 
     return _stub
@@ -95,6 +95,53 @@ def test_a_question_returns_rows_and_the_sql_that_ran(client, flat, stub_claude)
     assert body["row_count"] == 3
     totals = {r["category"]: Decimal(r["total"]) for r in body["rows"]}
     assert totals["UTILITIES"] == Decimal("412.00")
+
+
+def test_columns_get_headings_in_the_language_of_the_question(client, flat, monkeypatch):
+    from app.services.nl_query_service import ColumnLabel
+
+    monkeypatch.setattr(
+        nl_query_service,
+        "generate_sql",
+        lambda question, language="en": GeneratedSql(
+            sql="SELECT category, SUM(total_amount) AS total FROM expenses GROUP BY category",
+            explanation="סך ההוצאות לפי קטגוריה.",
+            column_labels=[
+                ColumnLabel(column="category", label="קטגוריה"),
+                ColumnLabel(column="total", label='סה"כ'),
+                # Describes a column the query does not return: dropped.
+                ColumnLabel(column="average", label="ממוצע"),
+            ],
+        ),
+    )
+    body = ask(client, flat, "כמה הוצאנו לפי קטגוריה?").json()
+    assert body["explanation"] == "סך ההוצאות לפי קטגוריה."
+    assert body["column_labels"] == {"category": "קטגוריה", "total": 'סה"כ'}
+
+
+def test_the_app_language_decides_the_answer_language(client, flat, monkeypatch):
+    seen = []
+
+    def fake(question, language="en"):
+        seen.append(language)
+        return GeneratedSql(sql="SELECT title FROM expenses", explanation="...")
+
+    monkeypatch.setattr(nl_query_service, "generate_sql", fake)
+    url = f"/api/groups/{flat['group_id']}/analytics/ask"
+    client.post(url, json={"question": "who paid most?", "language": "he"}, headers=flat["headers"])
+    client.post(url, json={"question": "who paid most?"}, headers=flat["headers"])
+    assert seen == ["he", "en"]
+    bad = client.post(
+        url, json={"question": "who paid most?", "language": "fr"}, headers=flat["headers"]
+    )
+    assert bad.status_code == 422
+
+
+def test_a_model_that_gives_no_headings_still_answers(client, flat, stub_claude):
+    stub_claude("SELECT title FROM expenses")
+    body = ask(client, flat).json()
+    assert body["column_labels"] == {}
+    assert body["row_count"] == 3
 
 
 def test_money_comes_back_as_a_string(client, flat, stub_claude):

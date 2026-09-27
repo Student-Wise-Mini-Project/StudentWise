@@ -581,12 +581,12 @@
     </p>
 
     <dl class="figures">
-      <div class="figure"><dt>Missions done</dt><dd>55<small> / 86</small></dd></div>
-      <div class="figure"><dt>Endpoints</dt><dd>62</dd></div>
-      <div class="figure"><dt>Backend tests</dt><dd>672</dd></div>
-      <div class="figure"><dt>Frontend tests</dt><dd>253</dd></div>
-      <div class="figure"><dt>Tables</dt><dd>14</dd></div>
-      <div class="figure"><dt>Migrations</dt><dd>12</dd></div>
+      <div class="figure"><dt>Missions done</dt><dd>65<small> / 86</small></dd></div>
+      <div class="figure"><dt>Endpoints</dt><dd>71</dd></div>
+      <div class="figure"><dt>Backend tests</dt><dd>873</dd></div>
+      <div class="figure"><dt>Frontend tests</dt><dd>336</dd></div>
+      <div class="figure"><dt>Tables</dt><dd>18</dd></div>
+      <div class="figure"><dt>Migrations</dt><dd>14</dd></div>
     </dl>
 
     <div class="read">
@@ -596,8 +596,8 @@
         the four split modes, see the balances move, settle up, comment, attach
         a receipt, read your alerts, see where the money goes, install it to an
         iOS home screen &mdash; and <strong>run the whole thing in Hebrew</strong>.
-        Epic&nbsp;9 is <strong>14 of 17</strong>, and the three that are left are
-        two screens and an APK.
+        Epic&nbsp;9 is <strong>16 of 17</strong>: you can ask a question in your own
+        words, and an unusual bill or a double payment is flagged. Only the APK is left.
       </p>
       <p>
         <strong>The backend has been finished for a week.</strong> Epics
@@ -676,8 +676,8 @@
         <ol>
           <li><div>Chase the four invitations before they expire<span>0.5 · 17 September, and until then nobody can review a PR</span></div></li>
           <li><div>Ask the lecturer about hosting<span>10.1 · one question, gates all six deployment missions</span></div></li>
-          <li><div>Finish Epic 9 bar the APK<span>9.9 + 9.10 · the Ask screen needs an API key; anomalies work today</span></div></li>
-          <li><div>Item tables and per-item splits<span>5.1 + 5.2 · #2 starts on pure backend, no AI yet</span></div></li>
+          <li><div>Finish Epic 9 bar the APK<span>9.9 + 9.10 · done 27 Sep: Ask in both languages, alerts on Insights and the expense</span></div></li>
+          <li><div>Item tables and per-item splits<span>5.1 + 5.2 · done 27 Sep, with the OCR flow on top</span></div></li>
         </ol>
       </article>
 
@@ -686,7 +686,7 @@
         <p>Turn a working app on a laptop into something a marker can open.</p>
         <ol>
           <li><div>Deploy the database, API and frontend<span>10.2–10.4 · a link beats a screenshot, and it fixes phone testing too</span></div></li>
-          <li><div>Receipt OCR and review-and-confirm<span>5.4 + 5.5 · the headline demo moment; upload already works</span></div></li>
+          <li><div>Receipt OCR and review-and-confirm<span>5.4 + 5.5 · done 27 Sep; real-model quality unmeasured until there is a key</span></div></li>
           <li><div>Measure Text-to-SQL quality<span>4.4 · ~20 real questions with expected answers</span></div></li>
           <li><div>Architecture diagrams and the demo script<span>11.2 + 11.4 · both are easier now the app exists to screenshot</span></div></li>
         </ol>
@@ -706,7 +706,7 @@
     <span>This page: <code>docs/roadmap.html</code></span>
     <span>Contract: <code>docs/api-contract.md</code></span>
     <span>Rules: <code>CLAUDE.md</code></span>
-    <span>Status as of 11 Sep 2026</span>
+    <span>Status as of 27 Sep 2026</span>
   </footer>
 </div>
 
@@ -769,17 +769,17 @@
         ["4.6", "Budgets per category with over-budget alerts", "M", "Gal", "done"],
       ]},
     { n: 5, name: "AI ingestion — Module 1",
-      note: "<strong>Now the largest block of unstarted work, and it belongs to #2.</strong> Load-bearing constraint: items and their splits must compute and write ordinary <code>expense_splits</code> rows. Balances, settlement and analytics must never learn that items exist — break this and every algorithm in Epics 3 and 4 needs reworking. Start with 5.1 → 5.2: pure backend, no AI, and everything else here writes through them.",
+      note: "<strong>Complete.</strong> Voice entry was dropped: receipts and Gmail cover how bills actually arrive. <br><br><strong>Receipts and Gmail bills both work end to end.</strong> Connect Gmail read-only and a bill from a known utility, for a flat that is certain, is split on its own; everything else waits for review with the reason. No Celery (nothing runs on a scheduler), no status column on expenses (pending bills are not money), and house numbers must match exactly before an address counts. <br><br><strong>Receipt scanning works end to end.</strong> Photograph a receipt, check what was read, tap the lines each person shared, save &mdash; built by #3 on 27 Sep (5.1&ndash;5.5), so #2 starts from voice and Gmail. The model call is stubbed in tests; its accuracy on real receipts is unmeasured until there is an API key, like 4.4. <br><br>Load-bearing constraint, kept: items and their splits must compute and write ordinary <code>expense_splits</code> rows. Balances, settlement and analytics must never learn that items exist — break this and every algorithm in Epics 3 and 4 needs reworking. Start with 5.1 → 5.2: pure backend, no AI, and everything else here writes through them.",
       missions: [
-        ["5.1", "expense_items + item_splits tables and migration", "M", "#2", "todo"],
-        ["5.2", "Per-item split API, writing into expense_splits", "L", "#2", "todo"],
+        ["5.1", "expense_items + item_splits tables and migration", "M", "#3", "done"],
+        ["5.2", "Per-item split API, writing into expense_splits", "L", "#3", "done"],
         ["5.3", "Receipt upload and storage — delivered as mission 2.11", "M", "#2", "done"],
-        ["5.4", "Vision OCR: receipt image to items and amounts", "L", "#2", "todo"],
-        ["5.5", "Review-and-confirm flow for extracted receipts", "M", "#2", "todo"],
-        ["5.6", "Speech-to-text: audio to transcript", "M", "#2", "todo"],
-        ["5.7", "Voice NLP: “85₪ cleaning stuff, everyone except Yossi”", "L", "#2", "todo"],
-        ["5.8", "Gmail OAuth and read-only inbox access", "L", "#2", "todo"],
-        ["5.9", "Bill extraction from Gmail, including PDF attachments", "L", "#2", "todo"],
+        ["5.4", "Vision OCR: receipt image to items and amounts", "L", "#3", "done"],
+        ["5.5", "Review-and-confirm flow for extracted receipts", "M", "#3", "done"],
+        ["5.8", "Gmail OAuth and read-only inbox access", "L", "#3", "done"],
+        ["5.9", "Bill extraction from Gmail, including PDF attachments", "L", "#3", "done"],
+        ["5.10", "Route an emailed bill to the right flat: address, trusted senders, review", "M", "#3", "done"],
+        ["5.11", "Offer to connect Gmail right after sign-up", "S", "#3", "done"],
       ]},
     { n: 6, name: "Recurring bills and automation",
       note: "<strong>Complete.</strong> The distinction the epic turns on: a bill&rsquo;s amount may be <em>null</em>. Rent is 3600 every month and posts itself; electricity is whatever the meter says, so that bill reminds somebody and never invents a number. <br><br><strong>Nothing runs on a scheduler</strong> &mdash; no Celery, no APScheduler, which would be a service to keep alive for the sake of a loop. The work is idempotent and triggered instead: the app calls <code>run</code> on load, and <code>run_due_bills.py</code> is there for a real cron. A bill months overdue posts one expense per period it missed. <br><br>A bill due on the 31st stays on the 31st: February clamps to the 28th and March goes back, rather than the bill walking backwards through the year. Anomaly detection already groups by title, so recurring bills feed it for free &mdash; confirmed, no rework needed.",
@@ -816,8 +816,8 @@
         ["9.6", "Add and edit expense, all four split types", "L", "#3", "done"],
         ["9.7", "Balances screen and settle-up plan", "M", "#3", "done"],
         ["9.8", "Charts: category pie, monthly trend, per-member bars", "L", "#3", "done"],
-        ["9.9", "“Ask” screen for natural-language questions", "M", "#3", "todo"],
-        ["9.10", "Anomaly alerts surfaced in the UI", "S", "#3", "todo"],
+        ["9.9", "“Ask” screen for natural-language questions", "M", "#3", "done"],
+        ["9.10", "Anomaly alerts surfaced in the UI", "S", "#3", "done"],
         ["9.11", "PWA: manifest, service worker, iOS install", "M", "#3", "done"],
         ["9.12", "Android APK wrapper", "M", "#3", "todo"],
         ["9.13", "Hebrew + i18n: catalogue, typed t(), RTL switch", "L", "Gal", "done"],
