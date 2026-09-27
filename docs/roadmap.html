@@ -581,9 +581,9 @@
     </p>
 
     <dl class="figures">
-      <div class="figure"><dt>Missions done</dt><dd>65<small> / 86</small></dd></div>
+      <div class="figure"><dt>Missions done</dt><dd>66<small> / 86</small></dd></div>
       <div class="figure"><dt>Endpoints</dt><dd>71</dd></div>
-      <div class="figure"><dt>Backend tests</dt><dd>873</dd></div>
+      <div class="figure"><dt>Backend tests</dt><dd>996</dd></div>
       <div class="figure"><dt>Frontend tests</dt><dd>336</dd></div>
       <div class="figure"><dt>Tables</dt><dd>18</dd></div>
       <div class="figure"><dt>Migrations</dt><dd>14</dd></div>
@@ -601,8 +601,8 @@
       </p>
       <p>
         <strong>The backend has been finished for a week.</strong> Epics
-        1,&nbsp;2,&nbsp;3 and&nbsp;6 are complete; Epic&nbsp;4 has one mission
-        left and it is blocked on a key. What remains is
+        1&ndash;6 are complete, and the Ask screen is measured: right on 99% of
+        a question set in English and Hebrew. What remains is
         <em>somebody&nbsp;else&rsquo;s</em> &mdash; the AI ingestion module &mdash;
         or is waiting on a person rather than on code.
       </p>
@@ -687,7 +687,7 @@
         <ol>
           <li><div>Deploy the database, API and frontend<span>10.2–10.4 · a link beats a screenshot, and it fixes phone testing too</span></div></li>
           <li><div>Receipt OCR and review-and-confirm<span>5.4 + 5.5 · done 27 Sep; real-model quality unmeasured until there is a key</span></div></li>
-          <li><div>Measure Text-to-SQL quality<span>4.4 · ~20 real questions with expected answers</span></div></li>
+          <li><div>Measure Text-to-SQL quality<span>4.4 · done 27 Sep: 85% → 99% after a prompt fix, see docs/evals</span></div></li>
           <li><div>Architecture diagrams and the demo script<span>11.2 + 11.4 · both are easier now the app exists to screenshot</span></div></li>
         </ol>
       </article>
@@ -759,12 +759,12 @@
         ["3.4", "Rule engine: rent by room size, cost by nights stayed", "L", "Gal", "done"],
       ]},
     { n: 4, name: "Analytics and intelligence",
-      note: "<strong>4.4 is the only mission left, and it is blocked on an API key.</strong> Everything downstream of Claude is tested with a stub, so the quality of the generated SQL is unmeasured — build ~20 real questions with expected answers and measure it. <br><br>4.5 shipped as two things, because <em>did we pay this twice?</em> has two halves: an <code>Idempotency-Key</code> header stops the network kind (a phone that loses a reply and retries), and <code>analytics/duplicates</code> finds the human kind. The three-day window is what keeps January rent from being flagged against February rent. 4.6&rsquo;s alerts fire <strong>once per budget per month per level</strong> — otherwise the twelfth expense over the line raises a twelfth notification and everyone stops reading them.",
+      note: "<strong>Complete. 4.4 measured the Ask screen against the real model</strong>: 36 questions in English and Hebrew, three times each, graded by result against a hand-written query. The first run scored 85% and found three systematic mistakes &mdash; a bill looked up by its broad category, the payer taken for everyone on an expense, and repayments counted backwards in a balance (which still sums to zero, so it looks right). Five lines in the prompt fixed them: 99% after, and 100% on six held-out questions that scored 67% on the old prompt. Results in <code>docs/evals/</code>. <br><br>4.5 shipped as two things, because <em>did we pay this twice?</em> has two halves: an <code>Idempotency-Key</code> header stops the network kind (a phone that loses a reply and retries), and <code>analytics/duplicates</code> finds the human kind. The three-day window is what keeps January rent from being flagged against February rent. 4.6&rsquo;s alerts fire <strong>once per budget per month per level</strong> — otherwise the twelfth expense over the line raises a twelfth notification and everyone stops reading them.",
       missions: [
         ["4.1", "Analytics: summary, by-category, by-month, by-member", "L", "Gal", "done"],
         ["4.2", "Anomaly detection (median + MAD, no AI)", "M", "Gal", "done"],
         ["4.3", "Text-to-SQL with a sandboxed executor", "XL", "Gal", "done"],
-        ["4.4", "Verify the Text-to-SQL prompt against the real model", "M", "Gal", "blocked"],
+        ["4.4", "Verify the Text-to-SQL prompt against the real model", "M", "#3", "done"],
         ["4.5", "Duplicate-payment detection, plus idempotency keys", "M", "Gal", "done"],
         ["4.6", "Budgets per category with over-budget alerts", "M", "Gal", "done"],
       ]},

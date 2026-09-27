@@ -176,8 +176,8 @@ next boot.
 cd backend
 .\.venv\Scripts\Activate.ps1
 
-pytest                    # everything: 672 tests, about four minutes
-pytest tests/unit -q      # 298 of them, pure logic, no database, under a second
+pytest                    # everything: 996 tests, about two minutes
+pytest tests/unit -q      # 428 of them, pure logic, no database, under a second
 pytest tests/api/test_expenses.py            # one file
 pytest -k "settlement and not plan"          # by name
 pytest -x --lf                               # stop at the first failure, then rerun just it
@@ -244,6 +244,30 @@ If one of these fails, it is not being pedantic. Fix the code, not the guard.
 installs its own `AbortController`, and once MSW patches the global `Request`
 the brand check in `new Request(url, {signal})` fails. TanStack Query passes a
 signal to every query, so under jsdom *every* request threw before it was sent.
+
+### Measuring the AI: `python eval_text_to_sql.py`
+
+The tests above replace Claude with a stub, so they prove the plumbing and say
+nothing about whether the model's answers are *right*. That is measured
+separately, by hand, because every run calls the real model and costs money
+(roughly a dollar for `--repeat 3`, estimated from token counts):
+
+```powershell
+cd backend
+python eval_text_to_sql.py --repeat 3 --report ..\docs\evals\my-run.md
+python eval_text_to_sql.py --only balances,eilat-divers   # a few questions
+python eval_text_to_sql.py --model claude-opus-5          # another model
+```
+
+It asks the Ask screen's questions -- in English and Hebrew, easy to hard,
+plus a few hostile ones -- through the real endpoint path, and compares each
+answer with a hand-written query's (`backend/evals/text_to_sql_cases.py`). The
+demo world is built in `studentwise_test`, so **your seeded data is never
+touched**. Results so far are in [`docs/evals/`](evals/).
+
+**Adding a question:** add a `Case` with its gold SQL and, if you can work it
+out from `seed.py`, the `expect`ed answer. `pytest tests/api/test_text_to_sql_eval.py`
+then checks your answer key before the model is ever graded against it.
 
 ### What CI runs on your pull request
 

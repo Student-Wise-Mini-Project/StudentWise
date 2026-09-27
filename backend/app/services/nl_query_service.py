@@ -80,6 +80,18 @@ Useful distinctions:
 - "what the group spent" = SUM(expenses.total_amount)
 - "what a person spent" = SUM(expense_splits.owed_amount) for that user
 - "what a person paid out" = SUM(expenses.total_amount) WHERE payer_id = them
+- "who was on / took part in / shared an expense" = the users with an
+  expense_splits row for it. payer_id is only the one person who paid.
+- A person's balance (positive: they are owed; negative: they owe) = what they
+  paid out - their total owed_amount + settlements they sent (from_user_id)
+  - settlements they received (to_user_id). Paying someone back raises the
+  payer's balance.
+- category is a broad bucket: UTILITIES holds electricity, water, internet and
+  more. A specific kind of expense (electricity, water, internet, pizza, a hotel)
+  is found by its title with ILIKE, not by its category.
+- Titles may be in English or Hebrew whatever language the question is in, so
+  match a short stem in both: title ILIKE '%electric%' OR title ILIKE '%חשמל%'.
+- A question asking for things combined or put together wants one total row.
 
 If the question cannot be answered from these relations, still return a valid
 SELECT that comes closest, and say so plainly in the explanation.

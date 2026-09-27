@@ -13,6 +13,7 @@ from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
 
 from sqlalchemy import delete, select
+from sqlalchemy.orm import Session
 
 from app.db import SessionLocal
 from app.domain.recurrence import RecurrenceFrequency
@@ -160,8 +161,11 @@ def shares(pairs):
     return [ParticipantSpec(user_id=user.id, share_value=Decimal(value)) for user, value in pairs]
 
 
-def main() -> None:
-    db = SessionLocal()
+def main(db: Session | None = None) -> None:
+    """Build the demo world. Pass a session to build it somewhere else -- the
+    Text-to-SQL evaluation and its tests build it in the test database."""
+    owns_session = db is None
+    db = db or SessionLocal()
     try:
         wipe(db)
 
@@ -765,7 +769,8 @@ def main() -> None:
         print("        GET  /api/groups/{id}/budgets")
         print("        GET  /api/groups/{id}/analytics/duplicates")
     finally:
-        db.close()
+        if owns_session:
+            db.close()
 
 
 if __name__ == "__main__":

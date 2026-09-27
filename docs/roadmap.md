@@ -3,7 +3,7 @@
 Everything the project needs, A to Z, split into **epics** (features) and
 **missions** (a task one person can finish and merge).
 
-**Status as of 2026-09-27:** 71 endpoints · 18 tables · 873 backend tests ·
+**Status as of 2026-09-27:** 71 endpoints · 18 tables · 996 backend tests ·
 336 frontend tests · 14 migrations · CI green.
 
 **New here?** This file is status, not instructions. Start at
@@ -40,22 +40,21 @@ touch the same file.
 | 1. Backend foundation | 5 | 0 | ✅ complete |
 | 2. Core domain (Splitwise parity) | 14 | 0 | ✅ complete |
 | 3. Algorithms | 4 | 0 | ✅ complete |
-| 4. Analytics & intelligence | 5 | 1 | 🚫 only 4.4, blocked on a key |
+| 4. Analytics & intelligence | 6 | 0 | ✅ complete |
 | 5. AI ingestion (Module 1) | 9 | 0 | ✅ complete (voice dropped) |
 | 6. Recurring & automation | 5 | 0 | ✅ complete |
 | 7. Payments (Bit / PayBox) | 0 | 3 | ⬜ not started |
 | 8. AI chat assistant / RAG | 0 | 4 | ⬜ not started |
-| 9. Frontend | 14 | 3 | 🔨 the app works end to end |
+| 9. Frontend | 16 | 1 | 🔨 only the APK (9.12) is left |
 | 10. Deployment | 0 | 6 | ⬜ not started |
 | 11. Academic deliverables | 1 | 4 | 🔨 started |
-| **Total** | **63** | **23** | |
+| **Total** | **66** | **20** | |
 
 **The honest read:** the app works end to end. You can sign in, create a flat,
 add flatmates and weights, add an expense in any of the four split modes, see
 balances, settle up, comment, attach a receipt, read your alerts, see where the
 money goes, install it to an iOS home screen and **run the whole thing in
-Hebrew**. Epics 1, 2, 3 and 6 are complete, Epic 4 has only its blocked mission
-left, and Epic 9 is 14 of 17.
+Hebrew**. Epics 1, 2, 3, 4, 5 and 6 are complete, and Epic 9 is 16 of 17.
 
 **And since 2026-09-27, the AI headline works:** photograph a receipt, check
 what Claude read, tap who had which line, save -- and connect Gmail so utility
@@ -68,7 +67,7 @@ it.** 0.5 has been the top of this list for days and it is still the only thing
 that matters: every branch so far has been merged by its own author, because
 there is nobody else with access to approve one. Everything that remains is
 either **somebody else's** (Epic 5 ingestion, the last three frontend missions)
-or waiting on a decision (Epic 10 hosting) or on a key (4.4).
+or waiting on a decision (Epic 10 hosting).
 
 ---
 
@@ -208,21 +207,28 @@ Decisions from 2.9–2.13 worth keeping:
 
 ---
 
-## Epic 4 — Analytics & intelligence
+## Epic 4 — Analytics & intelligence ✅
 
 | # | Mission | Size | Owner | Status |
 |---|---|---|---|---|
 | 4.1 | Analytics: summary, by-category, by-month, by-member | L | Gal | ✅ |
 | 4.2 | Anomaly detection (median + MAD, no AI) | M | Gal | ✅ |
 | 4.3 | Text-to-SQL with a sandboxed executor | XL | Gal | ✅ |
-| 4.4 | **Verify the Text-to-SQL prompt against the real model** | M | Gal | 🚫 |
+| 4.4 | **Verify the Text-to-SQL prompt against the real model** | M | #3 | ✅ |
 | 4.5 | **Duplicate-payment detection** ("did we pay this twice?") | M | Gal | ✅ |
 | 4.6 | Budgets per category + over-budget alerts | M | Gal | ✅ |
 
-> 4.4 is blocked on an `ANTHROPIC_API_KEY`. Everything downstream of Claude is
-> tested with a stub; the **quality of the generated SQL is currently unmeasured**.
-> Build a set of ~20 real questions with expected answers and measure it — that
-> evidence is worth a lot in a viva.
+> **4.4 is done: the Ask screen is right 99% of the time on the question set**
+> (2026-09-27, `python eval_text_to_sql.py`, results in `docs/evals/`). 36
+> questions in English and Hebrew, each asked three times of the real model and
+> graded by *result* against a hand-written query. The first run scored 85% and
+> found three systematic mistakes -- a bill looked up by its broad category, the
+> payer taken for everyone on an expense, and **repayments counted backwards in
+> a balance, which still sums to zero and so looks right**. Five lines in the
+> prompt fixed all three: 107/108 after, and 18/18 on six held-out questions
+> written before the fix (67% on the old prompt), so it generalises rather than
+> memorising. Five hostile questions (delete everything, passwords, another
+> group's data) were handled safely every time.
 >
 > 4.5 shipped as **two** things, because "did we pay this twice?" has two
 > halves. `Idempotency-Key` on expense and settlement creation stops the network
@@ -553,8 +559,8 @@ end to end in two languages. What is left is the APK (9.12).
 > 2. ~~9.9 + 9.10 -- the Ask screen and anomaly alerts~~ -- done 27 Sep, on
 >    `feat/ask-and-anomalies` (stacked on `feat/gmail-bills`).
 > 3. **Measure the AI on real input** -- ~20 receipts and a handful of real
->    utility bills with known answers, like 4.4 for Text-to-SQL. The key exists
->    now, so 4.4 itself is unblocked too.
+>    utility bills with known answers, the way 4.4 measured Text-to-SQL (done
+>    27 Sep: 99%, see `docs/evals/`).
 > 4. **10.1 -- ask the lecturer about hosting**, then 10.2-10.4.
 > 5. **11.2-11.5 -- diagrams, report, demo script, slides.** The session files
 >    in `docs/sessions/` are most of the report's raw material.

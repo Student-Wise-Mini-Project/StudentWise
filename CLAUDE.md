@@ -19,6 +19,7 @@ tutorial. If you are new, read them in this order:
 | [`frontend/README.md`](frontend/README.md) | The four frontend rules, and why each is a test |
 | [`docs/gmail-setup.md`](docs/gmail-setup.md) | The one-time Google Cloud setup for importing bills from Gmail |
 | [`docs/sessions/`](docs/sessions/) | What each session built and why -- the latest say what is newest |
+| [`docs/evals/`](docs/evals/) | How often the AI is actually right, measured against the real model |
 
 **The thirty-second version.** Postgres in Docker on port 5434; backend is
 Python 3.12 + FastAPI in `backend/` with a venv you must activate every
@@ -150,7 +151,12 @@ pytest tests/unit -q                  # fast: pure logic only
 ruff check --fix . ; ruff format .    # lint + format
 alembic revision --autogenerate -m "add expenses"   # new migration
 alembic check                         # does the schema match the models?
+python eval_text_to_sql.py            # measure Ask on the real model (needs a key, costs money)
 ```
+
+**Changed `SCHEMA_DOC` in `nl_query_service`?** Run `python eval_text_to_sql.py
+--repeat 3` before merging. The prompt is what decides whether Ask is right,
+and no stubbed test can tell you.
 
 **First time on a new machine**, in order: `docker compose up -d` ·
 `py -3.12 -m venv .venv` · activate · `pip install -r requirements.txt` ·
