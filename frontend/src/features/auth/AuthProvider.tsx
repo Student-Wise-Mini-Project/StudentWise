@@ -25,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // initialiser already sees the hydrated value.
   const [hasToken, setHasToken] = useState(() => hydrateToken() !== null)
   const [isResolving, setIsResolving] = useState(() => getToken() !== null)
+  const [isNewAccount, setIsNewAccount] = useState(false)
 
   /**
    * Signing out has to be single-flight.
@@ -111,9 +112,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     isAuthenticated: hasToken,
     isResolving,
-    signIn: async (email, password) => adopt(await loginRequest(email, password)),
-    signUp: async (input) => adopt(await registerRequest(input)),
-    signOut: clearSession,
+    isNewAccount,
+    signIn: async (email, password) => {
+      const response = await loginRequest(email, password)
+      setIsNewAccount(false)
+      await adopt(response)
+    },
+    signUp: async (input) => {
+      const response = await registerRequest(input)
+      // Before `adopt`, so the render that flips `isAuthenticated` already
+      // knows this is a new account.
+      setIsNewAccount(true)
+      await adopt(response)
+    },
+    signOut: () => {
+      setIsNewAccount(false)
+      clearSession()
+    },
     setUser,
   }
 

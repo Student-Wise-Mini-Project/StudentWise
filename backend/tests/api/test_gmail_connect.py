@@ -137,6 +137,36 @@ def test_an_expired_state_is_refused(client, alice, google):
     assert callback(client, code="good", state=expired).headers["location"].endswith("failed")
 
 
+def test_connecting_from_the_sign_up_step_comes_back_home(client, alice, google):
+    _, headers = alice
+    response = client.post(
+        "/api/integrations/gmail/connect", params={"return_to": "home"}, headers=headers
+    )
+    state = parse_qs(urlparse(response.json()["authorization_url"]).query)["state"][0]
+    back = callback(client, code="good", state=state)
+    assert back.headers["location"] == "http://app.test/?gmail=connected"
+
+
+def test_a_failure_from_the_sign_up_step_also_comes_back_home(client, alice, google):
+    _, headers = alice
+    response = client.post(
+        "/api/integrations/gmail/connect", params={"return_to": "home"}, headers=headers
+    )
+    state = parse_qs(urlparse(response.json()["authorization_url"]).query)["state"][0]
+    back = callback(client, code="bad", state=state)
+    assert back.headers["location"] == "http://app.test/?gmail=failed"
+
+
+def test_the_return_page_is_a_name_from_a_fixed_list_not_a_url(client, alice, google):
+    _, headers = alice
+    response = client.post(
+        "/api/integrations/gmail/connect",
+        params={"return_to": "https://evil.example"},
+        headers=headers,
+    )
+    assert response.status_code == 422
+
+
 def test_saying_no_at_google_is_reported_as_such(client, google):
     response = callback(client, error="access_denied")
     assert response.headers["location"] == "http://app.test/settings?gmail=denied"

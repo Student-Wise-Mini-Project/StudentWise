@@ -191,7 +191,8 @@ export function RegisterScreen() {
     setPending(true)
     try {
       await signUp({ name: name.trim(), email: email.trim(), password })
-      navigate('/', { replace: true })
+      // A new account is offered Gmail once, then goes home either way.
+      navigate('/welcome/gmail', { replace: true })
     } catch (cause) {
       setError(cause)
     } finally {

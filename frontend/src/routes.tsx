@@ -21,6 +21,7 @@ import { MembersScreen } from '@/features/groups/MembersScreen'
 import { NotificationsScreen } from '@/features/notifications/NotificationsScreen'
 import { ScanReceiptScreen } from '@/features/receipts/ScanReceiptScreen'
 import { BillsScreen } from '@/features/bills/BillsScreen'
+import { ConnectGmailOnboarding } from '@/features/bills/ConnectGmailOnboarding'
 import { RecurringScreen } from '@/features/recurring/RecurringScreen'
 import { env } from '@/lib/env'
 
@@ -47,6 +48,8 @@ export function AppRoutes() {
       </Route>
 
       <Route element={<RequireAuth />}>
+        {/* Right after sign-up, before the app: no tabs, one question. */}
+        <Route path="welcome/gmail" element={<ConnectGmailOnboarding />} />
         <Route element={<AppShell />}>
           <Route index element={<HomeScreen />} />
           <Route path="groups" element={<GroupListScreen />} />

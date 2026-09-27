@@ -20,10 +20,14 @@ export function useGmailStatus() {
  * cannot carry the Authorization header, so the server would not know who was
  * asking. Google sends the browser back to `/settings?gmail=...`.
  */
-export function useConnectGmail() {
+export function useConnectGmail(returnTo: 'settings' | 'home' = 'settings') {
   return useMutation({
     mutationFn: () =>
-      unwrap<{ authorization_url: string }>(api.POST('/api/integrations/gmail/connect')),
+      unwrap<{ authorization_url: string }>(
+        api.POST('/api/integrations/gmail/connect', {
+          params: { query: { return_to: returnTo } },
+        }),
+      ),
     onSuccess: ({ authorization_url }) => window.location.assign(authorization_url),
   })
 }

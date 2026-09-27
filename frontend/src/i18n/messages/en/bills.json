@@ -64,5 +64,16 @@
     "save": "Save address",
     "saved": "Saved",
     "none": "No address yet."
+  },
+  "onboarding": {
+    "title": "Bring your bills in from Gmail?",
+    "body": "Electricity, water, arnona and internet bills that arrive by email can be read and split with your flatmates for you.",
+    "point1": "Read-only access. Nothing is ever sent from your account.",
+    "point2": "Only emails that look like bills are read, and only the bill details are kept.",
+    "point3": "A bill that isn't clear-cut waits for you to check it before anything is split.",
+    "point4": "You can disconnect any time in Settings.",
+    "connect": "Connect Gmail",
+    "later": "Not now",
+    "laterNote": "You can connect later from Settings."
   }
 }

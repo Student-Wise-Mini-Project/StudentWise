@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from 'react-router'
+import { Link } from 'react-router'
 
 import { detailOf } from '@/api/errors'
 import { Button } from '@/components/Button'
@@ -14,17 +14,10 @@ import {
   usePendingBills,
   useSyncGmail,
 } from './api'
-
-/** What Google's redirect back to `/settings?gmail=...` means, in words. */
-const RESULTS = {
-  connected: { key: 'bills.gmail.resultConnected', tone: 'bg-credit-soft text-credit' },
-  denied: { key: 'bills.gmail.resultDenied', tone: 'bg-warn-soft text-warn' },
-  failed: { key: 'bills.gmail.resultFailed', tone: 'bg-danger-soft text-danger' },
-} as const
+import { GmailResultNotice } from './GmailResultNotice'
 
 export function GmailSection() {
   const t = useT()
-  const [params, setParams] = useSearchParams()
   const status = useGmailStatus()
   const connect = useConnectGmail()
   const disconnect = useDisconnectGmail()
@@ -32,26 +25,13 @@ export function GmailSection() {
   const connected = status.data?.connected === true
   const pending = usePendingBills(connected)
 
-  const outcome = params.get('gmail')
-  const result = outcome && outcome in RESULTS ? RESULTS[outcome as keyof typeof RESULTS] : null
   const error = connect.error ?? disconnect.error ?? sync.error
   const pendingCount = pending.data?.total ?? 0
 
   return (
     <ListSection header={t('bills.gmail.header')}>
       <div className="flex flex-col gap-3 px-4 py-4">
-        {result && (
-          <p role="status" className={`rounded-sm px-3 py-2.5 text-sm ${result.tone}`}>
-            {t(result.key)}{' '}
-            <button
-              type="button"
-              className="font-display font-bold underline"
-              onClick={() => setParams({}, { replace: true })}
-            >
-              {t('common.actions.close')}
-            </button>
-          </p>
-        )}
+        <GmailResultNotice />
 
         {status.isLoading && <Spinner label={t('common.actions.loading')} />}
 

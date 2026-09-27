@@ -36,9 +36,16 @@ export function RequireAuth() {
   return <Outlet />
 }
 
-/** The other direction: an authenticated user has no business on /login. */
+/**
+ * The other direction: an authenticated user has no business on /login.
+ *
+ * A brand-new account goes to the one-time Gmail offer rather than home. This
+ * guard re-renders the instant sign-up succeeds, before the sign-up screen's own
+ * navigation runs, so if it said "home" the offer would never be seen.
+ */
 export function RedirectIfAuthed() {
-  const { isAuthenticated, isResolving } = useAuth()
+  const { isAuthenticated, isResolving, isNewAccount } = useAuth()
   if (isResolving) return null
-  return isAuthenticated ? <Navigate to="/" replace /> : <Outlet />
+  if (!isAuthenticated) return <Outlet />
+  return <Navigate to={isNewAccount ? '/welcome/gmail' : '/'} replace />
 }

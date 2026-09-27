@@ -45,9 +45,18 @@ def _require_ready() -> None:
 # --- connecting -------------------------------------------------------------
 
 
-def connect_url(user: User) -> str:
-    """Google's consent page for this user. The state ties the answer to them."""
+#: Where the browser may be sent back to, by name. A fixed list inside the
+#: signed state -- never a URL from the request -- so the callback cannot be
+#: turned into a redirect to somebody else's site.
+RETURN_PAGES = {"settings": "/settings", "home": "/"}
+
+
+def connect_url(user: User, *, return_to: str = "settings") -> str:
+    """Google's consent page for this user. The state ties the answer to them,
+    and says which page of the app to come back to."""
     _require_ready()
+    if return_to not in RETURN_PAGES:
+        raise BadRequestError("Unknown page to return to")
     now = datetime.now(UTC)
     state = jwt.encode(
         {
@@ -56,11 +65,28 @@ def connect_url(user: User) -> str:
             "iat": now,
             "exp": now + STATE_LIFETIME,
             "nonce": uuid.uuid4().hex,
+            "rt": return_to,
         },
         settings.jwt_secret,
         algorithm=settings.jwt_algorithm,
     )
     return gmail.authorization_url(state)
+
+
+def return_path(state: str | None) -> str:
+    """The app page named in a valid state, or Settings for anything else."""
+    if state:
+        try:
+            payload = jwt.decode(
+                state,
+                settings.jwt_secret,
+                algorithms=[settings.jwt_algorithm],
+                audience=STATE_AUDIENCE,
+            )
+            return RETURN_PAGES.get(payload.get("rt"), RETURN_PAGES["settings"])
+        except jwt.PyJWTError:
+            pass
+    return RETURN_PAGES["settings"]
 
 
 def _user_from_state(db: Session, state: str) -> User:

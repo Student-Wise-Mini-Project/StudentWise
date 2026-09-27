@@ -4682,7 +4682,10 @@ export interface operations {
     };
     connect_api_integrations_gmail_connect_post: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Which screen to come back to after Google: settings, or home (the step offered right after sign-up). */
+                return_to?: "settings" | "home";
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -4696,6 +4699,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GmailConnectOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -6,6 +6,8 @@ It is authenticated by the signed, short-lived `state` minted for the user who
 asked to connect instead.
 """
 
+from typing import Literal
+
 from fastapi import APIRouter, Query, status
 from fastapi.responses import RedirectResponse
 
@@ -37,9 +39,18 @@ def get_status(current_user: CurrentUser, db: DbSession) -> GmailStatusOut:
 
 
 @router.post("/connect", response_model=GmailConnectOut)
-def connect(current_user: CurrentUser) -> GmailConnectOut:
+def connect(
+    current_user: CurrentUser,
+    return_to: Literal["settings", "home"] = Query(
+        default="settings",
+        description="Which screen to come back to after Google: settings, or home "
+        "(the step offered right after sign-up).",
+    ),
+) -> GmailConnectOut:
     """The address of Google's consent page. Only read access is asked for."""
-    return GmailConnectOut(authorization_url=gmail_service.connect_url(current_user))
+    return GmailConnectOut(
+        authorization_url=gmail_service.connect_url(current_user, return_to=return_to)
+    )
 
 
 @router.get("/callback", include_in_schema=False)
@@ -49,9 +60,10 @@ def callback(
     state: str | None = Query(default=None),
     error: str | None = Query(default=None),
 ) -> RedirectResponse:
-    """Where Google sends the browser back. Always ends on the settings screen,
-    with a result the screen can explain -- never a JSON error in a bare tab."""
-    target = f"{settings.frontend_url.rstrip('/')}/settings"
+    """Where Google sends the browser back. Always ends on a screen of the app --
+    the one the state names -- with a result it can explain, never a JSON error
+    in a bare tab."""
+    target = f"{settings.frontend_url.rstrip('/')}{gmail_service.return_path(state)}"
     if error or not code or not state:
         outcome = "denied" if error == "access_denied" else "failed"
         return RedirectResponse(f"{target}?gmail={outcome}", status_code=status.HTTP_303_SEE_OTHER)

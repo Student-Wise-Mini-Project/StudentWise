@@ -7,6 +7,12 @@ export type AuthState = {
   isAuthenticated: boolean
   /** True until a stored token has been resolved, so guards do not bounce early. */
   isResolving: boolean
+  /**
+   * The account was created in this session, by `signUp`. The guard that moves
+   * a signed-in user off the sign-up screen reads it, so a brand-new account
+   * lands on the one-time Gmail offer instead of racing past it to home.
+   */
+  isNewAccount: boolean
   signIn: (email: string, password: string) => Promise<void>
   signUp: (input: { name: string; email: string; password: string }) => Promise<void>
   signOut: () => void
