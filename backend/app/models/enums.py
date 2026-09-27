@@ -95,6 +95,39 @@ class NotificationKind(StrEnum):
     BILL_DUE = "BILL_DUE"
 
 
+class IngestedBillStatus(StrEnum):
+    """Where a bill found in someone's email has got to.
+
+    Only IMPORTED and APPROVED have an expense. Everything else is outside the
+    money entirely -- balances, analytics and settle-up never see it.
+    """
+
+    #: Split automatically: a trusted sender and exactly one flat it can be.
+    IMPORTED = "IMPORTED"
+    #: Waiting for the mailbox owner to say which flat, or whether at all.
+    PENDING_REVIEW = "PENDING_REVIEW"
+    #: A person picked the flat and it became an expense.
+    APPROVED = "APPROVED"
+    DISMISSED = "DISMISSED"
+    #: Looked at and not a bill, or already imported. Kept so it is not read twice.
+    SKIPPED = "SKIPPED"
+
+
+class BillReviewReason(StrEnum):
+    """Why a bill was not split automatically. A code, so the client can say it
+    in either language."""
+
+    NOT_A_BILL = "NOT_A_BILL"
+    UNREADABLE = "UNREADABLE"
+    NO_AMOUNT = "NO_AMOUNT"
+    NO_FLAT = "NO_FLAT"
+    AMBIGUOUS_FLAT = "AMBIGUOUS_FLAT"
+    UNKNOWN_SENDER = "UNKNOWN_SENDER"
+    RECURRING_CONFLICT = "RECURRING_CONFLICT"
+    CURRENCY_MISMATCH = "CURRENCY_MISMATCH"
+    DUPLICATE = "DUPLICATE"
+
+
 def enum_column(enum_cls: type[StrEnum]) -> SAEnum:
     """VARCHAR + CHECK constraint, with Python-side enum safety preserved."""
     return SAEnum(

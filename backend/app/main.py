@@ -6,13 +6,16 @@ from fastapi.responses import JSONResponse
 
 from app.api import (
     activity,
+    ai,
     analytics,
     auth,
     balances,
     budgets,
     comments,
     expenses,
+    gmail,
     groups,
+    ingested_bills,
     notifications,
     recurring_bills,
     settlements,
@@ -69,3 +72,6 @@ app.include_router(analytics.router, prefix="/api")
 app.include_router(activity.router, prefix="/api")
 app.include_router(notifications.router, prefix="/api")
 app.include_router(notifications.group_router, prefix="/api")
+app.include_router(ai.router, prefix="/api")
+app.include_router(gmail.router, prefix="/api")
+app.include_router(ingested_bills.router, prefix="/api")

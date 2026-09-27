@@ -7,6 +7,7 @@ and applies the same membership rule.
 
 import uuid
 from datetime import date
+from decimal import Decimal
 from typing import Annotated
 
 from fastapi import APIRouter, File, Header, Query, Response, UploadFile, status
@@ -14,10 +15,18 @@ from fastapi import APIRouter, File, Header, Query, Response, UploadFile, status
 from app.config import settings
 from app.core.deps import CurrentUser, DbSession, ExpenseForMember, GroupMembership
 from app.models.enums import ExpenseCategory
-from app.schemas.expense import ExpenseCreate, ExpenseOut, ExpenseUpdate
+from app.schemas.expense import (
+    ExpenseCreate,
+    ExpenseOut,
+    ExpenseUpdate,
+    ItemIn,
+    ItemPreviewOut,
+    ItemPreviewRequest,
+    ItemPreviewSplit,
+)
 from app.schemas.page import Page
 from app.services import expense_service, idempotency_service
-from app.services.expense_service import ParticipantSpec
+from app.services.expense_service import ItemSpec, ParticipantSpec
 
 group_router = APIRouter(prefix="/groups", tags=["expenses"])
 router = APIRouter(prefix="/expenses", tags=["expenses"])
@@ -41,6 +50,15 @@ def _specs(payload: ExpenseCreate | ExpenseUpdate) -> list[ParticipantSpec] | No
         return None
     return [
         ParticipantSpec(user_id=p.user_id, share_value=p.share_value) for p in payload.participants
+    ]
+
+
+def _item_specs(items: list[ItemIn] | None) -> list[ItemSpec] | None:
+    if items is None:
+        return None
+    return [
+        ItemSpec(name=item.name, amount=item.amount, user_ids=tuple(item.user_ids))
+        for item in items
     ]
 
 
@@ -104,10 +122,38 @@ def create_expense(
         notes=payload.notes,
         source=payload.source,
         apply_split_rule=payload.apply_split_rule,
+        items=_item_specs(payload.items),
+        ai_metadata=payload.ai_metadata,
         idempotency_key=idempotency_key,
         request_fingerprint=idempotency_service.fingerprint(payload),
     )
     return ExpenseOut.model_validate(expense)
+
+
+@group_router.post("/{group_id}/expenses/item-preview", response_model=ItemPreviewOut)
+def preview_item_splits(
+    payload: ItemPreviewRequest,
+    membership: GroupMembership,
+    db: DbSession,
+) -> ItemPreviewOut:
+    """What each person would owe if these lines were saved. Writes nothing.
+
+    For a review screen that shows per-person totals while lines are still
+    being assigned: the client never divides money, so it asks the server,
+    which answers with the same arithmetic the save will use.
+    """
+    splits = expense_service.preview_item_splits(
+        db,
+        membership.group,
+        total_amount=payload.total_amount,
+        items=_item_specs(payload.items) or [],
+    )
+    items_total = sum((item.amount for item in payload.items), Decimal("0.00"))
+    return ItemPreviewOut(
+        splits=[ItemPreviewSplit(user_id=s.user_id, owed_amount=s.owed_amount) for s in splits],
+        items_total=items_total,
+        adjustment=payload.total_amount - items_total,
+    )
 
 
 @router.get("/{expense_id}", response_model=ExpenseOut)

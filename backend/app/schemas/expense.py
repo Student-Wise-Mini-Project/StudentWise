@@ -1,11 +1,12 @@
 """Expense request/response schemas."""
 
+import json
 import uuid
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field
+from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 
 from app.models.enums import ExpenseCategory, ExpenseSource, SplitType
 from app.schemas.split_rule import SplitRuleSummary
@@ -18,6 +19,19 @@ class ParticipantIn(BaseModel):
 
     user_id: uuid.UUID
     share_value: Decimal | None = None
+
+
+#: Enough for what OCR, voice or email ingestion record about where an expense
+#: came from; small enough that nobody can park a document in the column.
+AI_METADATA_MAX_BYTES = 16_000
+
+
+class ItemIn(BaseModel):
+    """One receipt line. `user_ids` names who shared it; empty means everyone."""
+
+    name: str = Field(min_length=1, max_length=200)
+    amount: Decimal = Field(gt=0, max_digits=12, decimal_places=2)
+    user_ids: list[uuid.UUID] = Field(default_factory=list)
 
 
 class ExpenseCreate(BaseModel):
@@ -33,6 +47,27 @@ class ExpenseCreate(BaseModel):
     source: ExpenseSource = ExpenseSource.MANUAL
     #: Set false to split equally even when a standing rule would have applied.
     apply_split_rule: bool = True
+    #: Split line by line instead. The server works out each person's share and
+    #: stores it as an EXACT split, so send `split_type: EXACT` and no
+    #: `participants`. The gap between the lines and the total is spread in
+    #: proportion to what each person's lines came to.
+    items: list[ItemIn] | None = Field(default=None, min_length=1, max_length=200)
+    #: Where an ingested expense came from: what OCR read, before anyone edited it.
+    ai_metadata: dict[str, Any] | None = None
+
+    @model_validator(mode="after")
+    def _items_decide_the_split(self) -> "ExpenseCreate":
+        if self.items is not None:
+            if self.participants is not None:
+                raise ValueError("Send items or participants, not both")
+            if self.split_type is not SplitType.EXACT:
+                raise ValueError("An expense split by items is an EXACT split")
+        if (
+            self.ai_metadata is not None
+            and len(json.dumps(self.ai_metadata, default=str)) > AI_METADATA_MAX_BYTES
+        ):
+            raise ValueError("ai_metadata is too large")
+        return self
 
 
 class ExpenseUpdate(BaseModel):
@@ -52,6 +87,34 @@ class ExpenseSplitOut(BaseModel):
     user: UserOut
     owed_amount: Decimal
     share_value: Decimal | None = None
+
+
+class ExpenseItemOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    name: str
+    amount: Decimal
+    users: list[UserOut]
+
+
+class ItemPreviewRequest(BaseModel):
+    total_amount: Decimal = Field(gt=0, max_digits=12, decimal_places=2)
+    items: list[ItemIn] = Field(min_length=1, max_length=200)
+
+
+class ItemPreviewSplit(BaseModel):
+    user_id: uuid.UUID
+    owed_amount: Decimal
+
+
+class ItemPreviewOut(BaseModel):
+    #: What each person would owe, exactly as saving would store it.
+    splits: list[ItemPreviewSplit]
+    items_total: Decimal
+    #: `total_amount - items_total`: a service charge if positive, a discount
+    #: if negative. Spread in proportion to each person's lines.
+    adjustment: Decimal
 
 
 class ExpenseOut(BaseModel):
@@ -74,6 +137,9 @@ class ExpenseOut(BaseModel):
     created_at: datetime
     updated_at: datetime
     splits: list[ExpenseSplitOut] = []
+    #: Receipt lines, if the split was worked out line by line. The amounts
+    #: people owe are in `splits` either way.
+    items: list[ExpenseItemOut] = []
 
     #: The storage key, which is nobody's business outside the server: it says
     #: where the file lives, and that changes when storage does.

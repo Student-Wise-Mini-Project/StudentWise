@@ -8,14 +8,22 @@ import uuid
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
+from typing import Any
 
 from sqlalchemy.orm import Session
 
 from app.core.errors import BadRequestError, NotFoundError
 from app.core.storage import content_type_for, get_receipt_store
-from app.domain.splitting import ParticipantInput, compute_splits
+from app.domain.splitting import (
+    ComputedSplit,
+    ItemInput,
+    ParticipantInput,
+    compute_item_splits,
+    compute_splits,
+)
 from app.models.enums import ExpenseCategory, ExpenseSource, SplitType
 from app.models.expense import Expense, ExpenseSplit
+from app.models.expense_item import ExpenseItem, ItemSplit
 from app.models.group import Group, GroupMember
 from app.models.split_rule import SplitRule
 from app.models.user import User
@@ -36,6 +44,32 @@ class ParticipantSpec:
 
     user_id: uuid.UUID
     share_value: Decimal | None = None
+
+
+@dataclass(frozen=True)
+class ItemSpec:
+    """A receipt line as requested. No `user_ids` means everyone in the group."""
+
+    name: str
+    amount: Decimal
+    user_ids: tuple[uuid.UUID, ...] = ()
+
+
+def _resolve_items(db: Session, group: Group, items: list[ItemSpec]) -> list[ItemInput]:
+    """Name everyone on every line.
+
+    "Nobody marked this line" becomes the group's active members *now*, so a
+    stored receipt never quietly changes meaning when somebody joins later.
+    """
+    members = _active_members(db, group)
+    resolved = []
+    for item in items:
+        user_ids = item.user_ids or tuple(members)
+        for user_id in user_ids:
+            if user_id not in members:
+                raise BadRequestError(f"User {user_id} is not an active member of this group")
+        resolved.append(ItemInput(amount=item.amount, user_ids=tuple(user_ids)))
+    return resolved
 
 
 def _active_members(db: Session, group: Group) -> dict[uuid.UUID, GroupMember]:
@@ -170,6 +204,8 @@ def build_expense(
     notes: str | None = None,
     source: ExpenseSource = ExpenseSource.MANUAL,
     apply_split_rule: bool = True,
+    items: list[ItemSpec] | None = None,
+    ai_metadata: dict[str, Any] | None = None,
 ) -> Expense:
     """Everything creating an expense involves, except the commit.
 
@@ -177,7 +213,24 @@ def build_expense(
     and so anything that creates an expense on the way to doing something else
     cannot accidentally commit half of it. `create_expense` is this plus the
     commit; nothing else should reimplement any of it.
+
+    With `items`, the lines decide the split: each person's share is worked out
+    line by line and stored as an ordinary EXACT split, so balances never learn
+    that items exist. Items name their people, so no split rule applies.
     """
+    resolved_items: list[ItemInput] | None = None
+    if items is not None:
+        if participants is not None:
+            raise BadRequestError("Send items or participants, not both")
+        resolved_items = _resolve_items(db, group, items)
+        computed = compute_item_splits(total_amount, resolved_items)
+        participants = [
+            ParticipantSpec(user_id=split.user_id, share_value=split.owed_amount)
+            for split in computed
+        ]
+        split_type = SplitType.EXACT
+        apply_split_rule = False
+
     rule: SplitRule | None = None
     if apply_split_rule:
         rule, participants, split_type = _apply_split_rule(
@@ -207,10 +260,21 @@ def build_expense(
         split_type=split_type,
         source=source,
         notes=notes,
+        ai_metadata=ai_metadata,
         split_rule_id=rule.id if rule is not None else None,
         created_by=creator.id,
         splits=splits,
     )
+    if items is not None and resolved_items is not None:
+        expense.items = [
+            ExpenseItem(
+                position=position,
+                name=item.name.strip(),
+                amount=item.amount,
+                splits=[ItemSplit(user_id=user_id) for user_id in resolved.user_ids],
+            )
+            for position, (item, resolved) in enumerate(zip(items, resolved_items, strict=True))
+        ]
     ExpenseRepository(db).add(expense)
     # Same transaction as the expense: nobody should be told about an expense
     # that failed to save, and no expense should land silently.
@@ -237,6 +301,8 @@ def create_expense(
     notes: str | None = None,
     source: ExpenseSource = ExpenseSource.MANUAL,
     apply_split_rule: bool = True,
+    items: list[ItemSpec] | None = None,
+    ai_metadata: dict[str, Any] | None = None,
     idempotency_key: str | None = None,
     request_fingerprint: str | None = None,
 ) -> Expense:
@@ -273,12 +339,26 @@ def create_expense(
         notes=notes,
         source=source,
         apply_split_rule=apply_split_rule,
+        items=items,
+        ai_metadata=ai_metadata,
     )
     if claim is not None:
         claim.resource_id = expense.id
     db.commit()
     db.refresh(expense)
     return expense
+
+
+def preview_item_splits(
+    db: Session, group: Group, *, total_amount: Decimal, items: list[ItemSpec]
+) -> list[ComputedSplit]:
+    """What each person would owe, without writing anything.
+
+    The review screen shows exact per-person totals while lines are still being
+    assigned. The client may not divide money, so it asks: same resolution,
+    same arithmetic as the write, so the preview cannot disagree with the save.
+    """
+    return compute_item_splits(total_amount, _resolve_items(db, group, items))
 
 
 def update_expense(
@@ -337,6 +417,10 @@ def update_expense(
             split_type=expense.split_type,
             participants=participants,
         )
+
+        # The receipt lines described the old split. Kept, they would claim to
+        # explain amounts they no longer add up to.
+        expense.items.clear()
 
         # Delete the old rows and flush before adding the new ones. Otherwise
         # SQLAlchemy inserts the replacements first and trips the

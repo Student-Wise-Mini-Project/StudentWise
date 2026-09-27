@@ -19,6 +19,8 @@ class GroupCreate(BaseModel):
 class GroupUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=120)
     currency: str | None = Field(default=None, min_length=3, max_length=3)
+    #: The flat's street address, as its bills print it. An empty string clears it.
+    address: str | None = Field(default=None, max_length=300)
 
 
 class MemberAdd(BaseModel):
@@ -54,6 +56,8 @@ class GroupOut(BaseModel):
     name: str
     type: GroupType
     currency: str
+    #: Used to tell which flat an emailed bill belongs to.
+    address: str | None = None
     created_by: uuid.UUID
     created_at: datetime
     #: Null while the group is open. Set once it is closed.
