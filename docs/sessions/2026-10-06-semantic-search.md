@@ -42,7 +42,8 @@ parallel session studentwise-d0.
 - **Privacy.** Titles and notes go to Voyage, a third party. Voyage may
   train on API inputs unless the dashboard opt-out is on, and the opt-out
   only covers what is sent after it is switched on. This is documented in
-  `.env.example` and the API contract.
+  `.env.example` and the API contract. The team's account opted out on
+  2026-10-06, after the live tests.
 
 ## Tested live
 

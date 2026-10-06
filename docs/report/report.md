@@ -421,8 +421,9 @@ The coordination problems were real ones:
   users. Opening it to everyone needs Google's verification.
 - **Bit and PayBox** publish no deep-link API. Payment opens the app, with a
   copy-the-details fallback.
-- **Voyage AI** may use API inputs for training unless the account's opt-out
-  is switched on.
+- **Voyage AI** uses API inputs for training by default. Our account opted out
+  on 2026-10-06, but the opt-out only covers data sent after that, so the
+  embeddings made in testing that day were sent before it.
 - **Gender-neutral Hebrew from the model** is very likely but not guaranteed.
 - **No scheduler**, by design. Work catches up when the app is opened.
 - **Free hosting** sleeps when idle, so the first request after a while is
