@@ -250,3 +250,19 @@ def test_saving_the_same_embedding_twice_replaces_it_rather_than_failing(db, fla
         )
     rows = db.scalars(select(ExpenseEmbedding)).all()
     assert [(str(r.expense_id), r.text_hash) for r in rows] == [(expense_id, "second")]
+
+
+def test_when_search_is_down_the_model_is_told_to_use_other_tools(db, flat, monkeypatch):
+    from app.core.errors import ServiceUnavailableError
+    from app.models.group import Group
+
+    def rate_limited(texts, *, input_type):
+        raise ServiceUnavailableError("Search is busy. Try again in a moment.")
+
+    monkeypatch.setattr(settings, "voyage_api_key", "k")
+    monkeypatch.setattr(embeddings, "embed", rate_limited)
+    context = chat_tools.ToolContext(
+        db=db, readonly=None, group=db.get(Group, flat["group"]["id"]), language="en"
+    )
+    with pytest.raises(chat_tools.ToolError, match="Do not call search_expenses again"):
+        chat_tools.run(context, "search_expenses", {"query": "pizza"})

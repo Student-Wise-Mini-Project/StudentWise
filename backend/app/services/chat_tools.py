@@ -24,7 +24,7 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
 from app.ai import embeddings
-from app.core.errors import AppError
+from app.core.errors import AppError, ServiceUnavailableError
 from app.models.enums import ExpenseCategory
 from app.models.expense import Expense
 from app.models.group import Group
@@ -338,13 +338,22 @@ def _list_expenses(ctx: ToolContext, arguments: dict[str, Any]) -> dict[str, Any
 
 
 def _search_expenses(ctx: ToolContext, arguments: dict[str, Any]) -> dict[str, Any]:
-    matches = semantic_search_service.search(
-        ctx.db,
-        ctx.group,
-        str(arguments.get("query") or ""),
-        limit=int(arguments.get("limit") or 8),
-        **_period(arguments),
-    )
+    try:
+        matches = semantic_search_service.search(
+            ctx.db,
+            ctx.group,
+            str(arguments.get("query") or ""),
+            limit=int(arguments.get("limit") or 8),
+            **_period(arguments),
+        )
+    except ServiceUnavailableError as error:
+        # Said so the model moves on rather than retrying. Told "try again",
+        # it did -- five times, against a rate limit -- and then gave up on
+        # a question the other tools could have answered.
+        raise ToolError(
+            "Semantic search is unavailable right now. Do not call search_expenses again "
+            "in this answer; use list_expenses or query_database instead."
+        ) from error
     return {
         "matches": [
             {
