@@ -878,6 +878,10 @@ tools_used            = [{ name, input }]   // on an answer: what it looked at
   server has a `VOYAGE_API_KEY` -- `search_expenses` (semantic search: "that
   Italian place" finds "Pizza night", in either language). Name an unknown one
   generically: the list will grow.
+- **Privacy:** with semantic search on, expense titles, categories and notes are
+  sent to Voyage AI, a third party, to be embedded (lazily, the first time a
+  group is searched). Questions asked in the chat already go to Anthropic. Say
+  so wherever the app describes what it does with your data.
 - **The assistant cannot change anything.** Every tool reads; asked to add an
   expense or record a payment, it says where in the app to do it.
 

@@ -27,7 +27,6 @@ from app.config import settings
 from app.core.errors import BadRequestError
 from app.domain import vector_search
 from app.models.expense import Expense
-from app.models.expense_embedding import ExpenseEmbedding
 from app.models.group import Group
 from app.repositories.expense_embedding_repository import ExpenseEmbeddingRepository
 
@@ -74,15 +73,16 @@ def _refresh(db: Session, group: Group) -> list[tuple[Expense, list[float]]]:
         vectors = embeddings.embed([text for _, text in stale], input_type="document")
         for (expense, text), vector in zip(stale, vectors, strict=True):
             repo.save(
-                ExpenseEmbedding(
-                    expense_id=expense.id,
-                    model=model,
-                    text_hash=_hash(text),
-                    dimensions=len(vector),
-                    vector=vector_search.to_bytes(vector),
-                )
+                expense_id=expense.id,
+                model=model,
+                text_hash=_hash(text),
+                dimensions=len(vector),
+                vector=vector_search.to_bytes(vector),
             )
             fresh[expense.id] = vector
+        # Committed here, inside whatever called the search -- the chat's tool
+        # loop, today. That is safe only because the chat writes nothing until
+        # its answer exists; chat_service says so where the loop starts.
         db.commit()
 
     return [

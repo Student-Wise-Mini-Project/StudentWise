@@ -162,6 +162,9 @@ def _answer(
         messages.pop(0)
     messages.append({"role": "user", "content": question})
 
+    # Tools may commit this session (semantic search saves the embeddings it
+    # makes). So nothing may be added to it before the answer exists, or it
+    # would be committed early, outside the transaction it belongs to.
     context = chat_tools.ToolContext(db=db, readonly=readonly, group=group, language=language)
     used: list[dict[str, Any]] = []
 

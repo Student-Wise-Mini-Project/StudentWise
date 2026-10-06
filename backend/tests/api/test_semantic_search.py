@@ -236,3 +236,17 @@ def test_an_empty_search_goes_back_to_the_model_as_an_error(db, flat, embedder):
     )
     with pytest.raises(chat_tools.ToolError, match="Say what to look for"):
         chat_tools.run(context, "search_expenses", {"query": "  "})
+
+
+def test_saving_the_same_embedding_twice_replaces_it_rather_than_failing(db, flat):
+    # Two first searches at once both find no row and both write it.
+    from app.repositories.expense_embedding_repository import ExpenseEmbeddingRepository
+
+    repo = ExpenseEmbeddingRepository(db)
+    expense_id = flat["expenses"]["Pizza night"]["id"]
+    for text_hash in ("first", "second"):
+        repo.save(
+            expense_id=expense_id, model="m", text_hash=text_hash, dimensions=2, vector=b"\0" * 8
+        )
+    rows = db.scalars(select(ExpenseEmbedding)).all()
+    assert [(str(r.expense_id), r.text_hash) for r in rows] == [(expense_id, "second")]
