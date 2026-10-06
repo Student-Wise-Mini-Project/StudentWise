@@ -17,7 +17,8 @@
     "remove": "Remove",
     "retry": "Try again",
     "save": "Save",
-    "send": "Send"
+    "send": "Send",
+    "copy": "Copy"
   },
   "state": {
     "credit": "is owed",
@@ -25,7 +26,9 @@
     "square": "square",
     "squareTitle": "Square",
     "you": "You",
-    "youMarker": " (you)"
+    "youMarker": " (you)",
+    "copied": "Copied",
+    "copyFailed": "Couldn't copy. Press and hold the text instead."
   },
   "dates": {
     "today": "Today",

@@ -106,3 +106,45 @@ export function LinkButton({
     </Link>
   )
 }
+
+/**
+ * A link out of the app that looks like a button -- to an app store, say.
+ *
+ * A new tab, so an installed PWA is not navigated away from itself when the
+ * phone does not hand the address straight to another app.
+ */
+export function ExternalLinkButton({
+  href,
+  onClick,
+  variant = 'primary',
+  size = 'md',
+  fullWidth = false,
+  className,
+  children,
+}: {
+  href: string
+  onClick?: () => void
+  variant?: ButtonVariant
+  size?: ButtonSize
+  fullWidth?: boolean
+  className?: string
+  children: ReactNode
+}) {
+  return (
+    <a
+      href={href}
+      onClick={onClick}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={cn(
+        'font-display inline-flex items-center justify-center font-bold transition-colors',
+        VARIANTS[variant],
+        SIZES[size],
+        fullWidth && 'w-full',
+        className,
+      )}
+    >
+      {children}
+    </a>
+  )
+}

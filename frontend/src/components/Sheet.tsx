@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef } from 'react'
+import { type ReactNode, useEffect, useId, useRef } from 'react'
 
 import { useT } from '@/i18n/i18nContext'
 import { cn } from '@/lib/cn'
@@ -31,6 +31,9 @@ export function Sheet({
 }) {
   const t = useT()
   const ref = useRef<HTMLDialogElement>(null)
+  // Per instance: a screen with two sheets (pay, then record) would otherwise
+  // have two elements with one id, and a dialog named after the wrong title.
+  const titleId = useId()
 
   useEffect(() => {
     const dialog = ref.current
@@ -51,7 +54,7 @@ export function Sheet({
       onClick={(event) => {
         if (event.target === ref.current) onClose()
       }}
-      aria-labelledby="sheet-title"
+      aria-labelledby={titleId}
       className={cn(
         'bg-surface text-ink m-0 w-full max-w-none p-0 backdrop:backdrop-blur-[2px]',
         // Phone: pinned to the bottom, clearing the home indicator. The radius
@@ -66,10 +69,7 @@ export function Sheet({
       <div className="flex max-h-[90dvh] flex-col">
         <header className="border-line flex items-start justify-between gap-3 border-b px-4 py-3">
           <div className="min-w-0">
-            <h2
-              id="sheet-title"
-              className="font-display text-2xl font-extrabold tracking-[-0.02em]"
-            >
+            <h2 id={titleId} className="font-display text-2xl font-extrabold tracking-[-0.02em]">
               {title}
             </h2>
             {description && <p className="text-muted mt-0.5 text-sm">{description}</p>}

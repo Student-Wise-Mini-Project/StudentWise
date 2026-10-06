@@ -50,5 +50,20 @@
     "note": "Note",
     "notePlaceholder": "Optional",
     "submit": "Record it"
+  },
+  "pay": {
+    "action": "Pay {name}",
+    "rowAction": "Pay",
+    "title": "Pay {name}",
+    "description": "Bit and PayBox don't let other apps fill in a payment, so copy these two and paste them in.",
+    "phone": "{name}'s phone",
+    "copyPhone": "Copy {name}'s phone number",
+    "noPhone": "{name} hasn't added a phone number yet. It goes under You → Phone number.",
+    "amount": "Amount",
+    "copyAmount": "Copy the amount",
+    "open": "Open {app}",
+    "storeNote": "Opens the app's page in your app store. Tap Open there.",
+    "desktopNote": "Bit and PayBox run on your phone. Open StudentWise there to pay.",
+    "paid": "I paid {name}"
   }
 }

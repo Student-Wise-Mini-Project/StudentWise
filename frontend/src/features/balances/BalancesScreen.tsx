@@ -24,8 +24,10 @@ import { today } from '@/lib/dates'
 import { createIdempotencyTracker } from '@/lib/idempotency'
 import { settlementMethodLabel } from '@/lib/labels'
 import { isPositive, isValidAmount, isZero } from '@/lib/money'
+import { canPayWithApps, type PayApp } from '@/lib/payApps'
 
 import { useBalances, useRecordSettlement, useSendReminders, useSettlementPlan } from './api'
+import { PaySheet } from './PaySheet'
 
 export function BalancesScreen() {
   const t = useT()
@@ -35,6 +37,10 @@ export function BalancesScreen() {
   const plan = useSettlementPlan(groupId)
   const remind = useSendReminders(groupId)
   const [settling, setSettling] = useState<PlannedTransfer | null>(null)
+  const [settlingWith, setSettlingWith] = useState<SettlementMethod | undefined>()
+  const [paying, setPaying] = useState<PlannedTransfer | null>(null)
+  // The app last opened from the pay sheet, so "I paid" records the right one.
+  const [openedApp, setOpenedApp] = useState<PayApp | null>(null)
 
   if (balances.isLoading) return <ListRowSkeleton count={3} />
   if (balances.isError) {
@@ -49,6 +55,10 @@ export function BalancesScreen() {
   // else's payment is a slab about somebody else.
   const headline = transfers.find((t) => t.from_user.id === user?.id) ?? transfers[0]
   const rest = transfers.filter((t) => t !== headline)
+
+  // Your own debts can be paid from here; anybody else's can only be recorded.
+  const canPay = (transfer: PlannedTransfer) =>
+    transfer.from_user.id === user?.id && canPayWithApps(currency)
 
   // Anyone who owes *me*. The API refuses a reminder to anyone else, so the
   // button is only offered where it would actually work.
@@ -88,9 +98,27 @@ export function BalancesScreen() {
             {rest.length > 0 && restSentence(t, rest, user?.id)}
           </p>
 
-          <Button fullWidth size="lg" className="mt-3.5" onClick={() => setSettling(headline)}>
-            {t('balances.slab.record')}
-          </Button>
+          {canPay(headline) ? (
+            <>
+              <Button fullWidth size="lg" className="mt-3.5" onClick={() => setPaying(headline)}>
+                {t('balances.pay.action', { name: headline.to_user.name })}
+              </Button>
+              {/* A ghost button is ink on paper; on the slab it has to be
+               * light on dark, and a pale hover would light it up. */}
+              <Button
+                fullWidth
+                variant="ghost"
+                className="text-on-slab mt-1.5 hover:bg-transparent hover:underline active:bg-transparent"
+                onClick={() => setSettling(headline)}
+              >
+                {t('balances.slab.record')}
+              </Button>
+            </>
+          ) : (
+            <Button fullWidth size="lg" className="mt-3.5" onClick={() => setSettling(headline)}>
+              {t('balances.slab.record')}
+            </Button>
+          )}
         </Slab>
       ) : (
         <Slab eyebrow={group.name}>
@@ -120,9 +148,15 @@ export function BalancesScreen() {
                 }
                 meta={<Money amount={transfer.amount} currency={currency} size="lg" />}
                 trailing={
-                  <Button size="sm" variant="secondary" onClick={() => setSettling(transfer)}>
-                    {t('common.actions.record')}
-                  </Button>
+                  canPay(transfer) ? (
+                    <Button size="sm" onClick={() => setPaying(transfer)}>
+                      {t('balances.pay.rowAction')}
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="secondary" onClick={() => setSettling(transfer)}>
+                      {t('common.actions.record')}
+                    </Button>
+                  )
                 }
               />
             ))}
@@ -158,7 +192,32 @@ export function BalancesScreen() {
         </div>
       )}
 
-      <RecordPaymentSheet transfer={settling} onClose={() => setSettling(null)} />
+      <PaySheet
+        transfer={paying}
+        currency={currency}
+        onClose={() => {
+          setPaying(null)
+          setOpenedApp(null)
+        }}
+        onOpenApp={setOpenedApp}
+        onPaid={(transfer) => {
+          // Straight on to recording it, with the app already chosen: the
+          // payment only counts once it is recorded.
+          setPaying(null)
+          setSettlingWith(openedApp ?? 'BIT')
+          setOpenedApp(null)
+          setSettling(transfer)
+        }}
+      />
+
+      <RecordPaymentSheet
+        transfer={settling}
+        initialMethod={settlingWith}
+        onClose={() => {
+          setSettling(null)
+          setSettlingWith(undefined)
+        }}
+      />
     </>
   )
 }
@@ -287,9 +346,12 @@ function name(t: T, user: User, meId: string | undefined): string {
 
 function RecordPaymentSheet({
   transfer,
+  initialMethod,
   onClose,
 }: {
   transfer: PlannedTransfer | null
+  /** Set when arriving from the pay sheet: you just paid with that app. */
+  initialMethod?: SettlementMethod
   onClose: () => void
 }) {
   const t = useT()
@@ -298,7 +360,7 @@ function RecordPaymentSheet({
   const idempotency = useRef(createIdempotencyTracker())
 
   const [amount, setAmount] = useState('')
-  const [method, setMethod] = useState<SettlementMethod>('MANUAL')
+  const [chosenMethod, setMethod] = useState<SettlementMethod | null>(null)
   const [note, setNote] = useState('')
   const [date, setDate] = useState(today())
 
@@ -306,10 +368,11 @@ function RecordPaymentSheet({
   // thing and the field stays editable.
   const value = amount === '' ? (transfer?.amount ?? '') : amount
   const valid = isValidAmount(value) && isPositive(value)
+  const method = chosenMethod ?? initialMethod ?? 'MANUAL'
 
   function reset() {
     setAmount('')
-    setMethod('MANUAL')
+    setMethod(null)
     setNote('')
     setDate(today())
     record.reset()
