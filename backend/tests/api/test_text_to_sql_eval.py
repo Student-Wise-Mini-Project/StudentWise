@@ -224,6 +224,22 @@ def test_the_answer_language_is_checked(world, monkeypatch):
     assert attempt(world.connection, group, hebrew).right_language is True
 
 
+def test_a_quoted_search_word_does_not_count_as_the_wrong_language(world, monkeypatch):
+    # From a real run: an English answer naming the Hebrew word it searched
+    # titles for, which is exactly what the prompt asks it to do.
+    gym = next(c for c in CASES if c.id == "solo-gym")
+    group = world.groups[gym.group]
+    answering(
+        monkeypatch,
+        gym.gold_sql,
+        "Gym expenses, matched by the word 'gym' or 'חדר כושר' in the expense title.",
+    )
+    assert attempt(world.connection, group, gym).right_language is True
+
+    answering(monkeypatch, gym.gold_sql, "הוצאות על חדר כושר.")  # unquoted: really Hebrew
+    assert attempt(world.connection, group, gym).right_language is False
+
+
 def test_the_answer_key_only_sees_the_questions_group(world):
     # The same query means different things in different groups, and the gold
     # query goes through the same scope as the model's.

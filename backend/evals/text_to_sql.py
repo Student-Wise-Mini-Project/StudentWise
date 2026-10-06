@@ -12,6 +12,7 @@ needs cleaning up.
 
 import contextlib
 import io
+import re
 import time
 from collections import Counter
 from collections.abc import Callable, Iterable
@@ -71,8 +72,14 @@ def gold_answer(connection: Connection, group_id, case: Case):
     return run_scoped_query(connection, scoped, group_id)
 
 
+#: A quoted search word ("matched by 'חדר כושר' in the title") is not the
+#: answer's language: the prompt asks the model to search titles in both.
+_QUOTED = re.compile(r"'[^']*'|\"[^\"]*\"|‘[^’]*’|“[^”]*”")
+
+
 def _in_language(words: Iterable[str], language: str) -> bool:
-    has_hebrew = any(ord(ch) in _HEBREW for word in words for ch in word)
+    unquoted = [_QUOTED.sub("", word) for word in words]
+    has_hebrew = any(ord(ch) in _HEBREW for word in unquoted for ch in word)
     return has_hebrew if language == "he" else not has_hebrew
 
 

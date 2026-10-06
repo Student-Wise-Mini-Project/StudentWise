@@ -53,10 +53,13 @@ one row for a combined total.
   and 1 more time in a fourth pass, so it looks like ordinary model variance, not
   something the fix caused. It was not "fixed" with a prompt line for one
   question -- that is how an evaluation gets overfitted.
-- **3 of 141 answers were flagged as not in the app's language.** This did not
-  happen again in a fourth pass (47/47). It is not diagnosed; the check is a
-  simple test for Hebrew letters, and an English explanation that quotes a
-  Hebrew search word would trip it.
+- **3 of 141 answers were flagged as not in the app's language, wrongly.** A
+  re-check on 2026-10-06 caught one in the act: an English explanation naming
+  the Hebrew word it had searched titles for ("matched by 'gym' or 'חדר כושר'"),
+  which is exactly what the new prompt asks for. The check looked for any
+  Hebrew letter; it now ignores quoted words. Not a model problem.
+
+**Re-check, 2026-10-06** (one more pass, same prompt): 42/42 right, 5/5 safe.
 
 ### Caveats
 
