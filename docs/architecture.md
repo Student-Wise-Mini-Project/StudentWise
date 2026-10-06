@@ -4,11 +4,9 @@ Diagrams for mission 11.2: the layers, the database, and the paths money and AI
 take through them. They render on GitHub (Mermaid). Every name in them is a real
 module or table; when one stops being true, fix the diagram in the same commit.
 
-The database diagrams were generated from the SQLAlchemy models on 2026-10-06
-(20 tables, main at `bcc649c` plus 7.1–7.3). Two tables are on their way in on
-branches not yet merged: `receipt_images` (deployment, 10.3: receipt photos in
-Postgres, because a free host's disk does not survive a restart) and
-`expense_embeddings` (semantic search, 8.3). Add them when they land.
+The database diagrams were generated from the SQLAlchemy models on 2026-10-06,
+at main `914fd3d`: 22 tables, after deployment (10.3) and semantic search (8.3)
+landed.
 
 - [1. The layers](#1-the-layers)
 - [2. The database](#2-the-database)
@@ -73,7 +71,7 @@ flowchart TB
 
 ## 2. The database
 
-Twenty tables. Ids are UUIDs, money is `NUMERIC(12,2)`, and every enum is a
+Twenty-two tables. Ids are UUIDs, money is `NUMERIC(12,2)`, and every enum is a
 `VARCHAR` with a `CHECK` rather than a Postgres `ENUM`, so adding a value is not
 a migration headache. Deleting is real: removing an expense cascades to its
 splits, items, comments and notifications.
@@ -208,7 +206,7 @@ analytics never learn that items exist.
 
 ### Around the ledger
 
-Conversation, alerts, ingestion and safety. None of it is money.
+Conversation, alerts, ingestion, search and safety. None of it is money.
 
 ```mermaid
 erDiagram
@@ -226,7 +224,21 @@ erDiagram
     groups ||--o{ chat_conversations : "about"
     chat_conversations ||--|{ chat_messages : "contains"
     users ||--o{ idempotency_keys : "sent"
+    expenses ||--o| receipt_images : "photographed in"
+    expenses ||--o| expense_embeddings : "searchable as"
 
+    receipt_images {
+        uuid expense_id PK, FK
+        string content_type
+        bytea data "the photo; a free host's disk does not survive a restart"
+    }
+    expense_embeddings {
+        uuid expense_id PK, FK
+        string model "vectors from different models never mix"
+        string text_hash "notices an edited title or note"
+        int dimensions
+        bytea vector "made at search time, never on save"
+    }
     expense_comments {
         uuid id PK
         uuid expense_id FK
@@ -287,6 +299,11 @@ erDiagram
   seventeen modules read as money.
 - **Notification wording is never stored** — a `kind` and a payload of facts —
   so the app is shown in Hebrew without a migration.
+- **Both per-expense tables are keyed by the expense** and cascade with it.
+  `receipt_images` is used only when `RECEIPT_STORAGE=database` (production);
+  `expense_embeddings` is derived data, rebuilt whenever the text or the model
+  changes, and kept out of `expenses` because seventeen modules read that as
+  money.
 - **Idempotency keys** make a retried `POST` on a bad connection return the
   first result instead of creating a second expense.
 
@@ -384,7 +401,7 @@ read expense titles and names that anyone in the group could have typed.
 flowchart TB
     q["A question, in English or Hebrew"]
     chat["chat_service<br/>tool loop, history, language"]
-    tools["chat_tools<br/>read-only calls into tested services:<br/>balances, by category, by month,<br/>anomalies, duplicates, list expenses"]
+    tools["chat_tools<br/>read-only calls into tested services:<br/>balances, by category, by month,<br/>anomalies, duplicates, list expenses,<br/>search by meaning (Voyage + FAISS)"]
     gen["nl_query_service.generate_sql<br/>Claude + the schema description"]
     guard["domain/sql_guard<br/>parsed as SQL, not regex:<br/>one statement · SELECT only ·<br/>no writes anywhere in the tree ·<br/>no password_hash · no dangerous functions"]
     scope["wrap_in_group_scope<br/>every table shadowed by a CTE<br/>filtered to this group"]
