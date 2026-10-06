@@ -241,6 +241,12 @@ status page.
   *by another service, inside its transaction*, and never commits — an expense
   and the notifications about it land together or not at all. Everything else in
   that module owns its own transaction.
+- **A phone number is seen only by its owner and their groups.** `UserOut`
+  carries it; anything that can reach a stranger -- search -- returns
+  `UserSearchOut` instead. Numbers are Israeli mobiles stored as E.164
+  (`domain/phone.py`), because Bit and PayBox know nobody by anything else.
+  Neither app has a documented payment link, so Pay opens the app's store page
+  and the person pastes the number and amount; only "I paid" moves a balance.
 - **Notification wording is never stored.** A row keeps `kind` plus a `payload`
   of plain facts; `render()` turns that into words at read time, so the app can
   be shown in Hebrew without a migration.

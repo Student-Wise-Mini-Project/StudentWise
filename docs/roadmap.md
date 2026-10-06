@@ -3,8 +3,8 @@
 Everything the project needs, A to Z, split into **epics** (features) and
 **missions** (a task one person can finish and merge).
 
-**Status as of 2026-10-06:** 76 endpoints · 20 tables · 1,038 backend tests ·
-346 frontend tests · 15 migrations · CI green.
+**Status as of 2026-10-06:** 77 endpoints · 20 tables · 1,091 backend tests ·
+403 frontend tests · 15 migrations · CI green.
 
 **New here?** This file is status, not instructions. Start at
 [`onboarding.md`](onboarding.md), then [`testing.md`](testing.md), then come
@@ -43,12 +43,12 @@ touch the same file.
 | 4. Analytics & intelligence | 6 | 0 | ✅ complete |
 | 5. AI ingestion (Module 1) | 9 | 0 | ✅ complete (voice dropped) |
 | 6. Recurring & automation | 5 | 0 | ✅ complete |
-| 7. Payments (Bit / PayBox) | 0 | 3 | ⬜ not started |
+| 7. Payments (Bit / PayBox) | 3 | 0 | ✅ complete |
 | 8. AI chat assistant / RAG | 2 | 2 | 🔨 the chat works; semantic search left |
 | 9. Frontend | 16 | 1 | 🔨 only the APK (9.12) is left |
 | 10. Deployment | 1 | 5 | 🔨 hosting approved, $20 budget |
-| 11. Academic deliverables | 1 | 4 | 🔨 started |
-| **Total** | **69** | **17** | |
+| 11. Academic deliverables | 2 | 3 | 🔨 diagrams done |
+| **Total** | **73** | **13** | |
 
 **The honest read:** the app works end to end. You can sign in, create a flat,
 add flatmates and weights, add an expense in any of the four split modes, see
@@ -394,19 +394,24 @@ expense form are what turned it into a feature people can use.
 
 ---
 
-## Epic 7 — Payments (Bit / PayBox) ⬜
+## Epic 7 — Payments (Bit / PayBox) ✅
 
 | # | Mission | Size | Owner | Status |
 |---|---|---|---|---|
-| 7.1 | Deep-link builder from a settlement-plan transfer | M | Gal | ⬜ |
-| 7.2 | "I paid" confirmation → writes a `settlements` row | S | Gal | ⬜ |
-| 7.3 | Phone-number capture and validation (IL format) | S | Gal | ⬜ |
+| 7.1 | Pay a planned transfer: number + amount to copy, open Bit / PayBox | M | #3 | ✅ |
+| 7.2 | "I paid" confirmation → writes a `settlements` row | S | #3 | ✅ |
+| 7.3 | Phone-number capture and validation (IL format) | S | #3 | ✅ |
 
-> **Investigate before committing to this.** Bit and PayBox do not publish
-> documented deep-link APIs. Spend an hour finding out what actually works on a
-> real phone before planning around it; the fallback is a copy-paste amount plus
-> phone number, which still closes the loop. `users.phone_number` and
-> `SettlementMethod.BIT/PAYBOX` are already in the schema either way.
+> **Done 2026-10-06, by investigating first.** Neither app publishes a link
+> that opens a payment with a person and an amount filled in (Bit's developer
+> API is for merchant checkouts; PayBox has none), and an undocumented scheme
+> breaks silently on an app update. So the fallback *is* the design: Pay shows
+> the payee's number and the amount with copy buttons, Open goes to the app's
+> store page (which says "Open" when it is installed), and "I paid" records the
+> settlement with the app already chosen. Shekel groups only. Phone numbers are
+> Israeli mobiles stored as E.164, seen only by your groups -- search used to
+> return them to anyone and no longer does. **Still to check on a real phone:**
+> that Open lands in the installed app on iPhone and Android.
 
 ---
 
@@ -528,7 +533,7 @@ end to end in two languages. What is left is the APK (9.12).
 | # | Mission | Size | Owner | Status |
 |---|---|---|---|---|
 | 11.1 | Design decisions recorded as we go (`docs/sessions/`) | S | Gal | ✅ |
-| 11.2 | Architecture diagrams: layers, ERD, data flow | M | all | ⬜ |
+| 11.2 | Architecture diagrams: layers, ERD, data flow ([`architecture.md`](architecture.md)) | M | all | ✅ |
 | 11.3 | Written report | L | all | ⬜ |
 | 11.4 | Demo script + seeded demo data | M | all | ⬜ |
 | 11.5 | Presentation slides | M | all | ⬜ |

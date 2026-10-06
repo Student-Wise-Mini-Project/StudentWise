@@ -581,10 +581,10 @@
     </p>
 
     <dl class="figures">
-      <div class="figure"><dt>Missions done</dt><dd>69<small> / 86</small></dd></div>
-      <div class="figure"><dt>Endpoints</dt><dd>76</dd></div>
-      <div class="figure"><dt>Backend tests</dt><dd>1,038</dd></div>
-      <div class="figure"><dt>Frontend tests</dt><dd>346</dd></div>
+      <div class="figure"><dt>Missions done</dt><dd>73<small> / 86</small></dd></div>
+      <div class="figure"><dt>Endpoints</dt><dd>77</dd></div>
+      <div class="figure"><dt>Backend tests</dt><dd>1,091</dd></div>
+      <div class="figure"><dt>Frontend tests</dt><dd>403</dd></div>
       <div class="figure"><dt>Tables</dt><dd>20</dd></div>
       <div class="figure"><dt>Migrations</dt><dd>15</dd></div>
     </dl>
@@ -694,10 +694,9 @@
     </div>
 
     <p class="deferred">
-      <strong>Deliberately deferred:</strong> RAG and the chat assistant (Epic 8),
-      the Android APK (9.12) and Bit/PayBox deep links (Epic 7). All are real
-      features from the spec; none is on the path to a working demo, and saying
-      so out loud is cheaper than discovering it in week four.
+      <strong>Deliberately deferred:</strong> the Android APK (9.12). It is a
+      real feature from the spec, but it is not on the path to a working demo,
+      and saying so out loud is cheaper than discovering it in week four.
     </p>
   </section>
 
@@ -791,11 +790,11 @@
         ["6.5", "A bill can run a set number of times (occurrences_total)", "M", "Gal", "done"],
       ]},
     { n: 7, name: "Payments — Bit and PayBox",
-      note: "<strong>Investigate before planning around this.</strong> Neither Bit nor PayBox publishes a documented deep-link API. Spend an hour finding out what actually works on a real phone; the fallback is a copy-paste amount plus phone number, which still closes the loop. <code>users.phone_number</code> and the BIT/PAYBOX methods are already in the schema either way.",
+      note: "<strong>Complete.</strong> Neither Bit nor PayBox publishes a link that opens a payment with a person and an amount filled in, and an undocumented scheme breaks silently on an app update &mdash; so Pay shows the payee&rsquo;s number and the amount with copy buttons, Open goes to the app&rsquo;s store page (&ldquo;Open&rdquo; when installed), and &ldquo;I paid&rdquo; records the settlement with the app already chosen. Shekel groups only. Phone numbers are Israeli mobiles stored as E.164 and seen only by your groups; user search no longer returns them. Still to check on a real phone: that Open lands in the installed app.",
       missions: [
-        ["7.1", "Deep-link builder from a settlement-plan transfer", "M", "Gal", "todo"],
-        ["7.2", "“I paid” confirmation writes a settlements row", "S", "Gal", "todo"],
-        ["7.3", "Phone-number capture and IL-format validation", "S", "Gal", "todo"],
+        ["7.1", "Pay a planned transfer: copy number and amount, open Bit / PayBox", "M", "#3", "done"],
+        ["7.2", "“I paid” confirmation writes a settlements row", "S", "#3", "done"],
+        ["7.3", "Phone-number capture and IL-format validation", "S", "#3", "done"],
       ]},
     { n: 8, name: "AI chat assistant and RAG",
       note: "<strong>8.1 and 8.2 are done: the money assistant.</strong> A private conversation per person per group, answered through nine read-only tools &mdash; the same numbers the app computes, so it can explain a balance but never move one. Tested on the real model in English and Hebrew. 8.3&ndash;8.4 need an embedding model first. <br><br><strong>Scope this honestly.</strong> Text-to-SQL already answers numerical questions better than RAG would. FAISS earns its place only for fuzzy recall over free text — titles and notes — where exact SQL cannot help. Say that distinction in the report rather than building RAG twice over.",
@@ -840,7 +839,7 @@
       note: "Already worth writing up, with evidence: min-cash-flow is <strong>provably minimal</strong>, measured 0% suboptimal across 48,000 cases after replacing a heuristic that was 23.7% suboptimal at ten people; <code>100/3</code> splits to <code>33.34 / 33.33 / 33.33</code>, verified across every total from 0.01 to 4.00; and the Text-to-SQL sandbox found <strong>two real holes</strong> when probed beyond its own test suite — a better story than “all tests passed”. Every mission has been merged as its own commit precisely so 11.1 can be written from the commit messages rather than from memory.",
       missions: [
         ["11.1", "Design decisions recorded as we go (docs/sessions/)", "S", "Gal", "done"],
-        ["11.2", "Architecture diagrams: layers, ERD, data flow", "M", "all", "todo"],
+        ["11.2", "Architecture diagrams: layers, ERD, data flow (docs/architecture.md)", "M", "all", "done"],
         ["11.3", "Written report", "L", "all", "todo"],
         ["11.4", "Demo script and seeded demo data", "M", "all", "todo"],
         ["11.5", "Presentation slides", "M", "all", "todo"],

@@ -92,6 +92,11 @@ coffee twice.
 `/auth/login` is form-encoded, not JSON — that's what makes the Authorize button
 in `/docs` work. **`username` is the email address.** Password must be ≥ 8 characters.
 
+`phone_number` is optional and must be an **Israeli mobile** — it is what Bit and
+PayBox pay people on. Any usual spelling is accepted (`050-123 4567`,
+`+972 50 123 4567`, `00972501234567`) and it is stored and returned as E.164,
+`+972501234567`. A landline or anything else is a **422**; `""` means none.
+
 ```
 AuthResponse = { access_token: string, token_type: "bearer", user: User }
 User = { id, name, email, phone_number, created_at }
@@ -101,7 +106,17 @@ User = { id, name, email, phone_number, created_at }
 
 | Method | Path | Notes |
 |---|---|---|
-| GET | `/users/search?email=<fragment>` | Find people to add to a group. Fragment ≥ 3 chars. |
+| GET | `/users/search?email=<fragment>` | Find people to add to a group. Fragment ≥ 3 chars. Returns `UserSearchResult[]`. |
+| PATCH | `/users/me` | `{phone_number}` — set your number (same rules as at sign-up), or `null` / `""` to remove it. **Required**: leaving it out is a 422, so a client that forgot the field cannot wipe it. Returns `User`. |
+
+```
+UserSearchResult = { id, name, email }
+```
+
+**Who sees a phone number.** `User` carries it, and `User` is only ever returned
+to that person or to someone who shares a group with them — who needs it to pay
+them back (the settlement plan's `to_user.phone_number`). Search reaches every
+account in the app, so it returns `UserSearchResult`, which has no phone number.
 
 ## Groups
 
