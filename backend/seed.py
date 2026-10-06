@@ -40,6 +40,7 @@ from app.models.expense_embedding import ExpenseEmbedding
 from app.models.expense_item import ExpenseItem, ItemSplit
 from app.models.gmail_connection import GmailConnection
 from app.models.group import Group, GroupMember
+from app.models.group_invite import GroupInvite
 from app.models.idempotency import IdempotencyKey
 from app.models.ingested_bill import IngestedBill
 from app.models.notification import Notification
@@ -87,6 +88,7 @@ def wipe(db) -> None:
         ReceiptImage,
         Expense,
         Settlement,
+        GroupInvite,
         GroupMember,
         Group,
         User,

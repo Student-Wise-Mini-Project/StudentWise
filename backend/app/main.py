@@ -19,6 +19,7 @@ from app.api import (
     expenses,
     frontend,
     gmail,
+    group_invites,
     groups,
     ingested_bills,
     notifications,
@@ -88,6 +89,8 @@ def health() -> dict[str, str]:
 app.include_router(auth.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(groups.router, prefix="/api")
+app.include_router(group_invites.group_router, prefix="/api")
+app.include_router(group_invites.router, prefix="/api")
 app.include_router(expenses.group_router, prefix="/api")
 app.include_router(expenses.router, prefix="/api")
 app.include_router(settlements.group_router, prefix="/api")
