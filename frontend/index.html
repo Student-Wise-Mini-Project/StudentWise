@@ -52,7 +52,8 @@
 
         var l = localStorage.getItem('sw.locale')
         if (l !== 'en' && l !== 'he') {
-          l = navigator.language && navigator.language.toLowerCase().indexOf('en') === 0 ? 'en' : 'he'
+          l =
+            navigator.language && navigator.language.toLowerCase().indexOf('en') === 0 ? 'en' : 'he'
         }
         document.documentElement.lang = l
         document.documentElement.dir = l === 'he' ? 'rtl' : 'ltr'

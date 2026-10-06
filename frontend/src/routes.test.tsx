@@ -189,7 +189,10 @@ describe('routes resolve', () => {
     renderAt('/expenses/e1')
     // The per-person list is what proves it landed on the detail screen and
     // not on a redirect stub -- the heading names the split and the headcount.
-    expect(await screen.findByText('Equally between 1')).toBeInTheDocument()
+    //
+    // Two hops (the redirect, then the lazily loaded detail screen) can take
+    // longer than findBy's default second when the whole suite runs at once.
+    expect(await screen.findByText('Equally between 1', {}, { timeout: 5000 })).toBeInTheDocument()
   })
 
   it('an unknown path still says so', async () => {
