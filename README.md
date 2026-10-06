@@ -1,172 +1,258 @@
 # StudentWise
 
-Expense splitting for shared apartments, couples and trips — with AI on top.
-University project, 3 people. See `CLAUDE.md` for the rules of the road.
+**Shared expenses for students, where AI adds repeated expenses based on email, upload receipts for easy changing and conduct insights.**
 
-**New to the project?** Start with **[`docs/onboarding.md`](docs/onboarding.md)** —
-clone to a running app in about ten minutes, then your first mission. Then
-**[`docs/testing.md`](docs/testing.md)** for the demo accounts and the test
-suites.
+| | |
+|---|---|
+| **Team** | Gal Harel, Hila Zuckerman, Dana Bernstein |
+| **Course** | Topics in Applications of Computer Science |
+| **Date** | October 2026 |
 
-## Setup (Windows, PowerShell)
 
-Needs **Python 3.12** (not 3.13 or 3.14 — `psycopg-binary` has no wheel),
-**Docker Desktop running**, and **Node 20+** only if you are touching the
-frontend.
+## Introduction
+
+### The problem
+
+Students who share an apartment pay for many things together: rent, electricity, groceries, cleaning supplies. Someone pays, someone forgets, and after a few months nobody knows who owes whom. Apps like Splitwise and Tricount help with the bookkeeping, but every expense still has to be typed in by hand, and repeated bills are manually added, which is where people forget or make mistakes.
+
+### Our solution
+
+StudentWise is a Splitwise-style app for groups (a shared apartment, a couple, a trip). It has the usual features, and adds AI exactly where the manual work is:
+
+- **Receipt scanning.** Take a photo, AI reads the lines, you fix mistakes and mark who shared what.
+- **Bills from Gmail.** Utility bills are found in the inbox, read, and split in the right apartment, or held for review when the app is not sure.
+- **Analytics.** Spending by category, month and member, budget warnings, alerts for unusual or duplicate bills, and a question box ("how much did we spend on groceries in August?") that is answered from the group's own data.
+
+The basic features are groups, four ways to split an expense (equal, exact, percentage, weights), balances, settling up with the fewest payments, and recurring bills. The app works in English and Hebrew and can be installed on any phone.
+
+### Tools
+
+| Area | Technology |
+|---|---|
+| Backend | Python 3.12, FastAPI, SQLAlchemy 2.0, Pydantic v2 |
+| Database | PostgreSQL 16 (Docker), Alembic migrations |
+| Security | JWT, Argon2 password hashing, Fernet encryption |
+| AI and APIs | Anthropic Claude API (vision and structured output), Gmail API |
+| Frontend | React, TypeScript, Vite, Tailwind CSS, TanStack Query |
+| Testing | pytest, Vitest, Testing Library, MSW, GitHub Actions |
+
+
+## System Specification
+
+### Architecture
+
+A client-server system. The React frontend talks to the backend only through a JSON REST API. The backend is the only part that touches the database, file storage, and outside services.
+
+```mermaid
+flowchart LR
+    U[User<br/>phone or browser] --> FE[React PWA]
+    FE -- REST / JSON + JWT --> API[FastAPI backend]
+    API --> DB[(PostgreSQL)]
+    API --> FS[Receipt storage]
+    API --> CL[Claude API]
+    API --> GM[Gmail API<br/>read-only]
+```
+
+The backend has four layers, and code may only call downward:
+
+| Layer | Job |
+|---|---|
+| `api/` | Read and validate the HTTP request, call a service, return a response |
+| `services/` | Business rules, permissions, and the database transaction |
+| `repositories/` | Build queries, add rows |
+| `domain/` | Pure math: splitting, settling up, anomaly scores |
+
+Next to them, `core/` holds settings, security and errors, and `ai/` holds every call to Claude or Google.
+
+### Data model
+
+```mermaid
+erDiagram
+    USERS ||--o{ GROUP_MEMBERS : "belongs to"
+    GROUPS ||--o{ GROUP_MEMBERS : has
+    GROUPS ||--o{ EXPENSES : has
+    EXPENSES ||--o{ EXPENSE_SPLITS : "split into"
+    USERS ||--o{ EXPENSE_SPLITS : owes
+    EXPENSES ||--o{ EXPENSE_ITEMS : "receipt lines"
+    EXPENSE_ITEMS ||--o{ ITEM_SPLITS : "shared by"
+    GROUPS ||--o{ SETTLEMENTS : has
+    GROUPS ||--o{ RECURRING_BILLS : has
+    GROUPS ||--o{ BUDGETS : has
+    USERS ||--o| GMAIL_CONNECTIONS : connects
+    USERS ||--o{ INGESTED_BILLS : "bills found"
+```
+
+An expense has a split row only for the people who take part in it. Bills read from Gmail wait in `ingested_bills` and become expenses only after they are approved, so unconfirmed AI output never affects a balance.
+
+
+## Description of the Implementation
+
+### Splitting and settling up
+
+All splitting math is in `domain/splitting.py`. To handle rounding to sum up to the exact amount (for example to split 100 between 3 people), we use the largest remainder method: round every share down to the cent, then hand the leftover cents to the largest remainders.
+
+Settling up (`domain/settlement_algo.py`) is the main algorithm. Each person's debts are reduced to one balance, which removes every circle of debt. The fewest possible payments is `n` minus the largest number of subgroups whose balances sum to zero. This is NP-hard in general, but flatmate groups are small, so for up to 14 people we solve it exactly with dynamic programming over subsets, and for larger groups we use a greedy method. 
+
+### Recurring bills, budgets and analytics
+
+- **Recurring bills.** A fixed bill like rent is created automatically when due. A changing bill like electricity sends a reminder instead of guessing. There is no background scheduler: opening a group posts what is due.
+- **Budgets.** A monthly limit per category, with a warning at 80% and another when it is passed.
+- **Unusual bills.** A group expense that is way above the regular expense over time creates an alert, that comes with a plain reason ("50% above the usual 3000").
+- **Duplicates.** Two expenses with a close amount, a close date and a similar title are reported for a person to decide. Requests also accept an `Idempotency-Key`, so a retry from a phone with a bad connection does not create the expense twice.
+
+### The AI features
+
+All AI code is in `app/ai/`, under three rules: text in an image or email is data and never instructions, amounts come back from the model as text and are parsed into `Decimal`, and nothing the model reads becomes money until a strict rule or a person decides. We call Claude with structured output, so the answer must match a Pydantic schema that our code then checks.
+
+**Receipt scanning.** The backend sends the photo to Claude and gets the store, date, lines and total. Our code builds a draft and adds warning codes when something is missing or does not add up. The scan saves nothing. On the review screen the user fixes mistakes and paints each line with the colour of the group members who shared it (if not marked then split between all members). A discount or tip is spread in proportion to each person's lines, and the per-person preview is computed by the server, so it is the same math as the final save, which becomes a normal exact split.
+
+**Bills from Gmail.** The user connects Gmail with the read-only permission, and the refresh token is encrypted before it is stored. For each new email, Claude is asked whether it is a household bill and, if so, for the amount, due date, service and address. A pure function then routes the bill. It is split automatically only when the sender is a known utility, the amount was read, the user has exactly one matching apartment, there is no fixed recurring bill of that kind, and the currency matches. Anything else goes to a review screen with the reason. House numbers are compared exactly. 
+
+**Asking questions (Text-to-SQL).** A user write a question in simple text, Claude writes a SQL query from the user's question.
+
+1. A validator built on a real SQL parser (`sqlglot`) allows a single read-only `SELECT`.
+2. Every table name is replaced by a copy filtered to the current group, so the model cannot see other groups, and the users table has no password column.
+3. The query runs in a read-only transaction with a time limit and a row limit.
+
+### Frontend
+
+React and TypeScript, with TanStack Query for data.
+
+- **Home.** One screen shows the net balance across every group the user is in, plus a combined activity feed of recent expenses and payments.
+- **Insights, per group.** Charts for spend by category, by month and by member, switchable between "whole group" and "just me".
+- **Settings.** Connect Gmail (read-only) so household bills are picked up automatically, switch the app between Hebrew and English, and manage the account.
+- **Generated API types.** TypeScript types come from the backend's OpenAPI description, so the frontend does not compile when the backend changes. CI fails if they are out of date.
+- **Hebrew and right-to-left.** Every string is a key in a message catalogue, and a missing Hebrew translation is a compile error. We use only logical CSS directions (start and end), so the layout mirrors correctly.
+- **Design system.** Colours and fonts live in one folder.
+
+### Testing and quality
+
+- **Backend.** pytest runs against a real PostgreSQL database built from the actual migrations, with each test rolled back at the end. Every endpoint has a test. Every call to Claude or Google is replaced by a fake, so the suite needs no API key or network.
+- **Frontend.** Vitest with MSW, plus guard tests that scan the code for hard-coded colours, left/right CSS and untranslated text.
+- **CI.** GitHub Actions runs lint, migration check, all tests, build, and the API types check on every push.
+
+
+## Demonstration
+
+### Create a new account or connect to an existing account - and update your profile to enjoy the full experience
+
+
+<p align="center">
+  <img src="images/IMG_0465.png" alt="Settings" width="27%" />
+  <img src="images/IMG_0463.png" alt="Create account" width="27%" />
+  <img src="images/IMG_0464.png" alt="Connect to existing account" width="27%" />
+</p>
+
+
+### Create and view your groups
+
+
+<p align="center">
+  <img src="images/IMG_0470.png" alt="Add people to group" width="27%" />
+  <img src="images/IMG_0491.png" alt="Add new group" width="27%" />
+  <img src="images/IMG_0467.png" alt="Your groups" width="27%" />
+</p>
+
+
+### View your expenses
+
+
+<p align="center">
+  <img src="images/IMG_0468.png" alt="Your expenses in the group" width="42%" />
+  <img src="images/IMG_0466.png" alt="Your full expenses" width="42%" />
+</p>
+
+
+### See what you owe people, remind someone to pay and settle up
+
+
+<p align="center">
+  <img src="images/IMG_0489.png" alt="Settle up" width="20%" />
+  <img src="images/IMG_0488.png" alt="Create a settle" width="20%" />
+  <img src="images/IMG_0487.png" alt="Remind" width="20%" />
+  <img src="images/IMG_0469.png" alt="Pay someone" width="20%" />
+</p>
+
+
+### Create new expense - a repeated one or a one time
+
+
+<p align="center">
+  <img src="images/IMG_0477.png" alt="View expense and edit" width="20%" />
+  <img src="images/IMG_0476.png" alt="How to split new expense" width="20%" />
+  <img src="images/IMG_0475.png" alt="Create new expense" width="20%" />
+  <img src="images/IMG_0471.png" alt="Repeated expense general info" width="20%" />
+</p>
+
+
+### Upload a receipe to automatically create new expense and split it smartly between the group members
+
+
+<p align="center">
+  <img src="images/IMG_0481.png" alt="Aprove receipt and edit" width="27%" />
+  <img src="images/IMG_0480.png" alt="Load receipt" width="27%" />
+  <img src="images/IMG_0478.png" alt="Scan receipt" width="27%" />
+</p>
+
+
+<p align="center">
+  <img src="images/IMG_0485.png" alt="Save shared expense" width="27%" />
+  <img src="images/IMG_0483.png" alt="Select who payed" width="27%" />
+  <img src="images/IMG_0482.png" alt="Select row" width="27%" />
+</p>
+
+
+### Track what you spend under categories and unusual expenses, and question your AI assistant
+
+
+<p align="center">
+  <img src="images/IMG_0474.png" alt="AI query" width="42%" />
+  <img src="images/IMG_0473.png" alt="Graphs" width="42%" />
+</p>
+
+
+## Conclusions and Summary
+
+### What we achieved
+
+We built a Splitwise-style app and used AI to remove the part people hate most, manually handling with bills. It works end to end: groups, four split types, balances, settling up with the fewest payments, recurring bills, budgets, and a bilingual mobile interface. On top of that, receipts are scanned and split line by line, utility bills arrive from Gmail into the right apartment, and the group's data can be queried in plain language.
+
+The most important concept we learned and implemented is: **AI should suggest, and people or strict rules should decide.** The important design work was not the prompts but what happens after the model answers: drafts, review screens, trusted senders, and checks on every value. This is relevant for the features of upload receipt from picture and email detections of new bills.
+
+### Summary
+
+StudentWise is a complete expense-splitting app whose AI features save real typing without ever being trusted with money on their own. The project gave us practice in database design, algorithms, API design, security, frontend engineering, working with language models, and working as a team on one codebase.
+
+
+## Running the Project
+
+You need Python 3.12, Docker Desktop and Node 20 or newer. On Windows (PowerShell), from the repository root:
 
 ```powershell
-# 1. Start Postgres (Docker Desktop must be running)
-docker compose up -d
+docker compose up -d                 # PostgreSQL on port 5434
 
-# 2. Backend
 cd backend
 py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 copy .env.example .env
 alembic upgrade head
+python seed.py                       # demo data
+uvicorn app.main:app --reload        # API docs at http://localhost:8000/docs
 
-# 3. Demo data, then run it
-python seed.py
-uvicorn app.main:app --reload
-```
-
-API docs: http://localhost:8000/docs
-Health check: http://localhost:8000/health
-
-Sign in as **`gal@studentwise.dev`** / **`password123`** — in `/docs` use the
-**Authorize** button. Every seeded user has that password.
-
-```powershell
-# 4. Frontend (optional; the backend must be running for both commands)
-cd ..\frontend
+cd ..\frontend                       # second terminal
 npm install
 npm run gen:api
-npm run dev            # http://localhost:5173
+npm run dev                          # app at http://localhost:5173
 ```
 
-## Everyday commands
+## Setup the project on your phone
 
-| What | Command |
-|---|---|
-| Start DB | `docker compose up -d` |
-| Apply migrations | `alembic upgrade head` (from `backend/`) |
-| Run server | `uvicorn app.main:app --reload` |
-| Run tests | `pytest` |
-| Lint + format | `ruff check --fix . ; ruff format .` |
-| Reseed demo data | `python seed.py` (from `backend/`) |
-| Post due recurring bills | `python run_due_bills.py` (from `backend/`) |
-| Frontend dev server | `npm run dev` (from `frontend/`) |
-| Frontend tests | `npm test` (from `frontend/`) |
-| Regenerate API types | `npm run gen:api` (from `frontend/`, backend up) |
-| Check the roadmap is in sync | `node scripts/check-roadmap-sync.mjs` |
+1. From your phone - connect to https://studentwise-4o6d.onrender.com/login
+2. Press the 3 dots or the share option in the chrome that opens
+3. Choose the "add to home screen" or equivelent option
+4. Enter the App from your home screen and connect with an existing user (for the demo with already existing data you can use - `gal@studentwise.dev` with the password `password123`) or create a new user.
 
-## Testing
+* It might take a minute to load - we are using render to wrap the program so this layer is loading when someone enters the program (because we use the free option).
 
-Two suites and a pile of demo data, all of it covered in
-**[`docs/testing.md`](docs/testing.md)**: which of the seven seeded accounts to
-sign in as, what each of the six groups is there to demonstrate, and what the
-frontend's guard tests will refuse to let you do.
-
-```powershell
-pytest                    # backend: 672 tests, ~4 min. Venv active, from backend/
-pytest tests/unit -q      # 298 of them are pure logic and run in under a second
-npm test                  # frontend. From frontend/
-```
-
-Tests use a **separate database** (`studentwise_test`), created on the
-container's first boot by `docker/init-test-db.sql`. Nothing you do by hand can
-affect a test run, and no test run can destroy your demo data.
-
-## Layout
-
-- `backend/` — FastAPI + Postgres API
-- `frontend/` — React + Tailwind PWA. Runs: see `frontend/README.md`
-- `docs/onboarding.md` — first-run guide for a new teammate
-- `docs/testing.md` — demo accounts, both test suites, what CI runs
-- `docs/roadmap.md` — every epic and mission, with what's done
-- `docs/api-contract.md` — the endpoint contract the frontend builds against
-- `docs/design-brief.md` — the visual identity the frontend is built from
-- `docs/sessions/` — end-of-session summaries
-- `CLAUDE.md` — the rulebook: layering, money, migrations, ownership
-
-## Ports
-
-Postgres runs on host port **5434** (container-internal 5432). Two lower ports were
-already taken on the original dev machine: 5432 by a native `postgresql-x64-16`
-Windows service, 5433 by a WSL relay. If 5434 is busy on your laptop, change the host
-side of the mapping in `docker-compose.yml` and the port in your `.env` — nothing else
-needs to change.
-
-## Troubleshooting
-
-**`password authentication failed for user "studentwise"`** — you're reaching a
-different Postgres than the container. Check what owns the port:
-
-```powershell
-Get-NetTCPConnection -LocalPort 5434 -State Listen | ForEach-Object { Get-Process -Id $_.OwningProcess }
-```
-
-**`port is already allocated`** on `docker compose up` — pick a free host port with the
-same command over a range, then update `docker-compose.yml` and `.env`.
-
-**Reset the database completely** — `docker compose down -v` (the `-v` drops the
-volume), then `docker compose up -d` and `alembic upgrade head`.
-
-## Recurring bills
-
-Nothing in StudentWise runs on a scheduler — no Celery, no APScheduler. Bills
-that fall due are posted by whoever asks:
-
-- the app calls `POST /api/groups/{id}/recurring-bills/run` when it loads
-- `python run_due_bills.py` does the same for every group, for a real cron
-
-Both are safe to run as often as you like: a bill already posted for its due
-date has moved on, and a reminder already sent is not sent again. If nothing
-runs for a month, the next run posts the months it missed.
-
-```
-0 6 * * *  cd /srv/studentwise/backend && .venv/bin/python run_due_bills.py
-```
-
-## Uploaded files
-
-Receipt images are written to `backend/var/receipts/` in development — local
-disk behind a small interface, so moving to object storage later changes nothing
-that reads a receipt. The directory is gitignored. Change it with
-`RECEIPT_STORAGE_DIR` in `.env`.
-
-## Natural-language querying
-
-`POST /api/groups/{id}/analytics/ask` turns a plain-language question into SQL
-via Claude. It needs an Anthropic API key in `backend/.env`:
-
-```
-ANTHROPIC_API_KEY=sk-ant-...
-```
-
-Without one the endpoint returns 503 and everything else works normally. Roughly
-1-1.5 agorot per question (the schema prompt is cached).
-
-### Optional hardening: a dedicated read-only role
-
-Generated SQL is already validated, group-scoped, and run in a READ ONLY
-transaction with a statement timeout. A dedicated Postgres role adds one more
-layer, including making `users.password_hash` unreadable at the database level:
-
-```sql
-CREATE ROLE studentwise_readonly LOGIN PASSWORD 'readonly';
-GRANT CONNECT ON DATABASE studentwise TO studentwise_readonly;
-GRANT USAGE ON SCHEMA public TO studentwise_readonly;
-GRANT SELECT ON groups, group_members, expenses, expense_splits, settlements
-  TO studentwise_readonly;
--- Column list deliberately omits password_hash.
-GRANT SELECT (id, name, email, phone_number, created_at) ON users
-  TO studentwise_readonly;
-```
-
-Then point the app at it:
-
-```
-READONLY_DATABASE_URL=postgresql+psycopg://studentwise_readonly:readonly@localhost:5434/studentwise
-```
+Enjoy:)
