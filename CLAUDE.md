@@ -269,6 +269,20 @@ status page.
 - **Nothing reads email on a schedule.** Opening the app syncs once per session;
   `fetch_new_bills.py` exists for a real cron.
 
+### The money assistant (Epic 8)
+
+- **The assistant only reads.** Everything it knows comes through
+  `services/chat_tools.py`, and every tool there calls an existing, tested
+  service -- it never computes money itself. **Never add a tool that writes:**
+  a model talked into recording a payment is a bug nobody can test away. Asked
+  to change something, it says which screen to use.
+- **A conversation is private to one person in one group** -- someone else's
+  is a 404, not a 403. Only the question and the answer are stored; tools re-run
+  every turn so a follow-up never reasons from stale numbers.
+- **Hebrew answers are gender-neutral too, for everyone named**, not just "you".
+  The prompt spells this out with examples, because a name tempts the model to
+  guess.
+
 ### Files
 
 - **Uploaded bytes decide what a file is, not its `Content-Type`.** Receipt

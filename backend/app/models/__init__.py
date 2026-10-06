@@ -1,10 +1,12 @@
 """All models are imported here so Alembic autogenerate can see them."""
 
 from app.models.budget import Budget
+from app.models.chat import ChatConversation, ChatMessage
 from app.models.comment import ExpenseComment
 from app.models.enums import (
     BillReviewReason,
     BudgetPeriod,
+    ChatRole,
     ExpenseCategory,
     ExpenseSource,
     GroupType,
@@ -29,6 +31,9 @@ from app.models.user import User
 __all__ = [
     "BillReviewReason",
     "Budget",
+    "ChatConversation",
+    "ChatMessage",
+    "ChatRole",
     "GmailConnection",
     "IngestedBill",
     "IngestedBillStatus",

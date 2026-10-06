@@ -12,11 +12,13 @@ from sqlalchemy.orm import Session
 from app.core.errors import ForbiddenError, NotFoundError, UnauthorizedError
 from app.core.security import decode_access_token
 from app.db import get_db, get_readonly_connection
+from app.models.chat import ChatConversation
 from app.models.comment import ExpenseComment
 from app.models.expense import Expense
 from app.models.group import GroupMember
 from app.models.settlement import Settlement
 from app.models.user import User
+from app.repositories.chat_repository import ChatRepository
 from app.repositories.comment_repository import CommentRepository
 from app.repositories.expense_repository import ExpenseRepository
 from app.repositories.group_repository import GroupRepository
@@ -138,3 +140,34 @@ def get_comment_context(
 
 
 CommentForMember = Annotated[CommentContext, Depends(get_comment_context)]
+
+
+@dataclass(frozen=True)
+class ConversationContext:
+    conversation: ChatConversation
+    membership: GroupMember
+
+
+def get_conversation_context(
+    conversation_id: uuid.UUID,
+    db: DbSession,
+    current_user: CurrentUser,
+) -> ConversationContext:
+    """A conversation is private to the person who started it.
+
+    Someone else's is a 404, not a 403: saying it exists would already tell a
+    flatmate that you have been asking about the group's money. And its owner
+    must still be in the group -- leaving it ends access to its data, chat
+    included.
+    """
+    conversation = ChatRepository(db).get(conversation_id)
+    if conversation is None or conversation.user_id != current_user.id:
+        raise NotFoundError("Conversation not found")
+
+    membership = GroupRepository(db).get_membership(conversation.group_id, current_user.id)
+    if membership is None or not membership.is_active:
+        raise ForbiddenError("You are not a member of this group")
+    return ConversationContext(conversation=conversation, membership=membership)
+
+
+ConversationForOwner = Annotated[ConversationContext, Depends(get_conversation_context)]

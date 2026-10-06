@@ -92,6 +92,17 @@ export function InsightsScreen() {
         <ChevronEnd className="size-5 shrink-0" />
       </Link>
 
+      <Link
+        to={`/groups/${groupId}/chat`}
+        className="bg-surface border-line text-ink mx-4 mt-2 flex items-center justify-between gap-3 rounded-sm border px-4 py-3"
+      >
+        <span className="flex flex-col">
+          <span className="font-display text-base font-extrabold">{t('chat.entryTitle')}</span>
+          <span className="text-muted text-sm">{t('chat.entryBody')}</span>
+        </span>
+        <ChevronEnd className="size-5 shrink-0" />
+      </Link>
+
       <WorthALook />
 
       {loading && <LoadingBlocks />}

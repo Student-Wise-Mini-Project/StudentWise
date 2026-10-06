@@ -23,6 +23,14 @@ class MemberRole(StrEnum):
     MEMBER = "MEMBER"
 
 
+class ChatRole(StrEnum):
+    """Who said a chat message. Tool calls are not messages: they are recorded on
+    the answer they produced (`ChatMessage.tools_used`)."""
+
+    USER = "USER"
+    ASSISTANT = "ASSISTANT"
+
+
 class ExpenseCategory(StrEnum):
     """What an expense was for.
 

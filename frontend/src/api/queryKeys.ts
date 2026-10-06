@@ -35,6 +35,7 @@ export const qk = {
     plan: (groupId: string) => ['groups', 'detail', groupId, 'plan'] as const,
     activity: (groupId: string) => ['groups', 'detail', groupId, 'activity'] as const,
     recurringBills: (groupId: string) => ['groups', 'detail', groupId, 'recurring-bills'] as const,
+    conversations: (groupId: string) => ['groups', 'detail', groupId, 'conversations'] as const,
     itemPreview: (groupId: string, body: unknown) =>
       ['groups', 'detail', groupId, 'item-preview', body] as const,
   },
@@ -42,6 +43,9 @@ export const qk = {
     detail: (expenseId: string) => ['expenses', 'detail', expenseId] as const,
     comments: (expenseId: string) => ['expenses', 'detail', expenseId, 'comments'] as const,
     receipt: (expenseId: string) => ['expenses', 'detail', expenseId, 'receipt'] as const,
+  },
+  chat: {
+    detail: (conversationId: string) => ['chat', 'detail', conversationId] as const,
   },
   settlements: {
     detail: (settlementId: string) => ['settlements', 'detail', settlementId] as const,

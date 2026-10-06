@@ -3,8 +3,8 @@
 Everything the project needs, A to Z, split into **epics** (features) and
 **missions** (a task one person can finish and merge).
 
-**Status as of 2026-09-27:** 71 endpoints · 18 tables · 996 backend tests ·
-336 frontend tests · 14 migrations · CI green.
+**Status as of 2026-10-06:** 76 endpoints · 20 tables · 1,038 backend tests ·
+346 frontend tests · 15 migrations · CI green.
 
 **New here?** This file is status, not instructions. Start at
 [`onboarding.md`](onboarding.md), then [`testing.md`](testing.md), then come
@@ -44,11 +44,11 @@ touch the same file.
 | 5. AI ingestion (Module 1) | 9 | 0 | ✅ complete (voice dropped) |
 | 6. Recurring & automation | 5 | 0 | ✅ complete |
 | 7. Payments (Bit / PayBox) | 0 | 3 | ⬜ not started |
-| 8. AI chat assistant / RAG | 0 | 4 | ⬜ not started |
+| 8. AI chat assistant / RAG | 2 | 2 | 🔨 the chat works; semantic search left |
 | 9. Frontend | 16 | 1 | 🔨 only the APK (9.12) is left |
-| 10. Deployment | 0 | 6 | ⬜ not started |
+| 10. Deployment | 1 | 5 | 🔨 hosting approved, $20 budget |
 | 11. Academic deliverables | 1 | 4 | 🔨 started |
-| **Total** | **66** | **20** | |
+| **Total** | **69** | **17** | |
 
 **The honest read:** the app works end to end. You can sign in, create a flat,
 add flatmates and weights, add an expense in any of the four split modes, see
@@ -410,15 +410,28 @@ expense form are what turned it into a feature people can use.
 
 ---
 
-## Epic 8 — AI chat assistant / RAG ⬜
+## Epic 8 — AI chat assistant / RAG 🔨
 
 | # | Mission | Size | Owner | Status |
 |---|---|---|---|---|
-| 8.1 | Chat endpoint with conversation history | M | #2 | ⬜ |
-| 8.2 | Tool-use: let the assistant call the analytics endpoints | L | #2 | ⬜ |
+| 8.1 | Chat endpoint with conversation history | M | #3 | ✅ |
+| 8.2 | Tool-use: let the assistant call the analytics endpoints | L | #3 | ✅ |
 | 8.3 | FAISS vector store over expense text | M | #2 | ⬜ |
 | 8.4 | RAG: semantic search ("that Italian place in October") | L | #2 | ⬜ |
 
+> **8.1 and 8.2 are done: the money assistant** (2026-10-06, built by #3).
+> Insights → "Talk it through with the assistant": a conversation per person
+> per group, private to them. Claude answers through nine **read-only** tools --
+> summary, by category / month / member, balances with the settle-up plan,
+> unusual expenses, possible duplicates, the expense list, and the Ask screen's
+> Text-to-SQL for anything else -- so every number is one the app already
+> computes, and the assistant can explain a balance but never move one. Only
+> questions and answers are stored; tools re-run each turn. Tested on the real
+> model in English and Hebrew (gender-neutral, and in the reply's own language).
+>
+> **8.3-8.4 need an embedding model**, which Anthropic does not offer: Voyage AI
+> (a second key), a local model, or Postgres full-text instead. Decide first.
+>
 > **Scope honestly.** Text-to-SQL (4.3) already answers *numerical* questions
 > better than RAG would. FAISS/RAG earns its place only for *fuzzy recall* over
 > free text — titles and notes — where exact SQL cannot help. Say that
@@ -493,14 +506,17 @@ end to end in two languages. What is left is the APK (9.12).
 
 | # | Mission | Size | Owner | Status |
 |---|---|---|---|---|
-| 10.1 | **Ask the lecturer**: hosting allowed? budget? | S | Gal | ⬜ |
+| 10.1 | **Ask the lecturer**: hosting allowed? budget? | S | #3 | ✅ |
 | 10.2 | Managed Postgres (Neon / Supabase free tier) | S | Gal | ⬜ |
 | 10.3 | Deploy the API (Railway / Render / Fly) | M | Gal | ⬜ |
 | 10.4 | Deploy the frontend (Vercel / Netlify) | S | #3 | ⬜ |
 | 10.5 | Production secrets: real `JWT_SECRET`, API keys | S | Gal | ⬜ |
 | 10.6 | CORS + HTTPS + production settings review | S | Gal | ⬜ |
 
-> 10.1 gates the rest and is one question — ask it this week.
+> **10.1 answered (2026-10-06): hosting is allowed, with a $20 budget for the
+> whole project, and the team pays for Claude.** So: free tiers wherever they
+> exist (Neon for Postgres, the API on Render or Railway's smallest plan), and
+> the $20 kept as a buffer rather than a plan.
 >
 > **Do not deploy with the dev JWT secret.** It is committed in `.env.example`
 > and anyone reading the repo could forge a token for any account.

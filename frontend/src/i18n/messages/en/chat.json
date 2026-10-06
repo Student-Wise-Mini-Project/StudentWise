@@ -1,0 +1,42 @@
+{
+  "entryTitle": "Talk it through with the assistant",
+  "entryBody": "Who owes whom, what changed, what to check -- in a conversation.",
+  "listTitle": "Assistant",
+  "newChat": "New conversation",
+  "emptyTitle": "No conversations yet",
+  "emptyBody": "Ask about balances, spending, or anything that looks odd. The assistant reads this group's numbers and can never change them.",
+  "intro": "Ask anything about this group's money. Answers come from your own numbers, and the assistant only reads: it never adds, changes or deletes anything.",
+  "privateNote": "Only you can see your conversations.",
+  "inputAria": "Your message",
+  "placeholder": "Ask about this group's money…",
+  "thinking": "Looking at your numbers…",
+  "unavailable": "The assistant isn't available right now.",
+  "failedQuestion": "This wasn't answered:",
+  "youSaid": "You asked",
+  "assistantSaid": "The assistant answered",
+  "lookedAt": "Looked at {tools}",
+  "tools": {
+    "spending_summary": "the totals",
+    "spending_by_category": "spending by category",
+    "spending_by_month": "spending by month",
+    "spending_by_member": "spending per person",
+    "balances": "balances",
+    "unusual_expenses": "unusual expenses",
+    "possible_duplicates": "possible double payments",
+    "list_expenses": "the expense list",
+    "query_database": "a database query",
+    "unknown": "your data"
+  },
+  "suggestionsLabel": "Try asking",
+  "suggestions": {
+    "s1": "Who owes whom, and how do we settle up?",
+    "s2": "Where does most of our money go?",
+    "s3": "Did anything cost more than usual lately?",
+    "s4": "How much have I spent this month?"
+  },
+  "delete": "Delete",
+  "deleteAria": "Delete this conversation",
+  "confirmTitle": "Delete this conversation?",
+  "confirmBody": "It's gone for good. The group's expenses aren't affected.",
+  "confirmKeep": "Keep it"
+}

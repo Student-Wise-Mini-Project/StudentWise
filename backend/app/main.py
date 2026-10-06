@@ -11,6 +11,7 @@ from app.api import (
     auth,
     balances,
     budgets,
+    chat,
     comments,
     expenses,
     gmail,
@@ -75,3 +76,5 @@ app.include_router(notifications.group_router, prefix="/api")
 app.include_router(ai.router, prefix="/api")
 app.include_router(gmail.router, prefix="/api")
 app.include_router(ingested_bills.router, prefix="/api")
+app.include_router(chat.group_router, prefix="/api")
+app.include_router(chat.router, prefix="/api")

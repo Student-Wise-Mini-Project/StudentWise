@@ -581,12 +581,12 @@
     </p>
 
     <dl class="figures">
-      <div class="figure"><dt>Missions done</dt><dd>66<small> / 86</small></dd></div>
-      <div class="figure"><dt>Endpoints</dt><dd>71</dd></div>
-      <div class="figure"><dt>Backend tests</dt><dd>996</dd></div>
-      <div class="figure"><dt>Frontend tests</dt><dd>336</dd></div>
-      <div class="figure"><dt>Tables</dt><dd>18</dd></div>
-      <div class="figure"><dt>Migrations</dt><dd>14</dd></div>
+      <div class="figure"><dt>Missions done</dt><dd>69<small> / 86</small></dd></div>
+      <div class="figure"><dt>Endpoints</dt><dd>76</dd></div>
+      <div class="figure"><dt>Backend tests</dt><dd>1,038</dd></div>
+      <div class="figure"><dt>Frontend tests</dt><dd>346</dd></div>
+      <div class="figure"><dt>Tables</dt><dd>20</dd></div>
+      <div class="figure"><dt>Migrations</dt><dd>15</dd></div>
     </dl>
 
     <div class="read">
@@ -798,10 +798,10 @@
         ["7.3", "Phone-number capture and IL-format validation", "S", "Gal", "todo"],
       ]},
     { n: 8, name: "AI chat assistant and RAG",
-      note: "<strong>Scope this honestly.</strong> Text-to-SQL already answers numerical questions better than RAG would. FAISS earns its place only for fuzzy recall over free text — titles and notes — where exact SQL cannot help. Say that distinction in the report rather than building RAG twice over.",
+      note: "<strong>8.1 and 8.2 are done: the money assistant.</strong> A private conversation per person per group, answered through nine read-only tools &mdash; the same numbers the app computes, so it can explain a balance but never move one. Tested on the real model in English and Hebrew. 8.3&ndash;8.4 need an embedding model first. <br><br><strong>Scope this honestly.</strong> Text-to-SQL already answers numerical questions better than RAG would. FAISS earns its place only for fuzzy recall over free text — titles and notes — where exact SQL cannot help. Say that distinction in the report rather than building RAG twice over.",
       missions: [
-        ["8.1", "Chat endpoint with conversation history", "M", "#2", "todo"],
-        ["8.2", "Tool-use: assistant calls the analytics endpoints", "L", "#2", "todo"],
+        ["8.1", "Chat endpoint with conversation history", "M", "#3", "done"],
+        ["8.2", "Tool-use: assistant calls the analytics endpoints", "L", "#3", "done"],
         ["8.3", "FAISS vector store over expense text", "M", "#2", "todo"],
         ["8.4", "RAG: “that Italian place in October”", "L", "#2", "todo"],
       ]},
@@ -827,9 +827,9 @@
         ["9.17", "Recurring bills UI — the tab, the editor, and a repeats toggle", "L", "Gal", "done"],
       ]},
     { n: 10, name: "Deployment",
-      note: "10.1 gates the rest and is one question — ask it this week. It has also stopped being purely academic: testing on a phone currently means a dev server on the Wi-Fi, and a deployed URL over HTTPS is the only way the PWA's service worker and the iOS install actually run. <strong>Do not deploy with the dev JWT secret:</strong> it is committed in <code>.env.example</code>, so anyone reading the repo could forge a token for any account.",
+      note: "<strong>10.1 answered: hosting is allowed, with $20 for the whole project, and we pay for Claude.</strong> Free tiers wherever they exist; the $20 is a buffer. <br><br>10.1 gated the rest. It has also stopped being purely academic: testing on a phone currently means a dev server on the Wi-Fi, and a deployed URL over HTTPS is the only way the PWA's service worker and the iOS install actually run. <strong>Do not deploy with the dev JWT secret:</strong> it is committed in <code>.env.example</code>, so anyone reading the repo could forge a token for any account.",
       missions: [
-        ["10.1", "Ask the lecturer: hosting allowed? budget?", "S", "Gal", "todo"],
+        ["10.1", "Ask the lecturer: hosting allowed? budget?", "S", "#3", "done"],
         ["10.2", "Managed Postgres (Neon / Supabase free tier)", "S", "Gal", "todo"],
         ["10.3", "Deploy the API (Railway / Render / Fly)", "M", "Gal", "todo"],
         ["10.4", "Deploy the frontend (Vercel / Netlify)", "S", "#3", "todo"],

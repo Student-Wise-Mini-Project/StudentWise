@@ -16,6 +16,8 @@ import { GroupScopeRoute, GroupTabsLayout } from '@/features/groups/GroupLayout'
 import { GroupListScreen } from '@/features/groups/GroupListScreen'
 import { HomeScreen } from '@/features/activity/HomeScreen'
 import { AskScreen } from '@/features/analytics/AskScreen'
+import { ChatListScreen } from '@/features/chat/ChatListScreen'
+import { ChatScreen } from '@/features/chat/ChatScreen'
 import { InsightsScreen } from '@/features/analytics/InsightsScreen'
 import { BalancesScreen } from '@/features/balances/BalancesScreen'
 import { MembersScreen } from '@/features/groups/MembersScreen'
@@ -65,6 +67,8 @@ export function AppRoutes() {
             </Route>
 
             <Route path="ask" element={<AskScreen />} />
+            <Route path="chat" element={<ChatListScreen />} />
+            <Route path="chat/:conversationId" element={<ChatScreen />} />
             <Route path="expenses/new" element={<NewExpenseScreen />} />
             <Route path="expenses/scan" element={<ScanReceiptScreen />} />
             <Route path="expenses/:expenseId" element={<ExpenseDetailScreen />} />

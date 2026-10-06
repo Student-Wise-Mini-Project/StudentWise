@@ -24,6 +24,17 @@ class Settings(BaseSettings):
     nl_query_model: str = "claude-sonnet-5"
     nl_query_row_limit: int = 200
     nl_query_timeout_ms: int = 5000
+    # The money assistant (Epic 8). Same key; without it the chat returns 503.
+    chat_model: str = "claude-sonnet-5"
+    # A person is waiting on a phone, through several tool calls.
+    chat_timeout_seconds: float = 60.0
+    # Model calls in one answer. Each round can call several tools at once, so
+    # a real question rarely needs more than three; this stops a loop.
+    chat_max_rounds: int = 6
+    # Earlier messages sent with each new question. Answers re-fetch their
+    # numbers, so older context is only needed for follow-ups like "and Noa?".
+    chat_history_messages: int = 20
+
     # Optional dedicated read-only Postgres role. Defence in depth: the query is
     # already validated and run in a read-only transaction without it.
     readonly_database_url: str | None = None

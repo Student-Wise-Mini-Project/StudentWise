@@ -825,6 +825,45 @@ in that flat -- from a flatmate's mailbox, say -- is `SKIPPED` as `DUPLICATE`.
 `total_amount` is required when the amount could not be read, and otherwise
 replaces what was read.
 
+## The money assistant (chat)
+
+A conversation with Claude about one group's money. **Private:** each
+conversation belongs to the person who started it, and nobody else -- not even
+the group's owner -- can see that it exists.
+
+| Method | Path | Body | Returns |
+|---|---|---|---|
+| GET | `/groups/{id}/chat/conversations?limit&offset` | | `Page[ConversationOut]`, yours only, most recent first |
+| POST | `/groups/{id}/chat/conversations` | `{message, language}` | **201** `ConversationDetailOut` |
+| GET | `/chat/conversations/{id}` | | `ConversationDetailOut` |
+| POST | `/chat/conversations/{id}/messages` | `{message, language}` | `ConversationDetailOut`, the new answer last |
+| DELETE | `/chat/conversations/{id}` | | 204 |
+
+```
+ConversationOut       = { id, group_id, title, created_at, last_message_at }
+ConversationDetailOut = ConversationOut + { messages: ChatMessageOut[] }   // oldest first
+ChatMessageOut        = { id, role: "USER" | "ASSISTANT", content, tools_used, created_at }
+tools_used            = [{ name, input }]   // on an answer: what it looked at
+```
+
+- `message` is 1-2000 characters; `language` is `"en"` or `"he"` (the app's
+  language -- the answer comes back in it), default `"en"`.
+- **The first question creates the conversation.** There is no empty
+  conversation; its `title` is that question, shortened to 60 characters.
+- **Nothing is saved unless an answer comes back.** On **503** (no key, the
+  model busy, or it could not finish) the question is not stored -- keep the
+  text so the person can send it again.
+- Someone else's conversation is **404**. Your own, after you have left its
+  group, is **403**.
+- `content` is plain text, with lists as lines starting `- `. Render it with
+  line breaks kept (`white-space: pre-line`) and `dir="auto"`.
+- `tools_used[].name` is one of `spending_summary`, `spending_by_category`,
+  `spending_by_month`, `spending_by_member`, `balances`, `unusual_expenses`,
+  `possible_duplicates`, `list_expenses`, `query_database`. Name an unknown one
+  generically: the list will grow.
+- **The assistant cannot change anything.** Every tool reads; asked to add an
+  expense or record a payment, it says where in the app to do it.
+
 ## Not built yet (Step 3+)
 
 Do not build UI against these; they don't exist:

@@ -38,10 +38,11 @@ export function AppShell() {
   const onNewExpense = useMatch('/groups/:groupId/expenses/new')
   const onEditExpense = useMatch('/groups/:groupId/expenses/:expenseId/edit')
   const onScanReceipt = useMatch('/groups/:groupId/expenses/scan')
-  // Ask has its own button beside the input, and on a phone the bar sat on top of
-  // the answer being read.
+  // Ask and the assistant have their own button beside the input, and on a
+  // phone the bar sat on top of the answer being read.
   const onAsk = useMatch('/groups/:groupId/ask')
-  const onEditor = Boolean(onNewExpense ?? onEditExpense ?? onScanReceipt ?? onAsk)
+  const onChat = useMatch('/groups/:groupId/chat/*')
+  const onEditor = Boolean(onNewExpense ?? onEditExpense ?? onScanReceipt ?? onAsk ?? onChat)
 
   // A closed group takes no new expenses, so it is not offered one. The group
   // list is already in cache from the screens that use it; this shell sits

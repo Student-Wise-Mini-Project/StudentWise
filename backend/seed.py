@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from app.db import SessionLocal
 from app.domain.recurrence import RecurrenceFrequency
 from app.models.budget import Budget
+from app.models.chat import ChatConversation, ChatMessage
 from app.models.comment import ExpenseComment
 from app.models.enums import (
     ExpenseCategory,
@@ -57,6 +58,8 @@ PASSWORD = "password123"
 def wipe(db) -> None:
     """Order matters: children before parents."""
     for model in (
+        ChatMessage,
+        ChatConversation,
         IngestedBill,
         GmailConnection,
         Notification,

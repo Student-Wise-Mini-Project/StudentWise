@@ -162,6 +162,10 @@ has no Gmail data: connecting needs a real Google client, which
 [`gmail-setup.md`](gmail-setup.md) walks through. Every Gmail test in `pytest`
 stubs Google and Claude, so the suites need neither.
 
+It also deletes every conversation with the money assistant (the Chat screen).
+The demo world starts with none: each one is a real exchange with Claude, so
+there is nothing worth seeding.
+
 `docker compose down -v` drops the volume. Everything in the database goes,
 including the test database — which is fine, the init script recreates it on the
 next boot.
@@ -176,7 +180,7 @@ next boot.
 cd backend
 .\.venv\Scripts\Activate.ps1
 
-pytest                    # everything: 996 tests, about two minutes
+pytest                    # everything: 1,038 tests, about two minutes
 pytest tests/unit -q      # 428 of them, pure logic, no database, under a second
 pytest tests/api/test_expenses.py            # one file
 pytest -k "settlement and not plan"          # by name
