@@ -36,6 +36,7 @@ from app.models.enums import (
     SplitType,
 )
 from app.models.expense import Expense, ExpenseSplit
+from app.models.expense_embedding import ExpenseEmbedding
 from app.models.expense_item import ExpenseItem, ItemSplit
 from app.models.gmail_connection import GmailConnection
 from app.models.group import Group, GroupMember
@@ -69,6 +70,7 @@ def wipe(db) -> None:
     for model in (
         ChatMessage,
         ChatConversation,
+        ExpenseEmbedding,
         IngestedBill,
         GmailConnection,
         Notification,

@@ -874,7 +874,9 @@ tools_used            = [{ name, input }]   // on an answer: what it looked at
   line breaks kept (`white-space: pre-line`) and `dir="auto"`.
 - `tools_used[].name` is one of `spending_summary`, `spending_by_category`,
   `spending_by_month`, `spending_by_member`, `balances`, `unusual_expenses`,
-  `possible_duplicates`, `list_expenses`, `query_database`. Name an unknown one
+  `possible_duplicates`, `list_expenses`, `query_database`, and -- when the
+  server has a `VOYAGE_API_KEY` -- `search_expenses` (semantic search: "that
+  Italian place" finds "Pizza night", in either language). Name an unknown one
   generically: the list will grow.
 - **The assistant cannot change anything.** Every tool reads; asked to add an
   expense or record a payment, it says where in the app to do it.

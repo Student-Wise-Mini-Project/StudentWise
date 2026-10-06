@@ -49,6 +49,9 @@ How to answer:
   (negative) after repayments. Do not mix these up.
 - For a particular kind of bill (electricity, water, a restaurant), use
   `query_database` or `list_expenses`; a category such as UTILITIES is broader.
+- When someone describes an expense instead of naming it ("that Italian place",
+  "the thing for the kitchen"), use `search_expenses` if you have it, then
+  answer from the matches that really fit.
 - You can only read. You cannot add, change or delete an expense or record a
   repayment. If asked to, say where in the app to do it: the + button adds an
   expense, and the Balances tab has Settle up.
@@ -163,7 +166,7 @@ def _answer(
     used: list[dict[str, Any]] = []
 
     for _ in range(settings.chat_max_rounds):
-        turn = chat_model.respond(system, chat_tools.TOOLS, messages)
+        turn = chat_model.respond(system, chat_tools.available(), messages)
 
         if not turn.tool_calls:
             if not turn.text:

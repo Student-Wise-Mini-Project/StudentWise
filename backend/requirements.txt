@@ -29,6 +29,11 @@ cryptography>=43               # refresh tokens are encrypted at rest (Fernet)
 requests>=2.32                 # revoking a Google grant
 rapidfuzz>=3.10                # matching a bill's address to a flat
 
+# Semantic search over expenses (Epic 8). Embeddings come from Voyage AI over
+# HTTPS (requests, above); FAISS ranks them.
+faiss-cpu>=1.9
+numpy>=2.0
+
 # Dev / test
 pytest>=8.3
 httpx2>=2.12                   # starlette TestClient backend (httpx is deprecated for this)

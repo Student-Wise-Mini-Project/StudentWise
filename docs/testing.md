@@ -162,7 +162,9 @@ has no Gmail data: connecting needs a real Google client, which
 [`gmail-setup.md`](gmail-setup.md) walks through. Every Gmail test in `pytest`
 stubs Google and Claude, so the suites need neither.
 
-It also deletes every conversation with the money assistant (the Chat screen).
+It also deletes every conversation with the money assistant (the Chat screen),
+and the stored expense embeddings semantic search uses (they are remade on the
+next search).
 The demo world starts with none: each one is a real exchange with Claude, so
 there is nothing worth seeding.
 

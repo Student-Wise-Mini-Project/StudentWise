@@ -17,6 +17,7 @@ from app.models.enums import (
     SplitType,
 )
 from app.models.expense import Expense, ExpenseSplit
+from app.models.expense_embedding import ExpenseEmbedding
 from app.models.expense_item import ExpenseItem, ItemSplit
 from app.models.gmail_connection import GmailConnection
 from app.models.group import Group, GroupMember
@@ -42,6 +43,7 @@ __all__ = [
     "Expense",
     "ExpenseCategory",
     "ExpenseComment",
+    "ExpenseEmbedding",
     "ExpenseItem",
     "ExpenseSource",
     "ExpenseSplit",

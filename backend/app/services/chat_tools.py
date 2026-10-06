@@ -23,6 +23,7 @@ from sqlalchemy import Connection
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
+from app.ai import embeddings
 from app.core.errors import AppError
 from app.models.enums import ExpenseCategory
 from app.models.expense import Expense
@@ -35,6 +36,7 @@ from app.services import (
     duplicate_service,
     expense_service,
     nl_query_service,
+    semantic_search_service,
 )
 
 MAX_LISTED = 50
@@ -135,6 +137,19 @@ TOOLS: list[dict[str, Any]] = [
         "read-only SQL query over this group's data and the rows come back.",
         {"question": {"type": "string", "description": "One precise question, in words."}},
         required=("question",),
+    ),
+    _tool(
+        "search_expenses",
+        "Find expenses by what they were rather than their exact title: 'the Italian "
+        "place', 'something for the kitchen', 'פיצה'. Matches meaning across Hebrew and "
+        "English, in titles and notes. Returns the closest expenses with a similarity score "
+        "(0 to 1); a low score means probably not what was meant.",
+        {
+            "query": {"type": "string", "description": "What to look for, in words."},
+            **_PERIOD,
+            "limit": {"type": "integer", "minimum": 1, "maximum": 25},
+        },
+        required=("query",),
     ),
 ]
 
@@ -322,6 +337,28 @@ def _list_expenses(ctx: ToolContext, arguments: dict[str, Any]) -> dict[str, Any
     }
 
 
+def _search_expenses(ctx: ToolContext, arguments: dict[str, Any]) -> dict[str, Any]:
+    matches = semantic_search_service.search(
+        ctx.db,
+        ctx.group,
+        str(arguments.get("query") or ""),
+        limit=int(arguments.get("limit") or 8),
+        **_period(arguments),
+    )
+    return {
+        "matches": [
+            {
+                **_brief(m.expense),
+                "paid_by": m.expense.payer.name,
+                "shared_by": [s.user.name for s in m.expense.splits],
+                "notes": m.expense.notes,
+                "similarity": m.score,
+            }
+            for m in matches
+        ]
+    }
+
+
 def _query_database(ctx: ToolContext, arguments: dict[str, Any]) -> dict[str, Any]:
     question = str(arguments.get("question") or "").strip()
     if len(question) < 3:
@@ -361,9 +398,18 @@ _RUNNERS = {
     "possible_duplicates": _possible_duplicates,
     "list_expenses": _list_expenses,
     "query_database": _query_database,
+    "search_expenses": _search_expenses,
 }
 
 assert set(_RUNNERS) == {tool["name"] for tool in TOOLS}, "every tool needs a runner"
+
+
+def available() -> list[dict[str, Any]]:
+    """The tools to offer. Semantic search only when it can work: offering a
+    tool that always fails would cost the model a turn to find that out."""
+    if embeddings.configured():
+        return TOOLS
+    return [tool for tool in TOOLS if tool["name"] != "search_expenses"]
 
 
 def run(ctx: ToolContext, name: str, arguments: dict[str, Any]) -> dict[str, Any]:

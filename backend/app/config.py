@@ -87,6 +87,13 @@ class Settings(BaseSettings):
     # numbers, so older context is only needed for follow-ups like "and Noa?".
     chat_history_messages: int = 20
 
+    # Semantic search over expenses (8.3, 8.4): "that Italian place". Voyage AI
+    # makes the embeddings; without a key the chat simply does not offer the
+    # search, and everything else works.
+    voyage_api_key: str | None = None
+    embedding_model: str = "voyage-4-lite"
+    embedding_timeout_seconds: float = 20.0
+
     # Optional dedicated read-only Postgres role. Defence in depth: the query is
     # already validated and run in a read-only transaction without it.
     readonly_database_url: str | None = None
