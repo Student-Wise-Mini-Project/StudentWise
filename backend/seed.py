@@ -4,17 +4,25 @@ Run from `backend/` with the venv active:
 
     python seed.py
 
-Wipes StudentWise's own tables first, so it is safe to run repeatedly. It goes
+Wipes StudentWise's own tables first, so it is safe to run repeatedly -- on
+your own machine. Anywhere else it asks you to name the host you are about to
+wipe (deployment: docs/deployment.md):
+
+    python seed.py --wipe=ep-xyz-123.eu-central-1.aws.neon.tech
+
+It goes
 through the service layer, so the seeded data obeys the same invariants the API
 enforces (splits summing exactly to totals, participants being group members).
 """
 
+import sys
 from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, make_url, select
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.db import SessionLocal
 from app.domain.recurrence import RecurrenceFrequency
 from app.models.budget import Budget
@@ -34,6 +42,7 @@ from app.models.group import Group, GroupMember
 from app.models.idempotency import IdempotencyKey
 from app.models.ingested_bill import IngestedBill
 from app.models.notification import Notification
+from app.models.receipt_image import ReceiptImage
 from app.models.recurring_bill import RecurringBill, RecurringBillParticipant
 from app.models.settlement import Settlement
 from app.models.split_rule import SplitRule, SplitRuleShare
@@ -73,6 +82,7 @@ def wipe(db) -> None:
         ItemSplit,
         ExpenseItem,
         ExpenseSplit,
+        ReceiptImage,
         Expense,
         Settlement,
         GroupMember,
@@ -776,5 +786,23 @@ def main(db: Session | None = None) -> None:
             db.close()
 
 
+def may_wipe(database_url: str, argv: list[str]) -> bool:
+    """Whether this run may wipe the database it points at.
+
+    Local databases, always. Any other host only when it is named on the
+    command line: a production DATABASE_URL left in a terminal is one
+    up-arrow away from deleting every real expense, and typing the host is
+    the moment someone notices which one they are about to delete.
+    """
+    host = make_url(database_url).host
+    return host in {"localhost", "127.0.0.1", None} or f"--wipe={host}" in argv
+
+
 if __name__ == "__main__":
+    if not may_wipe(settings.database_url, sys.argv[1:]):
+        host = make_url(settings.database_url).host
+        sys.exit(
+            f"This would DELETE EVERYTHING in the database on {host}.\n"
+            f"If that is what you want, run:  python seed.py --wipe={host}"
+        )
     main()

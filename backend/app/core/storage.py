@@ -1,9 +1,10 @@
 """Where receipt images live.
 
-Local disk for now, behind a small interface, because the only thing that has to
-survive the move to object storage is the *key* -- an opaque string kept in
-`expenses.receipt_image_url`. Nothing else in the app knows or cares whether a
-receipt is a file on this machine or an object in a bucket.
+Local disk in development and Postgres in production (`RECEIPT_STORAGE`), behind
+a small interface, because the only thing that has to survive a change of store
+is the *key* -- an opaque string kept in `expenses.receipt_image_url`. Nothing
+else in the app knows or cares whether a receipt is a file on this machine, a
+row, or an object in a bucket.
 
 Two rules hold whatever the backend is:
 
@@ -19,8 +20,14 @@ import re
 import uuid
 from pathlib import Path
 
+from sqlalchemy import Connection, Engine, delete, select
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import Session
+
+from app import db
 from app.config import settings
 from app.core.errors import BadRequestError, NotFoundError
+from app.models.receipt_image import ReceiptImage
 
 #: content type -> the extension we store it under.
 ALLOWED_IMAGE_TYPES: dict[str, str] = {
@@ -113,5 +120,77 @@ class LocalReceiptStore:
         self._path(key).unlink(missing_ok=True)
 
 
-def get_receipt_store() -> LocalReceiptStore:
+class DatabaseReceiptStore:
+    """Receipts as rows in `receipt_images`, for a host with no lasting disk.
+
+    It behaves like a bucket that happens to live in Postgres: every call runs
+    in its own short transaction, exactly as a file write or an S3 PUT happens
+    whether or not the caller's transaction later commits. That is what keeps
+    the expense service storage-agnostic -- it already saves before its commit
+    and deletes after it, and that ordering is right for both stores.
+
+    The key is the same `receipts/<expense id>.<ext>` the disk store uses, and
+    `read`/`delete` match on the extension as well as the expense, so deleting
+    the *previous* key after a replacement cannot remove the new image.
+    """
+
+    def __init__(self, bind: Engine | Connection) -> None:
+        self.bind = bind
+
+    def _session(self) -> Session:
+        # create_savepoint: when the tests hand over a connection that is
+        # already inside a transaction, "commit" releases a savepoint rather
+        # than ending their whole test.
+        return Session(bind=self.bind, join_transaction_mode="create_savepoint")
+
+    @staticmethod
+    def _parse(key: str) -> tuple[uuid.UUID, str]:
+        if not _KEY_PATTERN.match(key):
+            raise NotFoundError("Receipt not found")
+        return uuid.UUID(Path(key).stem), content_type_for(key)
+
+    def save(self, *, expense_id: uuid.UUID, data: bytes) -> str:
+        content_type = validate_receipt_image(data)
+        upsert = insert(ReceiptImage).values(
+            expense_id=expense_id, content_type=content_type, data=data
+        )
+        upsert = upsert.on_conflict_do_update(
+            index_elements=[ReceiptImage.expense_id],
+            set_={"content_type": content_type, "data": data},
+        )
+        with self._session() as session:
+            session.execute(upsert)
+            session.commit()
+        return f"receipts/{expense_id}.{ALLOWED_IMAGE_TYPES[content_type]}"
+
+    def read(self, key: str) -> bytes:
+        expense_id, content_type = self._parse(key)
+        with self._session() as session:
+            data = session.scalar(
+                select(ReceiptImage.data).where(
+                    ReceiptImage.expense_id == expense_id,
+                    ReceiptImage.content_type == content_type,
+                )
+            )
+        if data is None:
+            # Same wording as a missing file: the row says there is a receipt
+            # and the image is gone.
+            raise NotFoundError("Receipt file is missing from storage")
+        return data
+
+    def delete(self, key: str) -> None:
+        expense_id, content_type = self._parse(key)
+        with self._session() as session:
+            session.execute(
+                delete(ReceiptImage).where(
+                    ReceiptImage.expense_id == expense_id,
+                    ReceiptImage.content_type == content_type,
+                )
+            )
+            session.commit()
+
+
+def get_receipt_store() -> LocalReceiptStore | DatabaseReceiptStore:
+    if settings.receipt_storage == "database":
+        return DatabaseReceiptStore(db.engine)
     return LocalReceiptStore(Path(settings.receipt_storage_dir))

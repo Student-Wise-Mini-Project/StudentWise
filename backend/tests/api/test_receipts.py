@@ -8,8 +8,11 @@ what an image is -- not the request.
 import base64
 
 import pytest
+from sqlalchemy import select
 
+from app import db as app_db
 from app.config import settings
+from app.models.receipt_image import ReceiptImage
 
 #: A real 1x1 PNG. Small enough to inline, real enough that nothing is faked.
 PNG = base64.b64decode(
@@ -19,10 +22,23 @@ JPEG = b"\xff\xd8\xff\xe0" + b"\x00" * 64
 WEBP = b"RIFF" + b"\x00\x00\x00\x00" + b"WEBP" + b"\x00" * 32
 
 
-@pytest.fixture(autouse=True)
-def receipts_in_tmp(tmp_path, monkeypatch):
-    """Keep uploads out of the working tree."""
-    monkeypatch.setattr(settings, "receipt_storage_dir", str(tmp_path / "receipts"))
+@pytest.fixture(autouse=True, params=["local", "database"])
+def stored(request, tmp_path, monkeypatch, connection):
+    """Run every test against both stores: files in development, Postgres in
+    production. Returns a function listing what the store currently holds.
+
+    Uploads stay out of the working tree, and the database store writes
+    through the test's own connection, so its rows roll back with the test.
+    """
+    monkeypatch.setattr(settings, "receipt_storage", request.param)
+    if request.param == "local":
+        monkeypatch.setattr(settings, "receipt_storage_dir", str(tmp_path / "receipts"))
+        return lambda: sorted(p.name for p in (tmp_path / "receipts").glob("*"))
+
+    monkeypatch.setattr(app_db, "engine", connection)
+    return lambda: [
+        str(expense_id) for expense_id in connection.scalars(select(ReceiptImage.expense_id))
+    ]
 
 
 @pytest.fixture
@@ -201,16 +217,32 @@ def test_reading_a_receipt_requires_authentication(client, flat):
     assert client.get(f"/api/expenses/{flat['expense_id']}/receipt").status_code == 401
 
 
-def test_deleting_the_expense_takes_the_file_with_it(client, flat, tmp_path):
+def test_deleting_the_expense_takes_the_file_with_it(client, flat, stored):
     upload(client, flat)
-    stored = list((tmp_path / "receipts").iterdir())
-    assert len(stored) == 1
+    assert len(stored()) == 1
 
     assert (
         client.delete(f"/api/expenses/{flat['expense_id']}", headers=flat["headers"]).status_code
         == 204
     )
-    assert list((tmp_path / "receipts").iterdir()) == []
+    assert stored() == []
+
+
+def test_replacing_with_another_format_leaves_one_image(client, flat, stored):
+    """The second upload has a different extension, so its key differs and the
+    service deletes the previous key afterwards. That delete must not take the
+    new image with it."""
+    upload(client, flat, data=PNG)
+    upload(client, flat, data=JPEG)
+    assert len(stored()) == 1
+    response = client.get(f"/api/expenses/{flat['expense_id']}/receipt", headers=flat["headers"])
+    assert response.content == JPEG
+
+
+def test_removing_the_receipt_removes_the_image(client, flat, stored):
+    upload(client, flat)
+    client.delete(f"/api/expenses/{flat['expense_id']}/receipt", headers=flat["headers"])
+    assert stored() == []
 
 
 def test_the_response_forbids_content_sniffing(client, flat):

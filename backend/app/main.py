@@ -1,6 +1,9 @@
 """FastAPI application entrypoint."""
 
-from fastapi import FastAPI, Request
+from collections.abc import Awaitable, Callable
+from pathlib import Path
+
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -14,6 +17,7 @@ from app.api import (
     chat,
     comments,
     expenses,
+    frontend,
     gmail,
     groups,
     ingested_bills,
@@ -32,13 +36,38 @@ app = FastAPI(
     version="0.1.0",
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+if settings.cors_origins:
+    # Development only by default: production serves the frontend from this
+    # origin, so no browser needs a CORS grant there.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+
+@app.middleware("http")
+async def security_headers(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
+    """Headers every response carries, whatever produced it.
+
+    `setdefault`, so an endpoint that needs something stricter keeps it. HSTS
+    only in production: it tells the browser to refuse plain HTTP for a year,
+    which on localhost would outlive the dev server.
+    """
+    response = await call_next(request)
+    headers = response.headers
+    headers.setdefault("X-Content-Type-Options", "nosniff")
+    headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    # Nobody may put the app in a frame: a transparent StudentWise over a
+    # "click here" button is how money gets moved without consent.
+    headers.setdefault("X-Frame-Options", "DENY")
+    if settings.environment == "production":
+        headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    return response
 
 
 @app.exception_handler(AppError)
@@ -78,3 +107,11 @@ app.include_router(gmail.router, prefix="/api")
 app.include_router(ingested_bills.router, prefix="/api")
 app.include_router(chat.group_router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
+
+# The built frontend, for whatever no route above matched. The router's
+# fallback rather than a catch-all route, so it can never shadow an endpoint --
+# including one added below this line.
+if settings.frontend_dist_dir:
+    app.router.default = frontend.fallback(
+        Path(settings.frontend_dist_dir), not_found=app.router.not_found
+    )

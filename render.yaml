@@ -1,0 +1,48 @@
+# Render Blueprint: one free web service running the Docker image, which
+# serves both the API and the frontend (mission 10.3).
+#
+# The database is NOT here: it is Neon (mission 10.2), because Render's free
+# Postgres is deleted 30 days after it is created. Full walkthrough, including
+# what to paste where: docs/deployment.md.
+services:
+  - type: web
+    name: studentwise
+    runtime: docker
+    plan: free
+    # Frankfurt: the closest Render region to Israel, and the same AWS region
+    # as the Neon project (eu-central-1). Every request makes several queries,
+    # so the two must sit next to each other.
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    branch: main
+    # Deploy a commit to main only once CI has passed on it.
+    autoDeployTrigger: checksPass
+    healthCheckPath: /health
+    envVars:
+      # Paste Neon's connection string exactly as Neon shows it -- the
+      # postgresql:// scheme and ?sslmode=require are handled by the app.
+      - key: DATABASE_URL
+        sync: false
+      # Render generates a random 256-bit value once and keeps it.
+      - key: JWT_SECRET
+        generateValue: true
+      # Optional: without it the AI features answer 503 and the rest works.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # The role generated SQL runs as (Ask, the chat's database tool):
+      # SELECT on the six allowed tables, no password hashes, no writes.
+      # Made by `python make_readonly_role.py`; see docs/deployment.md.
+      - key: READONLY_DATABASE_URL
+        sync: false
+      # Optional, Gmail bills only. Fernet has its own key format, so Render's
+      # generator cannot make this one: run `python make_secrets.py`.
+      - key: TOKEN_ENCRYPTION_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      # ENVIRONMENT=production, FRONTEND_DIST_DIR and receipts-in-Postgres are
+      # baked into the image; PUBLIC_URL comes from Render's own
+      # RENDER_EXTERNAL_URL.

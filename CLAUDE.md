@@ -18,6 +18,7 @@ tutorial. If you are new, read them in this order:
 | [`docs/api-contract.md`](docs/api-contract.md) | The endpoint contract, before building any UI |
 | [`frontend/README.md`](frontend/README.md) | The four frontend rules, and why each is a test |
 | [`docs/gmail-setup.md`](docs/gmail-setup.md) | The one-time Google Cloud setup for importing bills from Gmail |
+| [`docs/deployment.md`](docs/deployment.md) | The live app: Render + Neon, setting it up from zero, and every production setting with its reason |
 | [`docs/sessions/`](docs/sessions/) | What each session built and why -- the latest say what is newest |
 | [`docs/evals/`](docs/evals/) | How often the AI is actually right, measured against the real model |
 

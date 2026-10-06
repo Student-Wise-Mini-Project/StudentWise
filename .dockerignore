@@ -1,0 +1,19 @@
+# Everything the image builds for itself, and everything that must never ship.
+.git
+**/.env
+**/.env.*
+!**/.env.example
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.ruff_cache
+
+backend/.venv
+backend/var
+
+frontend/node_modules
+frontend/dist
+frontend/openapi.json
+
+docs
+logs

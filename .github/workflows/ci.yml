@@ -140,3 +140,52 @@ jobs:
             echo "::error::The API types are stale. Run 'npm run gen:api' in frontend/ and commit the result."
             exit 1
           fi
+
+  # The image Render deploys (docs/deployment.md), built and booted the way
+  # Render runs it. A broken Dockerfile, a migration that fails on an empty
+  # database or a production setting that refuses to start then fails the PR
+  # -- and Render's autoDeployTrigger: checksPass never ships it.
+  image:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: studentwise
+          POSTGRES_PASSWORD: studentwise
+          POSTGRES_DB: studentwise
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U studentwise"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the image
+        run: docker build -t studentwise .
+
+      - name: Boot it in production mode
+        run: |
+          docker run -d --name app --network host \
+            -e DATABASE_URL=postgresql://studentwise:studentwise@localhost:5432/studentwise \
+            -e JWT_SECRET="$(openssl rand -base64 48)" \
+            -e PORT=8000 \
+            studentwise
+          for i in $(seq 1 60); do curl -sf localhost:8000/health && break; sleep 1; done
+
+      - name: It migrated, serves the API and the app, with the production headers
+        run: |
+          curl -sf localhost:8000/health
+          test "$(curl -s -o /dev/null -w '%{http_code}' localhost:8000/api/auth/me)" = 401
+          curl -sf localhost:8000/groups | grep -q '<div id="root">'
+          curl -sfI localhost:8000/ | grep -qi '^content-security-policy:'
+          curl -sfI localhost:8000/ | grep -qi '^strict-transport-security:'
+
+      - name: Server log
+        if: always()
+        run: docker logs app

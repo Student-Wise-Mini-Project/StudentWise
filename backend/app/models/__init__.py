@@ -23,6 +23,7 @@ from app.models.group import Group, GroupMember
 from app.models.idempotency import IdempotencyKey
 from app.models.ingested_bill import IngestedBill
 from app.models.notification import Notification
+from app.models.receipt_image import ReceiptImage
 from app.models.recurring_bill import RecurringBill, RecurringBillParticipant
 from app.models.settlement import Settlement
 from app.models.split_rule import SplitRule, SplitRuleShare
@@ -51,6 +52,7 @@ __all__ = [
     "ItemSplit",
     "MemberRole",
     "Notification",
+    "ReceiptImage",
     "RecurringBill",
     "RecurringBillParticipant",
     "NotificationKind",

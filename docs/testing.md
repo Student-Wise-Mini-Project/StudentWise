@@ -166,6 +166,14 @@ It also deletes every conversation with the money assistant (the Chat screen).
 The demo world starts with none: each one is a real exchange with Claude, so
 there is nothing worth seeding.
 
+**`seed.py` only wipes a database on your own machine without asking.** If
+`DATABASE_URL` points anywhere else -- the live Neon database, say -- it stops
+and tells you to name the host: `python seed.py --wipe=<host>`. The same demo
+world, with the same seven accounts and `password123`, is what the deployed app
+is seeded with, so a grader signing in there sees exactly what this page
+describes. Receipt photos uploaded on the live app are stored in Postgres
+(`receipt_images`) rather than on disk, and the seed clears those too.
+
 `docker compose down -v` drops the volume. Everything in the database goes,
 including the test database — which is fine, the init script recreates it on the
 next boot.
