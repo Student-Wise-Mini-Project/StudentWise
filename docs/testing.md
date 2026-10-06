@@ -313,6 +313,6 @@ often they are the answer:
    `studentwise-db` as healthy.
 2. **You are reaching a different Postgres.** A native Windows Postgres service
    on the same port will accept the connection and then reject the password. See
-   README → Troubleshooting for the command that names the process on the port.
+   [`setup.md`](setup.md) → Troubleshooting for the command that names the process on the port.
 3. **Migrations are behind** — `alembic upgrade head`.
 4. **`.env` is missing** — `copy .env.example .env` in `backend/`.

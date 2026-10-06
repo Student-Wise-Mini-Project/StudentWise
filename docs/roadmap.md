@@ -47,8 +47,8 @@ touch the same file.
 | 8. AI chat assistant / RAG | 4 | 0 | ✅ complete |
 | 9. Frontend | 17 | 0 | ✅ complete |
 | 10. Deployment | 6 | 0 | ✅ live on Render + Neon, $0 |
-| 11. Academic deliverables | 2 | 3 | 🔨 diagrams done |
-| **Total** | **82** | **4** | |
+| 11. Academic deliverables | 5 | 0 | ✅ complete |
+| **Total** | **85** | **1** | |
 
 **The honest read:** the app works end to end. You can sign in, create a flat,
 add flatmates and weights, add an expense in any of the four split modes, see
@@ -538,15 +538,15 @@ iPhone home screen, and is an Android app (9.12, [`android.md`](android.md)).
 
 ---
 
-## Epic 11 — Academic deliverables
+## Epic 11 — Academic deliverables ✅
 
 | # | Mission | Size | Owner | Status |
 |---|---|---|---|---|
 | 11.1 | Design decisions recorded as we go (`docs/sessions/`) | S | Gal | ✅ |
 | 11.2 | Architecture diagrams: layers, ERD, data flow ([`architecture.md`](architecture.md)) | M | all | ✅ |
-| 11.3 | Written report | L | all | ⬜ |
-| 11.4 | Demo script + seeded demo data | M | all | ⬜ |
-| 11.5 | Presentation slides | M | all | ⬜ |
+| 11.3 | Written report (the repository [`README.md`](../README.md)) | L | Hila | ✅ |
+| 11.4 | Demo script + seeded demo data (the report's Demonstration section; `seed.py`) | M | all | ✅ |
+| 11.5 | Presentation slides — not needed: the report replaces them (team decision, 6 Oct) | M | all | ✅ |
 
 **Things already worth writing up, with the evidence to back them:**
 

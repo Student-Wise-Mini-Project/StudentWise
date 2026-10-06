@@ -7,8 +7,9 @@ twenty.
 Three files, and it is worth knowing which is which:
 
 - **This one** is the path through the first day, in order.
-- **[`../README.md`](../README.md)** is the reference for commands, ports and
-  troubleshooting. Come back to it when something breaks.
+- **[`setup.md`](setup.md)** is the reference for commands, ports and
+  troubleshooting. Come back to it when something breaks. (The repository's
+  `README.md` is now the project report, 11.3.)
 - **[`testing.md`](testing.md)** is the demo accounts and the test suites —
   which account to sign in as, what each seeded group is for, how to run pytest.
 
@@ -48,7 +49,7 @@ docker compose up -d
 ```
 
 Postgres comes up on host port **5434**, not 5432 — two lower ports were taken
-on the original dev machine, and README → Ports has the full story plus what to
+on the original dev machine, and `setup.md` → Ports has the full story plus what to
 change if 5434 is busy on yours.
 
 Check it: `docker compose ps` should show `studentwise-db` as running and
@@ -307,7 +308,7 @@ written report later, and they are much easier to write now than in December.
 
 - **`password authentication failed for user "studentwise"`** — you are reaching
   a different Postgres than the container, usually a native Windows install on
-  the same port. README → Troubleshooting has the command that names the process
+  the same port. `setup.md` → Troubleshooting has the command that names the process
   holding the port.
 - **`port is already allocated`** — change the host side of the mapping in
   `docker-compose.yml` and the port in your `.env`. Nothing else needs to change.
