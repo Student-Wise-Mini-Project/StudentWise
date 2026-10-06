@@ -30,6 +30,10 @@ services:
       # Optional: without it the AI features answer 503 and the rest works.
       - key: ANTHROPIC_API_KEY
         sync: false
+      # Optional: semantic search in the chat. Without it the assistant just
+      # does not offer the search; nothing else changes.
+      - key: VOYAGE_API_KEY
+        sync: false
       # The role generated SQL runs as (Ask, the chat's database tool):
       # SELECT on the six allowed tables, no password hashes, no writes.
       # Made by `python make_readonly_role.py`; see docs/deployment.md.

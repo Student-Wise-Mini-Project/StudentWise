@@ -82,6 +82,7 @@ GitHub app on the repo for whoever does.
    |---|---|
    | `DATABASE_URL` | the Neon string from step 1 |
    | `ANTHROPIC_API_KEY` | our key (blank = AI features answer 503, the rest works) |
+   | `VOYAGE_API_KEY` | optional: semantic search in the chat (blank = not offered). The Voyage account needs a payment method, or it is limited to 3 requests a minute, and its training opt-out on |
    | `READONLY_DATABASE_URL` | the line `make_readonly_role.py` printed |
    | `TOKEN_ENCRYPTION_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | blank for now; see *Gmail in production* |
 

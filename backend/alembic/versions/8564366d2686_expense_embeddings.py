@@ -13,7 +13,7 @@ FAISS index in memory from these rows on each query, so there is no index
 file to lose when a container restarts.
 
 Revision ID: 8564366d2686
-Revises: 7bd0ad0e9592
+Revises: 0fb83f8aa324
 Create Date: 2026-10-06 11:07:30.855372
 
 """
@@ -26,7 +26,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "8564366d2686"
-down_revision: str | Sequence[str] | None = "7bd0ad0e9592"
+down_revision: str | Sequence[str] | None = "0fb83f8aa324"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
