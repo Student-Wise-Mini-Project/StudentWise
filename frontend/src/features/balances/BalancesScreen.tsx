@@ -41,6 +41,9 @@ export function BalancesScreen() {
   const [paying, setPaying] = useState<PlannedTransfer | null>(null)
   // The app last opened from the pay sheet, so "I paid" records the right one.
   const [openedApp, setOpenedApp] = useState<PayApp | null>(null)
+  // Who has been reminded on this visit, and who is being reminded right now.
+  const [reminded, setReminded] = useState<string[]>([])
+  const [reminding, setReminding] = useState<string | null>(null)
 
   if (balances.isLoading) return <ListRowSkeleton count={3} />
   if (balances.isError) {
@@ -63,6 +66,40 @@ export function BalancesScreen() {
   // Anyone who owes *me*. The API refuses a reminder to anyone else, so the
   // button is only offered where it would actually work.
   const myDebtors = transfers.filter((transfer) => transfer.to_user.id === user?.id)
+
+  // One person at a time, and only someone who owes *me*: the server refuses
+  // anyone else, so the button is never offered where it would fail.
+  const remindOne = (transfer: PlannedTransfer) => {
+    const debtorId = transfer.from_user.id
+    setReminding(debtorId)
+    remind.mutate([debtorId], {
+      onSuccess: () => setReminded((done) => [...done, debtorId]),
+      onSettled: () => setReminding(null),
+    })
+  }
+  const remindButton = (transfer: PlannedTransfer, onSlab = false) => {
+    if (transfer.to_user.id !== user?.id) return null
+    if (reminded.includes(transfer.from_user.id)) {
+      return (
+        <span className={cn('text-xs', onSlab ? 'text-on-slab' : 'text-credit')}>
+          {t('balances.remind.sent')}
+        </span>
+      )
+    }
+    return (
+      <Button
+        size="sm"
+        variant={onSlab ? 'ghost' : 'secondary'}
+        className={onSlab ? 'text-on-slab hover:bg-transparent hover:underline' : undefined}
+        aria-label={t('balances.remind.aria', { name: transfer.from_user.name })}
+        loading={reminding === transfer.from_user.id}
+        disabled={reminding !== null}
+        onClick={() => remindOne(transfer)}
+      >
+        {t('balances.remind.action')}
+      </Button>
+    )
+  }
 
   return (
     <>
@@ -119,6 +156,9 @@ export function BalancesScreen() {
               {t('balances.slab.record')}
             </Button>
           )}
+          {headline.to_user.id === user?.id && (
+            <div className="mt-1.5 flex justify-center">{remindButton(headline, true)}</div>
+          )}
         </Slab>
       ) : (
         <Slab eyebrow={group.name}>
@@ -153,9 +193,12 @@ export function BalancesScreen() {
                       {t('balances.pay.rowAction')}
                     </Button>
                   ) : (
-                    <Button size="sm" variant="secondary" onClick={() => setSettling(transfer)}>
-                      {t('common.actions.record')}
-                    </Button>
+                    <span className="flex items-center gap-2">
+                      {remindButton(transfer)}
+                      <Button size="sm" variant="secondary" onClick={() => setSettling(transfer)}>
+                        {t('common.actions.record')}
+                      </Button>
+                    </span>
                   )
                 }
               />
@@ -168,28 +211,32 @@ export function BalancesScreen() {
         {t('balances.planNote')}
       </p>
 
-      {myDebtors.length > 0 && (
+      {/* Each debtor has their own Remind above; "everyone" only earns a button
+       * when there is more than one of them. */}
+      {myDebtors.length > 1 && (
         <div className="px-4 pb-4">
           <Button
             variant="secondary"
             fullWidth
-            loading={remind.isPending}
-            onClick={() => remind.mutate(undefined)}
+            loading={remind.isPending && reminding === null}
+            disabled={reminding !== null}
+            onClick={() =>
+              remind.mutate(undefined, {
+                onSuccess: () => setReminded(myDebtors.map((transfer) => transfer.from_user.id)),
+              })
+            }
           >
-            {t('balances.nudge', {
-              count: myDebtors.length,
-              name: myDebtors[0]?.from_user.name ?? '',
-            })}
+            {t('balances.nudge', { count: myDebtors.length, name: '' })}
           </Button>
-          {remind.isSuccess && (
+          {remind.isSuccess && reminding === null && (
             <p className="text-credit mt-2 text-center text-xs">{t('balances.nudgeSent')}</p>
           )}
-          {remind.isError && (
-            <p role="alert" className="text-danger mt-2 text-center text-xs">
-              {detailOf(remind.error)}
-            </p>
-          )}
         </div>
+      )}
+      {remind.isError && (
+        <p role="alert" className="text-danger px-4 pb-4 text-center text-xs">
+          {detailOf(remind.error)}
+        </p>
       )}
 
       <PaySheet

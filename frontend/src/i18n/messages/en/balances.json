@@ -65,5 +65,10 @@
     "storeNote": "Opens the app's page in your app store. Tap Open there.",
     "desktopNote": "Bit and PayBox run on your phone. Open StudentWise there to pay.",
     "paid": "I paid {name}"
+  },
+  "remind": {
+    "action": "Remind",
+    "aria": "Remind {name} to pay you back",
+    "sent": "Reminded"
   }
 }

@@ -1,5 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { HttpResponse, http } from 'msw'
 import { MemoryRouter } from 'react-router'
@@ -187,6 +187,34 @@ describe('balances', () => {
     expect(
       await screen.findByRole('button', { name: /Nudge everyone who owes you/ }),
     ).toBeInTheDocument()
+  })
+
+  it('lets you remind one person who owes you, and only them', async () => {
+    const sent: unknown[] = []
+    server.use(
+      http.post(apiUrl('/api/groups/g1/reminders'), async ({ request }) => {
+        sent.push(await request.json())
+        return HttpResponse.json([], { status: 201 })
+      }),
+    )
+    const person = userEvent.setup()
+    renderScreen(MAYA)
+
+    // Both owe Maya, so each has a Remind; nobody else has one.
+    const remindGal = await screen.findByRole('button', { name: 'Remind Gal to pay you back' })
+    expect(screen.getByRole('button', { name: 'Remind Noa to pay you back' })).toBeInTheDocument()
+
+    await person.click(remindGal)
+    await waitFor(() => expect(sent).toEqual([{ debtor_ids: ['u-gal'] }]))
+    expect(await screen.findByText('Reminded')).toBeInTheDocument()
+    // Noa can still be reminded separately.
+    expect(screen.getByRole('button', { name: 'Remind Noa to pay you back' })).toBeEnabled()
+  })
+
+  it('offers no Remind to someone who owes money', async () => {
+    renderScreen(GAL)
+    await screen.findByText('Who is up, who is down')
+    expect(screen.queryByRole('button', { name: /^Remind/ })).not.toBeInTheDocument()
   })
 })
 
