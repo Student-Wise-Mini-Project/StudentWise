@@ -1,8 +1,9 @@
-import { Navigate, Outlet, useLocation } from 'react-router'
+import { Navigate, Outlet, useLocation, useSearchParams } from 'react-router'
 
 import { Spinner } from '@/components/Spinner'
 import { useAuth } from '@/features/auth/authContext'
 import { useT } from '@/i18n/i18nContext'
+import { safeNext } from '@/lib/invite'
 
 /**
  * Protects everything behind it.
@@ -45,7 +46,11 @@ export function RequireAuth() {
  */
 export function RedirectIfAuthed() {
   const { isAuthenticated, isResolving, isNewAccount } = useAuth()
+  const [searchParams] = useSearchParams()
   if (isResolving) return null
   if (!isAuthenticated) return <Outlet />
+  // Signed in while following a link (an invite, say): go where it pointed.
+  const next = safeNext(searchParams.get('next'))
+  if (next) return <Navigate to={next} replace />
   return <Navigate to={isNewAccount ? '/welcome/gmail' : '/'} replace />
 }

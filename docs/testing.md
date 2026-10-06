@@ -164,7 +164,8 @@ stubs Google and Claude, so the suites need neither.
 
 It also deletes every conversation with the money assistant (the Chat screen),
 and the stored expense embeddings semantic search uses (they are remade on the
-next search).
+next search), and every group's invite links -- old links stop working after a
+re-seed.
 The demo world starts with none: each one is a real exchange with Claude, so
 there is nothing worth seeding.
 

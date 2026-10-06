@@ -32,7 +32,12 @@
     "description": "You can add the others once it exists.",
     "nameLabel": "Name",
     "nameHint": "Dizengoff 5, Greece 2026, us two.",
-    "kindLabel": "What kind?"
+    "kindLabel": "What kind?",
+    "emailLabel": "Add by email",
+    "emailHint": "Anyone without an account yet gets an invite link once the group is created.",
+    "addEmail": "Add",
+    "removeEmail": "Remove {email}",
+    "badEmail": "That doesn't look like an email address."
   },
   "scope": {
     "loading": "Loading the group",
@@ -96,5 +101,32 @@
       "one": "Group created, but {count} person could not be added.",
       "other": "Group created, but {count} people could not be added."
     }
+  },
+  "invite": {
+    "button": "Invite with a link",
+    "title": "Invite to {group}",
+    "description": "Anyone with this link can join {group}, signing up first if they need to. It works for 14 days.",
+    "linkLabel": "Invite link",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "copy": "Copy link",
+    "share": "Share…",
+    "renew": "Make a new link",
+    "renewNote": "The old link stops working.",
+    "expires": "Works until {date}",
+    "message": "Join {group} on StudentWise, so we can split our expenses: {url}",
+    "subject": "Join {group} on StudentWise",
+    "noAccount": "{email} doesn't have a StudentWise account yet. Send an invite link instead.",
+    "sendInvite": "Invite {email} with a link",
+    "forWhom": "These people don't have an account yet. Send them the link: {emails}"
+  },
+  "join": {
+    "title": "Join a group",
+    "invitedBy": "Invited by {name}",
+    "join": "Join {group}",
+    "already": "You're already in this group.",
+    "open": "Open the group",
+    "closed": "This group is closed, so it isn't taking new members.",
+    "invalid": "This invite link is no longer valid. Ask for a new one."
   }
 }

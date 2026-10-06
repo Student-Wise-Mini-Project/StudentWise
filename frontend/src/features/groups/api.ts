@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, unwrap } from '@/api/client'
 import { invalidateMembership } from '@/api/invalidate'
 import { qk } from '@/api/queryKeys'
-import type { Group, GroupType, UserSearchResult } from '@/api/types'
+import type { Group, GroupType, Invite, InvitePreview, UserSearchResult } from '@/api/types'
 
 export function useGroups() {
   return useQuery({
@@ -158,11 +158,11 @@ export function useAddMember(groupId: string) {
  */
 export function useAddMemberToNewGroup() {
   const queryClient = useQueryClient()
-  return async function addMemberTo(groupId: string, userId: string) {
+  return async function addMemberTo(groupId: string, who: { user_id: string } | { email: string }) {
     await unwrap(
       api.POST('/api/groups/{group_id}/members', {
         params: { path: { group_id: groupId } },
-        body: { user_id: userId, default_split_weight: '1' },
+        body: { ...who, default_split_weight: '1' },
       }),
     )
     invalidateMembership(queryClient, groupId)
@@ -196,5 +196,41 @@ export function useRemoveMember(groupId: string) {
     // their balance stays until it is settled. So the ledger is invalidated too,
     // not just the membership list.
     onSuccess: () => invalidateMembership(queryClient, groupId),
+  })
+}
+
+/** The group's invite link. The same one comes back until `renew` replaces it. */
+export function useShareInvite(groupId: string) {
+  return useMutation({
+    mutationFn: ({ renew = false }: { renew?: boolean } = {}) =>
+      unwrap<Invite>(
+        api.POST('/api/groups/{group_id}/invites', {
+          params: { path: { group_id: groupId } },
+          body: { renew },
+        }),
+      ),
+  })
+}
+
+/** What a link is for, before joining: the group's name and who invited. */
+export function useInvitePreview(token: string) {
+  return useQuery({
+    queryKey: qk.invites.preview(token),
+    queryFn: ({ signal }) =>
+      unwrap<InvitePreview>(
+        api.GET('/api/invites/{token}', { params: { path: { token } }, signal }),
+      ),
+    retry: false,
+  })
+}
+
+export function useAcceptInvite(token: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () =>
+      unwrap<{ group_id: string }>(
+        api.POST('/api/invites/{token}/accept', { params: { path: { token } } }),
+      ),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: qk.groups.all() }),
   })
 }

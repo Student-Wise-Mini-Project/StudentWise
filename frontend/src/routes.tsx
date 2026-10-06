@@ -14,6 +14,7 @@ import { ExpenseListScreen } from '@/features/expenses/ExpenseListScreen'
 import { ExpenseRedirect } from '@/features/expenses/ExpenseRedirect'
 import { GroupScopeRoute, GroupTabsLayout } from '@/features/groups/GroupLayout'
 import { GroupListScreen } from '@/features/groups/GroupListScreen'
+import { JoinScreen } from '@/features/groups/JoinScreen'
 import { HomeScreen } from '@/features/activity/HomeScreen'
 import { AskScreen } from '@/features/analytics/AskScreen'
 import { ChatListScreen } from '@/features/chat/ChatListScreen'
@@ -56,6 +57,8 @@ export function AppRoutes() {
         <Route element={<AppShell />}>
           <Route index element={<HomeScreen />} />
           <Route path="groups" element={<GroupListScreen />} />
+          {/* Where an invite link lands; sign-in comes first, and returns here. */}
+          <Route path="join/:token" element={<JoinScreen />} />
 
           <Route path="groups/:groupId" element={<GroupScopeRoute />}>
             <Route element={<GroupTabsLayout />}>

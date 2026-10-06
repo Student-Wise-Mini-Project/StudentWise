@@ -840,6 +840,40 @@ in that flat -- from a flatmate's mailbox, say -- is `SKIPPED` as `DUPLICATE`.
 `total_amount` is required when the amount could not be read, and otherwise
 replaces what was read.
 
+## Invite links
+
+For someone a group cannot add by email -- usually because they have no
+account yet. **The app sends no email**: the client shares the link on
+WhatsApp, through the person's own email app (`mailto:`), by copying, or with
+the phone's share sheet.
+
+| Method | Path | Body | Returns |
+|---|---|---|---|
+| POST | `/groups/{id}/invites` | `{renew}` | `InviteOut`: the group's link (any member) |
+| DELETE | `/groups/{id}/invites` | | 204, the link stops working |
+| GET | `/invites/{token}` | | `InvitePreviewOut` |
+| POST | `/invites/{token}/accept` | | `{group_id}`, now a member |
+
+```
+InviteOut        = { group_id, token, expires_at }
+InvitePreviewOut = { group_id, group_name, group_type, invited_by, expires_at,
+                     already_member, is_open }
+```
+
+- **The link is built by the client**: `<origin>/join/<token>`, so it works on
+  the live site and locally. The token is 32 random URL-safe characters.
+- **One link per group.** The same one comes back until it expires (14 days);
+  `renew: true` replaces it and the old one stops working at once.
+- **Opening a link needs an account** (401 otherwise): the client sends someone
+  signed out to sign-in or sign-up with `?next=/join/<token>`, and back.
+  The preview shows the group's name and who invited -- never its members or
+  money.
+- **404 "no longer valid"** for an unknown, expired or replaced link alike.
+  **409** to share or accept for a closed group.
+- Accepting twice is harmless; someone who had left rejoins.
+- `POST /groups/{id}/members` with an `email` that has no account is still
+  **404 "User not found"** -- the client offers an invite link instead.
+
 ## The money assistant (chat)
 
 A conversation with Claude about one group's money. **Private:** each

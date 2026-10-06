@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router'
 
 import { GROUP_TYPES, type Group, type GroupType } from '@/api/types'
 import { AppBar } from '@/app/layouts/AppBar'
@@ -12,7 +13,7 @@ import { Sheet } from '@/components/Sheet'
 import { EmptyState, ErrorState, ListRowSkeleton } from '@/components/feedback'
 import { ChevronEnd, GroupsIcon } from '@/components/icons'
 import { Page, Stack } from '@/components/layout'
-import { detailOf } from '@/api/errors'
+import { ApiError, detailOf } from '@/api/errors'
 import { useAuth } from '@/features/auth/authContext'
 import { useT } from '@/i18n/i18nContext'
 import { groupTypeLabel } from '@/lib/labels'
@@ -149,6 +150,10 @@ function CreateGroupSheet({ open, onClose }: { open: boolean; onClose: () => voi
   const [name, setName] = useState('')
   const [type, setType] = useState<GroupType>('SHARED_APARTMENT')
   const [picked, setPicked] = useState<string[]>([])
+  // Addresses typed in. Ones with an account are added; the rest are invited.
+  const [emails, setEmails] = useState<string[]>([])
+  const [emailDraft, setEmailDraft] = useState('')
+  const navigate = useNavigate()
   const [failed, setFailed] = useState(0)
   const [working, setWorking] = useState(false)
 
@@ -160,6 +165,8 @@ function CreateGroupSheet({ open, onClose }: { open: boolean; onClose: () => voi
     setName('')
     setType('SHARED_APARTMENT')
     setPicked([])
+    setEmails([])
+    setEmailDraft('')
     setFailed(0)
     setWorking(false)
     create.reset()
@@ -182,16 +189,29 @@ function CreateGroupSheet({ open, onClose }: { open: boolean; onClose: () => voi
       let failures = 0
       for (const userId of picked) {
         try {
-          await addMemberTo(group.id, userId)
+          await addMemberTo(group.id, { user_id: userId })
         } catch {
           failures += 1
+        }
+      }
+      // No account at that address is not a failure: they get an invite link.
+      const toInvite: string[] = []
+      for (const email of emails) {
+        try {
+          await addMemberTo(group.id, { email })
+        } catch (error) {
+          if (error instanceof ApiError && error.status === 404) toInvite.push(email)
+          else failures += 1
         }
       }
 
       // A silent half-success would leave you believing somebody is in a group
       // they are not in, so the sheet stays open and says so.
       if (failures > 0) setFailed(failures)
-      else reset()
+      else if (toInvite.length > 0) {
+        reset()
+        navigate(`/groups/${group.id}/members`, { state: { invite: toInvite } })
+      } else reset()
     } catch {
       /* `create.error` renders it. */
     } finally {
@@ -262,6 +282,17 @@ function CreateGroupSheet({ open, onClose }: { open: boolean; onClose: () => voi
           )}
         </Field>
 
+        <EmailList
+          emails={emails}
+          draft={emailDraft}
+          onDraft={setEmailDraft}
+          onAdd={(email) => {
+            setEmails((current) => (current.includes(email) ? current : [...current, email]))
+            setEmailDraft('')
+          }}
+          onRemove={(email) => setEmails((current) => current.filter((e) => e !== email))}
+        />
+
         {suggestions.length > 0 && (
           <Field label={t('groups.suggestions.label')} hint={t('groups.suggestions.hint')}>
             {() => (
@@ -281,5 +312,76 @@ function CreateGroupSheet({ open, onClose }: { open: boolean; onClose: () => voi
         )}
       </Stack>
     </Sheet>
+  )
+}
+
+const LOOKS_LIKE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+/** Addresses to add when the group is created, one at a time. */
+function EmailList({
+  emails,
+  draft,
+  onDraft,
+  onAdd,
+  onRemove,
+}: {
+  emails: string[]
+  draft: string
+  onDraft: (value: string) => void
+  onAdd: (email: string) => void
+  onRemove: (email: string) => void
+}) {
+  const t = useT()
+  const cleaned = draft.trim().toLowerCase()
+  const bad = cleaned.length > 0 && !LOOKS_LIKE_EMAIL.test(cleaned)
+
+  return (
+    <Field
+      label={t('groups.create.emailLabel')}
+      hint={bad ? t('groups.create.badEmail') : t('groups.create.emailHint')}
+    >
+      {(props) => (
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2">
+            <Input
+              {...props}
+              type="email"
+              value={draft}
+              onChange={(event) => onDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && cleaned && !bad) {
+                  event.preventDefault()
+                  onAdd(cleaned)
+                }
+              }}
+              autoCapitalize="none"
+              autoComplete="off"
+              spellCheck={false}
+              className="min-w-0 flex-1"
+            />
+            <Button variant="secondary" disabled={!cleaned || bad} onClick={() => onAdd(cleaned)}>
+              {t('groups.create.addEmail')}
+            </Button>
+          </div>
+          {emails.length > 0 && (
+            <ul className="flex flex-wrap gap-2">
+              {emails.map((email) => (
+                <li key={email}>
+                  <button
+                    type="button"
+                    onClick={() => onRemove(email)}
+                    aria-label={t('groups.create.removeEmail', { email })}
+                    className="bg-sunken text-ink rounded-sm px-2.5 py-1 text-sm"
+                    dir="ltr"
+                  >
+                    {email} ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </Field>
   )
 }

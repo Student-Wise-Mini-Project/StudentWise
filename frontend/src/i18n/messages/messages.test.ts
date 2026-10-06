@@ -14,6 +14,8 @@ const IDENTICAL_BY_DESIGN = new Set([
   'settings.aboutApiTitle',
   // A phone number is written the same way in both.
   'settings.phone.placeholder',
+  // A brand name, written the same in both.
+  'groups.invite.whatsapp',
 ])
 
 describe('catalogues', () => {

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-import { detailOf } from '@/api/errors'
+import { ApiError, detailOf } from '@/api/errors'
 import type { GroupMember } from '@/api/types'
 import { Avatar } from '@/components/Avatar'
 import { Button } from '@/components/Button'
@@ -17,7 +17,7 @@ import { useT } from '@/i18n/i18nContext'
 import { memberRoleLabel } from '@/lib/labels'
 import { isPositive, isValidAmount, isZero } from '@/lib/money'
 
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 
 import { useSettlementPlan } from '@/features/balances/api'
 
@@ -30,15 +30,22 @@ import {
   useUpdateMemberWeight,
 } from './api'
 import { FlatAddressSection } from './FlatAddressSection'
+import { InviteSheet } from './InviteSheet'
 import { useGroupScope } from './groupContext'
 import { SuggestionChips } from './SuggestionChips'
 import { useMemberSuggestions } from './suggestions'
 
 export function MembersScreen() {
   const t = useT()
-  const { activeMembers, allMembers, isOwner, isOpen, groupId, currency } = useGroupScope()
+  const { activeMembers, allMembers, isOwner, isOpen, groupId, group, currency } = useGroupScope()
   const { user } = useAuth()
+  const location = useLocation()
   const [adding, setAdding] = useState(false)
+  // People to invite by link. Arriving from "create a group" with addresses that
+  // have no account yet opens the invite straight away, naming them.
+  const [inviting, setInviting] = useState<string[] | null>(
+    () => (location.state as { invite?: string[] } | null)?.invite ?? null,
+  )
   const [editing, setEditing] = useState<GroupMember | null>(null)
 
   const departed = allMembers.filter((member) => member.left_at !== null)
@@ -57,9 +64,14 @@ export function MembersScreen() {
         header={t('groups.members.header')}
         action={
           isOpen ? (
-            <Button size="sm" variant="secondary" onClick={() => setAdding(true)}>
-              {t('groups.members.addSomeone')}
-            </Button>
+            <span className="flex gap-2">
+              <Button size="sm" variant="secondary" onClick={() => setInviting([])}>
+                {t('groups.invite.button')}
+              </Button>
+              <Button size="sm" variant="secondary" onClick={() => setAdding(true)}>
+                {t('groups.members.addSomeone')}
+              </Button>
+            </span>
           ) : undefined
         }
       >
@@ -153,7 +165,21 @@ export function MembersScreen() {
 
       {isOwner && <DangerZone />}
 
-      <AddMemberSheet open={adding} onClose={() => setAdding(false)} />
+      <AddMemberSheet
+        open={adding}
+        onClose={() => setAdding(false)}
+        onInvite={(email) => {
+          setAdding(false)
+          setInviting([email])
+        }}
+      />
+      <InviteSheet
+        groupId={groupId}
+        groupName={group.name}
+        open={inviting !== null}
+        emails={inviting ?? []}
+        onClose={() => setInviting(null)}
+      />
       <WeightSheet member={editing} onClose={() => setEditing(null)} />
     </>
   )
@@ -365,7 +391,16 @@ function DeleteGroupSheet({ open, onClose }: { open: boolean; onClose: () => voi
   )
 }
 
-function AddMemberSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+function AddMemberSheet({
+  open,
+  onClose,
+  onInvite,
+}: {
+  open: boolean
+  onClose: () => void
+  /** For an address with no account: send it an invite link instead. */
+  onInvite: (email: string) => void
+}) {
   const t = useT()
   const { groupId, activeMembers } = useGroupScope()
   const add = useAddMember(groupId)
@@ -406,11 +441,22 @@ function AddMemberSheet({ open, onClose }: { open: boolean; onClose: () => void 
       }
     >
       <Stack gap={4}>
-        {add.isError && (
-          <p role="alert" className="bg-danger-soft text-danger rounded-sm px-3 py-2.5 text-sm">
-            {detailOf(add.error)}
-          </p>
-        )}
+        {add.isError &&
+          (add.error instanceof ApiError && add.error.status === 404 ? (
+            // No account with that address: not a dead end, an invitation.
+            <div role="alert" className="bg-accent-soft flex flex-col gap-2 rounded-sm px-3 py-2.5">
+              <p className="text-accent text-sm">
+                {t('groups.invite.noAccount', { email: email.trim() })}
+              </p>
+              <Button size="sm" className="self-start" onClick={() => onInvite(email.trim())}>
+                {t('groups.invite.sendInvite', { email: email.trim() })}
+              </Button>
+            </div>
+          ) : (
+            <p role="alert" className="bg-danger-soft text-danger rounded-sm px-3 py-2.5 text-sm">
+              {detailOf(add.error)}
+            </p>
+          ))}
         {suggestions.length > 0 && (
           <Field label={t('groups.suggestions.label')} hint={t('groups.suggestions.hint')}>
             {() => (

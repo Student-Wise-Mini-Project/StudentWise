@@ -44,6 +44,9 @@ export const qk = {
     comments: (expenseId: string) => ['expenses', 'detail', expenseId, 'comments'] as const,
     receipt: (expenseId: string) => ['expenses', 'detail', expenseId, 'receipt'] as const,
   },
+  invites: {
+    preview: (token: string) => ['invites', token] as const,
+  },
   chat: {
     detail: (conversationId: string) => ['chat', 'detail', conversationId] as const,
   },

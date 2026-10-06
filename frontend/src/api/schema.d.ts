@@ -248,6 +248,75 @@ export interface paths {
         patch: operations["update_member_api_groups__group_id__members__user_id__patch"];
         trace?: never;
     };
+    "/api/groups/{group_id}/invites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Share Invite
+         * @description The group's invite link, for any member to share. The same link comes back
+         *     until it expires (14 days); `renew` retires it and makes a new one. **409**
+         *     when the group is closed.
+         */
+        post: operations["share_invite_api_groups__group_id__invites_post"];
+        /**
+         * Stop Sharing
+         * @description Retire the group's link: anyone holding it can no longer join.
+         */
+        delete: operations["stop_sharing_api_groups__group_id__invites_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invites/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview Invite
+         * @description What the link is for: the group's name and who invited you. Signing in is
+         *     required; members and money are never shown before joining. **404** for a
+         *     link that is unknown, expired or replaced -- the same answer for each.
+         */
+        get: operations["preview_invite_api_invites__token__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/invites/{token}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept Invite
+         * @description Join the group. Accepting twice is harmless; someone who had left rejoins
+         *     with their history intact. **409** when the group is closed.
+         */
+        post: operations["accept_invite_api_invites__token__accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/groups/{group_id}/expenses": {
         parameters: {
             query?: never;
@@ -2034,6 +2103,67 @@ export interface components {
          * @enum {string}
          */
         IngestedBillStatus: "IMPORTED" | "PENDING_REVIEW" | "APPROVED" | "DISMISSED" | "SKIPPED";
+        /** InviteAcceptedOut */
+        InviteAcceptedOut: {
+            /**
+             * Group Id
+             * Format: uuid
+             */
+            group_id: string;
+        };
+        /**
+         * InviteOut
+         * @description The link is `<app origin>/join/<token>`; the client builds it, so the same
+         *     response works on the live site and on a laptop.
+         */
+        InviteOut: {
+            /**
+             * Group Id
+             * Format: uuid
+             */
+            group_id: string;
+            /** Token */
+            token: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+        };
+        /**
+         * InvitePreviewOut
+         * @description What someone opening a link sees before joining. Deliberately thin: no
+         *     members, no balances, no expenses.
+         */
+        InvitePreviewOut: {
+            /**
+             * Group Id
+             * Format: uuid
+             */
+            group_id: string;
+            /** Group Name */
+            group_name: string;
+            group_type: components["schemas"]["GroupType"];
+            /** Invited By */
+            invited_by: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Already Member */
+            already_member: boolean;
+            /** Is Open */
+            is_open: boolean;
+        };
+        /** InviteShareIn */
+        InviteShareIn: {
+            /**
+             * Renew
+             * @default false
+             */
+            renew: boolean;
+        };
         /**
          * ItemIn
          * @description One receipt line. `user_ids` names who shared it; empty means everyone.
@@ -3279,6 +3409,132 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GroupMemberOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    share_invite_api_groups__group_id__invites_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteShareIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    stop_sharing_api_groups__group_id__invites_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_invite_api_invites__token__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitePreviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    accept_invite_api_invites__token__accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteAcceptedOut"];
                 };
             };
             /** @description Validation Error */

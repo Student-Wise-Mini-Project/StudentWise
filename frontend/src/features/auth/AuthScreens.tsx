@@ -7,6 +7,7 @@ import { Field } from '@/components/Field'
 import { Input } from '@/components/Input'
 import { Money } from '@/components/Money'
 import { useT } from '@/i18n/i18nContext'
+import { safeNext } from '@/lib/invite'
 
 import { useAuth } from './authContext'
 
@@ -108,7 +109,7 @@ export function LoginScreen() {
     try {
       await signIn(email.trim(), password)
       // Back to whatever the expired session interrupted.
-      navigate(searchParams.get('next') ?? '/', { replace: true })
+      navigate(safeNext(searchParams.get('next')) ?? '/', { replace: true })
     } catch (cause) {
       setError(cause)
     } finally {
@@ -123,7 +124,7 @@ export function LoginScreen() {
       footer={
         <>
           {t('auth.login.noAccount')}{' '}
-          <Link to="/register" className="text-accent font-bold">
+          <Link to={withNext('/register', searchParams)} className="text-accent font-bold">
             {t('auth.login.signUpLink')}
           </Link>
         </>
@@ -173,6 +174,7 @@ export function RegisterScreen() {
   const t = useT()
   const { signUp } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -191,8 +193,9 @@ export function RegisterScreen() {
     setPending(true)
     try {
       await signUp({ name: name.trim(), email: email.trim(), password })
-      // A new account is offered Gmail once, then goes home either way.
-      navigate('/welcome/gmail', { replace: true })
+      // A new account is offered Gmail once, then goes home either way -- unless
+      // it signed up to follow a link (an invite), which comes first.
+      navigate(safeNext(searchParams.get('next')) ?? '/welcome/gmail', { replace: true })
     } catch (cause) {
       setError(cause)
     } finally {
@@ -207,7 +210,7 @@ export function RegisterScreen() {
       footer={
         <>
           {t('auth.register.haveOne')}{' '}
-          <Link to="/login" className="text-accent font-bold">
+          <Link to={withNext('/login', searchParams)} className="text-accent font-bold">
             {t('auth.register.logInLink')}
           </Link>
         </>
@@ -275,4 +278,10 @@ export function RegisterScreen() {
       </form>
     </AuthLayout>
   )
+}
+
+/** Keep `?next=` when switching between sign-in and sign-up. */
+function withNext(path: string, searchParams: URLSearchParams): string {
+  const next = safeNext(searchParams.get('next'))
+  return next ? `${path}?next=${encodeURIComponent(next)}` : path
 }
