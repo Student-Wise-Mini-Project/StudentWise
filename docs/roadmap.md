@@ -3,8 +3,8 @@
 Everything the project needs, A to Z, split into **epics** (features) and
 **missions** (a task one person can finish and merge).
 
-**Status as of 2026-10-06:** 77 endpoints · 20 tables · 1,091 backend tests ·
-403 frontend tests · 15 migrations · CI green.
+**Status as of 2026-10-06:** 77 endpoints · 22 tables · 1,219 backend tests ·
+403 frontend tests · 17 migrations · CI green.
 
 **New here?** This file is status, not instructions. Start at
 [`onboarding.md`](onboarding.md), then [`testing.md`](testing.md), then come
@@ -44,11 +44,11 @@ touch the same file.
 | 5. AI ingestion (Module 1) | 9 | 0 | ✅ complete (voice dropped) |
 | 6. Recurring & automation | 5 | 0 | ✅ complete |
 | 7. Payments (Bit / PayBox) | 3 | 0 | ✅ complete |
-| 8. AI chat assistant / RAG | 2 | 2 | 🔨 the chat works; semantic search left |
+| 8. AI chat assistant / RAG | 4 | 0 | ✅ complete |
 | 9. Frontend | 16 | 1 | 🔨 only the APK (9.12) is left |
 | 10. Deployment | 1 | 5 | 🔨 hosting approved, $20 budget |
 | 11. Academic deliverables | 2 | 3 | 🔨 diagrams done |
-| **Total** | **73** | **13** | |
+| **Total** | **75** | **11** | |
 
 **The honest read:** the app works end to end. You can sign in, create a flat,
 add flatmates and weights, add an expense in any of the four split modes, see
@@ -415,14 +415,14 @@ expense form are what turned it into a feature people can use.
 
 ---
 
-## Epic 8 — AI chat assistant / RAG 🔨
+## Epic 8 — AI chat assistant / RAG ✅
 
 | # | Mission | Size | Owner | Status |
 |---|---|---|---|---|
 | 8.1 | Chat endpoint with conversation history | M | #3 | ✅ |
 | 8.2 | Tool-use: let the assistant call the analytics endpoints | L | #3 | ✅ |
-| 8.3 | FAISS vector store over expense text | M | #2 | ⬜ |
-| 8.4 | RAG: semantic search ("that Italian place in October") | L | #2 | ⬜ |
+| 8.3 | FAISS vector store over expense text | M | #3 | ✅ |
+| 8.4 | RAG: semantic search ("that Italian place in October") | L | #3 | ✅ |
 
 > **8.1 and 8.2 are done: the money assistant** (2026-10-06, built by #3).
 > Insights → "Talk it through with the assistant": a conversation per person
@@ -434,8 +434,14 @@ expense form are what turned it into a feature people can use.
 > questions and answers are stored; tools re-run each turn. Tested on the real
 > model in English and Hebrew (gender-neutral, and in the reply's own language).
 >
-> **8.3-8.4 need an embedding model**, which Anthropic does not offer: Voyage AI
-> (a second key), a local model, or Postgres full-text instead. Decide first.
+> **8.3-8.4 are done: semantic search** (2026-10-06). Expense titles, categories
+> and notes are embedded with Voyage AI (`voyage-4-lite`), stored in
+> `expense_embeddings`, and ranked in an exact FAISS index built in memory per
+> search. The assistant uses it as a tool: "that Italian food night" finds
+> "Pizza night", "המלון בצפון" finds "Hotel in Haifa" -- 5/5 live, across three
+> groups and both languages. Embeddings are made lazily at search time, never
+> when an expense is saved. Optional: without `VOYAGE_API_KEY` the tool is not
+> offered. The Voyage account cost a one-off $5 credit to lift a 3-a-minute limit.
 >
 > **Scope honestly.** Text-to-SQL (4.3) already answers *numerical* questions
 > better than RAG would. FAISS/RAG earns its place only for *fuzzy recall* over

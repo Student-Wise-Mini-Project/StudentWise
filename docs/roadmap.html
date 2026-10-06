@@ -581,12 +581,12 @@
     </p>
 
     <dl class="figures">
-      <div class="figure"><dt>Missions done</dt><dd>73<small> / 86</small></dd></div>
+      <div class="figure"><dt>Missions done</dt><dd>75<small> / 86</small></dd></div>
       <div class="figure"><dt>Endpoints</dt><dd>77</dd></div>
-      <div class="figure"><dt>Backend tests</dt><dd>1,091</dd></div>
+      <div class="figure"><dt>Backend tests</dt><dd>1,219</dd></div>
       <div class="figure"><dt>Frontend tests</dt><dd>403</dd></div>
-      <div class="figure"><dt>Tables</dt><dd>20</dd></div>
-      <div class="figure"><dt>Migrations</dt><dd>15</dd></div>
+      <div class="figure"><dt>Tables</dt><dd>22</dd></div>
+      <div class="figure"><dt>Migrations</dt><dd>17</dd></div>
     </dl>
 
     <div class="read">
@@ -797,12 +797,12 @@
         ["7.3", "Phone-number capture and IL-format validation", "S", "#3", "done"],
       ]},
     { n: 8, name: "AI chat assistant and RAG",
-      note: "<strong>8.1 and 8.2 are done: the money assistant.</strong> A private conversation per person per group, answered through nine read-only tools &mdash; the same numbers the app computes, so it can explain a balance but never move one. Tested on the real model in English and Hebrew. 8.3&ndash;8.4 need an embedding model first. <br><br><strong>Scope this honestly.</strong> Text-to-SQL already answers numerical questions better than RAG would. FAISS earns its place only for fuzzy recall over free text — titles and notes — where exact SQL cannot help. Say that distinction in the report rather than building RAG twice over.",
+      note: "<strong>8.1 and 8.2 are done: the money assistant.</strong> A private conversation per person per group, answered through nine read-only tools &mdash; the same numbers the app computes, so it can explain a balance but never move one. Tested on the real model in English and Hebrew. <strong>8.3&ndash;8.4 too: semantic search</strong> with Voyage AI embeddings and FAISS &mdash; &ldquo;that Italian food night&rdquo; finds &ldquo;Pizza night&rdquo;, in Hebrew or English; 5/5 live. <br><br><strong>Scope this honestly.</strong> Text-to-SQL already answers numerical questions better than RAG would. FAISS earns its place only for fuzzy recall over free text — titles and notes — where exact SQL cannot help. Say that distinction in the report rather than building RAG twice over.",
       missions: [
         ["8.1", "Chat endpoint with conversation history", "M", "#3", "done"],
         ["8.2", "Tool-use: assistant calls the analytics endpoints", "L", "#3", "done"],
-        ["8.3", "FAISS vector store over expense text", "M", "#2", "todo"],
-        ["8.4", "RAG: “that Italian place in October”", "L", "#2", "todo"],
+        ["8.3", "FAISS vector store over expense text", "M", "#3", "done"],
+        ["8.4", "RAG: “that Italian place in October”", "L", "#3", "done"],
       ]},
     { n: 9, name: "Frontend",
       note: "<strong>Fourteen of seventeen.</strong> Three decisions are doing most of the work. <strong>The API types are generated</strong> from <code>/openapi.json</code> and never hand-written; a <code>contract</code> CI job regenerates them and fails on a diff, which is the frontend's <code>alembic check</code>. <strong>The client never divides money</strong> — the backend allocates cents by largest remainder, and a second implementation would disagree by one, so <code>divideForDisplay</code> returns a wrapped value that only <code>&lt;Money approximate/&gt;</code> can render and the <code>≈</code> is enforced by the type system. And <strong>only the theme file may name a colour or a typeface</strong>, so applying the design brief is a token edit rather than a pass over every screen — two guard tests fail the build on a stray hex or a physical <code>ml-</code>, the second because the app is English now and Hebrew later and nobody here would notice a mirrored layout. <strong>The app now runs in Hebrew</strong> (9.13): the layout axis was already finished, so this was only the words — a typed <code>t()</code> rather than a library, because keys derived from the English catalogue make a typo and a missing translation both compile errors, and a third guard test fails the build on a hardcoded string. <br><br>Left: 9.9 needs <code>ANTHROPIC_API_KEY</code> and returns 503 without one; 9.10 works today; 9.12 is deferred.",
