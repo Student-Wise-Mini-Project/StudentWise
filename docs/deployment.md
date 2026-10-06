@@ -1,5 +1,8 @@
 # Deploying StudentWise
 
+**Live: <https://studentwise-4o6d.onrender.com>** -- sign in as
+`gal@studentwise.dev` / `password123`. Running since 2026-10-06.
+
 Epic 10. How the live app is built, where it runs, how to set it up from zero,
 and every production decision with its reason. If something about the live app
 surprises you, the answer should be on this page -- and if it is not, add it.
@@ -70,6 +73,18 @@ development: seven accounts, `password123`, sign in as `gal@studentwise.dev`
 
 ### 3. Render (10.3, 10.5)
 
+> **How the live service was actually made:** by hand (**New → Web Service**),
+> not from the Blueprint, so `render.yaml` is documentation of the settings
+> rather than what Render reads. The settings that matter, in the service's
+> **Settings**: Runtime **Docker**, branch **main**, region **Frankfurt**,
+> instance **Free**, Health Check Path **`/health`**, and **Auto-Deploy: After
+> CI checks pass** (the hand-made default deploys every commit, even a red
+> one). The four variables were pasted with **Add from .env**:
+> `DATABASE_URL`, `READONLY_DATABASE_URL`, `JWT_SECRET` (from
+> `python make_secrets.py` -- without the Blueprint Render does not generate
+> it) and `ANTHROPIC_API_KEY`.
+> Both routes end in the same service; the Blueprint just fills it in for you.
+
 Render deploys from GitHub, and **only the repo's owner can grant Render access
 to a private repo** -- so the owner (Gal) does this step, or installs Render's
 GitHub app on the repo for whoever does.
@@ -134,8 +149,8 @@ Optional; the app runs fine without it. On top of [`gmail-setup.md`](gmail-setup
   a minute to wake. Open the URL a couple of minutes before presenting.
 - Neon suspends its compute after 5 idle minutes; the first query after that
   takes about a second.
-- Neon free storage is 0.5 GB. Receipts are capped at 5 MB each, so that is
-  around a hundred full-size photos, more for normal phone shots.
+- Neon free storage is 1 GB. Receipts are capped at 5 MB each, so that is
+  around two hundred full-size photos, far more for normal phone shots.
 - 750 free instance hours a month -- enough for one service running all month.
 - Render does not document a short request timeout (unlike Heroku's 30 s). The
   slowest call we make is a chat answer, up to about 60 s; if a proxy is ever

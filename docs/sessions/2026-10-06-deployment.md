@@ -73,7 +73,23 @@ way it does.
 - faiss-cpu (coming with 8.3) in the same image: 213 MB peak, under Render's
   512 MB.
 
+## Live
+
+**<https://studentwise-4o6d.onrender.com>**, the same day. Neon project in
+Frankfurt, migrated, seeded and given the read-only role from Dana's laptop;
+the Render service was made by hand by Hila (an owner of the repo -- a
+collaborator with write access cannot grant Render access to a private repo).
+Verified on the live URL in a browser: sign-in, deep-link reload, fonts,
+service worker, HTTP→HTTPS, headers, a receipt uploaded through the UI and
+found in Neon's `receipt_images`, Ask and Chat on the real model, Ask's
+connection showing up as `studentwise_readonly` -- no console errors or CSP
+violations.
+
 ## Next
 
-Go live: Neon project, seed it, Render Blueprint (needs the repo owner to grant
-Render access), then tick 10.2-10.6 in the roadmap.
+- Hila: set **Auto-Deploy → After CI checks pass** and the `/health` health
+  check in the service's Settings, if not already.
+- Gmail in production: register the live redirect URI in Google Cloud, then
+  add `TOKEN_ENCRYPTION_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`.
+- A monthly spend limit on the Anthropic key.
+- 9.12 (APK) is now unblocked: it needed an HTTPS address.

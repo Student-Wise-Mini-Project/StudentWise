@@ -46,9 +46,9 @@ touch the same file.
 | 7. Payments (Bit / PayBox) | 3 | 0 | ✅ complete |
 | 8. AI chat assistant / RAG | 4 | 0 | ✅ complete |
 | 9. Frontend | 16 | 1 | 🔨 only the APK (9.12) is left |
-| 10. Deployment | 1 | 5 | 🔨 hosting approved, $20 budget |
+| 10. Deployment | 6 | 0 | ✅ live on Render + Neon, $0 |
 | 11. Academic deliverables | 2 | 3 | 🔨 diagrams done |
-| **Total** | **75** | **11** | |
+| **Total** | **80** | **6** | |
 
 **The honest read:** the app works end to end. You can sign in, create a flat,
 add flatmates and weights, add an expense in any of the four split modes, see
@@ -67,7 +67,7 @@ it.** 0.5 has been the top of this list for days and it is still the only thing
 that matters: every branch so far has been merged by its own author, because
 there is nobody else with access to approve one. Everything that remains is
 either **somebody else's** (Epic 5 ingestion, the last three frontend missions)
-or waiting on a decision (Epic 10 hosting).
+or academic (Epic 11). **The app is live** at <https://studentwise-4o6d.onrender.com>.
 
 ---
 
@@ -513,24 +513,36 @@ end to end in two languages. What is left is the APK (9.12).
 
 ---
 
-## Epic 10 — Deployment ⬜
+## Epic 10 — Deployment ✅
 
 | # | Mission | Size | Owner | Status |
 |---|---|---|---|---|
 | 10.1 | **Ask the lecturer**: hosting allowed? budget? | S | #3 | ✅ |
-| 10.2 | Managed Postgres (Neon / Supabase free tier) | S | Gal | ⬜ |
-| 10.3 | Deploy the API (Railway / Render / Fly) | M | Gal | ⬜ |
-| 10.4 | Deploy the frontend (Vercel / Netlify) | S | #3 | ⬜ |
-| 10.5 | Production secrets: real `JWT_SECRET`, API keys | S | Gal | ⬜ |
-| 10.6 | CORS + HTTPS + production settings review | S | Gal | ⬜ |
+| 10.2 | Managed Postgres (Neon / Supabase free tier) | S | #3 | ✅ |
+| 10.3 | Deploy the API (Railway / Render / Fly) | M | #3 | ✅ |
+| 10.4 | Deploy the frontend (Vercel / Netlify) | S | #3 | ✅ |
+| 10.5 | Production secrets: real `JWT_SECRET`, API keys | S | #3 | ✅ |
+| 10.6 | CORS + HTTPS + production settings review | S | #3 | ✅ |
 
 > **10.1 answered (2026-10-06): hosting is allowed, with a $20 budget for the
 > whole project, and the team pays for Claude.** So: free tiers wherever they
 > exist (Neon for Postgres, the API on Render or Railway's smallest plan), and
 > the $20 kept as a buffer rather than a plan.
 >
-> **Do not deploy with the dev JWT secret.** It is committed in `.env.example`
-> and anyone reading the repo could forge a token for any account.
+> **Live since 2026-10-06 at <https://studentwise-4o6d.onrender.com>**, sign in as
+> `gal@studentwise.dev` / `password123`. One Docker image serves the API *and*
+> the frontend from one origin (so 10.4 is not a separate Vercel deploy), on a
+> free Render service in Frankfurt; Postgres is Neon, also Frankfurt. Cost: $0.
+> Receipts live in Postgres because Render's free disk is wiped on every deploy.
+>
+> The server refuses to start with the dev JWT secret or any other laptop-only
+> setting, and the AI's generated SQL runs as a read-only role. Everything --
+> setup from zero, every production setting and why -- is in
+> [`deployment.md`](deployment.md). Verified live in a browser: sign-in,
+> receipts (stored in Neon), Ask and Chat on the real model.
+>
+> **The free service sleeps after 15 idle minutes** and takes about a minute to
+> wake. Open the link a couple of minutes before a demo.
 
 ---
 
