@@ -36,7 +36,7 @@ touch the same file.
 
 | Epic | Done | Left | State |
 |---|---:|---:|---|
-| 0. Ways of working | 7 | 1 | 🔨 only branch protection (0.6) is left |
+| 0. Ways of working | 8 | 0 | ✅ complete (0.6 closed by decision) |
 | 1. Backend foundation | 5 | 0 | ✅ complete |
 | 2. Core domain (Splitwise parity) | 14 | 0 | ✅ complete |
 | 3. Algorithms | 4 | 0 | ✅ complete |
@@ -48,7 +48,7 @@ touch the same file.
 | 9. Frontend | 17 | 0 | ✅ complete |
 | 10. Deployment | 6 | 0 | ✅ live on Render + Neon, $0 |
 | 11. Academic deliverables | 5 | 0 | ✅ complete |
-| **Total** | **85** | **1** | |
+| **Total** | **86** | **0** | |
 
 **The honest read:** the app works end to end. You can sign in, create a flat,
 add flatmates and weights, add an expense in any of the four split modes, see
@@ -62,9 +62,8 @@ bills arrive and split themselves in the right flat. Both were tested on real
 input (a real receipt photo; a real PDF in a real inbox). Epic 5 is complete;
 voice entry was dropped.
 
-**All three of us can see the code now** (0.5). What remains is the Android
-APK (9.12), protecting `main` (0.6, which needs a paid plan) and the academic
-deliverables (Epic 11). **The app is live** at <https://studentwise-4o6d.onrender.com>.
+**Every mission is closed.** The last one, 0.6, was closed by a team decision
+rather than by enforcement (see below). **The app is live** at <https://studentwise-4o6d.onrender.com>.
 
 ---
 
@@ -77,7 +76,7 @@ deliverables (Epic 11). **The app is live** at <https://studentwise-4o6d.onrende
 | 0.3 | End-of-session summaries in `docs/sessions/` | S | Gal | ✅ |
 | 0.4 | CI: ruff + `alembic check` + pytest on every push | S | Gal | ✅ |
 | 0.5 | Add teammates as GitHub collaborators | S | Gal | ✅ |
-| 0.6 | Protect `main`: require PR + 1 review + green CI | S | Gal | 🚫 |
+| 0.6 | Protect `main`: require PR + 1 review + green CI | S | Gal | ✅ |
 | 0.7 | Onboarding doc: clone → running app in 10 minutes | S | Gal | ✅ |
 | 0.8 | **Contributor docs**: testing guide, demo accounts, a doc map | S | Gal | ✅ |
 
@@ -85,11 +84,13 @@ deliverables (Epic 11). **The app is live** at <https://studentwise-4o6d.onrende
 > The invitations were sent from the web UI because the REST API only takes a
 > username, and an invitation grants nothing until the person accepts it.
 >
-> **0.6 needs a paid plan.** Branch protection *and* rulesets are both refused on
-> a private repo on the Free plan (`403 Upgrade to GitHub Pro`). The rule we want
-> is written and ready to apply in `.github/ruleset-main.json`; the routes out are
-> in `.github/branch-protection.md`. The best one is the GitHub Student Developer
-> Pack — free Pro, and both `.ac.il` addresses qualify.
+> **0.6 — closed by decision, not enforced.** The repo is now public under
+> `Student-Wise-Mini-Project`, so GitHub would enforce the rule for free, but on
+> 2026-10-06 the team decided it is not needed for the rest of the project: `main`
+> stays protected by convention (`CLAUDE.md`), and CI must be green before
+> Render deploys. The rule is still written in `.github/ruleset-main.json` if
+> anyone wants it later; before applying it, allow rebase merges, drop the
+> admin bypass, require all four CI checks, and use the new repo path.
 >
 > 0.7 is `docs/onboarding.md`: install list, first run, five checks that prove the
 > environment, where the code lives, and each teammate's first mission.

@@ -174,9 +174,10 @@ npm run gen:icons                     # PWA icons, from one SVG
 
 ## Git
 
-- `main` is protected **by convention, not by GitHub** — rulesets need a paid
-  plan on a private repo. See `.github/branch-protection.md`; the rule is
-  written and ready to apply. Never push to `main` directly.
+- `main` is protected **by convention, not by GitHub**. The team decided not to
+  enforce it (0.6, 2026-10-06), though the repo is public and enforcing it would
+  be free. The rule is written in `.github/ruleset-main.json` if that changes.
+  Never push to `main` directly.
 - Branch per milestone: `feat/expenses-crud`.
 - PR → one teammate approves → merge.
 - **Rebase-merge when every commit is a mission; squash when the branch is
