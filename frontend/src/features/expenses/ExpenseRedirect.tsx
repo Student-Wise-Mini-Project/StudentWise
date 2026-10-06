@@ -1,4 +1,4 @@
-import { Navigate, useParams } from 'react-router'
+import { Navigate, useLocation, useParams } from 'react-router'
 
 import { Spinner } from '@/components/Spinner'
 import { ErrorState } from '@/components/feedback'
@@ -20,6 +20,7 @@ import { useT } from '@/i18n/i18nContext'
 export function ExpenseRedirect() {
   const t = useT()
   const { expenseId } = useParams<{ expenseId: string }>()
+  const location = useLocation()
   const query = useExpense(expenseId)
 
   if (query.isLoading) {
@@ -38,5 +39,13 @@ export function ExpenseRedirect() {
     )
   }
 
-  return <Navigate to={`/groups/${query.data.group_id}/expenses/${query.data.id}`} replace />
+  // Forward the router state: it says where the person came from, and the
+  // expense's back arrow needs it.
+  return (
+    <Navigate
+      to={`/groups/${query.data.group_id}/expenses/${query.data.id}`}
+      state={location.state}
+      replace
+    />
+  )
 }

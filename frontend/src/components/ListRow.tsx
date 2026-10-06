@@ -12,6 +12,8 @@ export type ListRowProps = {
   metaSubtitle?: ReactNode
   trailing?: ReactNode
   to?: string
+  /** Router state sent with `to`, such as where the row was opened from. */
+  linkState?: unknown
   onClick?: () => void
   dense?: boolean
   className?: string
@@ -33,6 +35,7 @@ export function ListRow({
   metaSubtitle,
   trailing,
   to,
+  linkState,
   onClick,
   dense = false,
   className,
@@ -66,7 +69,7 @@ export function ListRow({
 
   if (to) {
     return (
-      <Link to={to} className={classes}>
+      <Link to={to} state={linkState} className={classes}>
         {content}
       </Link>
     )

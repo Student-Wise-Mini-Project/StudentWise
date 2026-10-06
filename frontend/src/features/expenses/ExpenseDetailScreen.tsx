@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useLocation, useNavigate, useParams } from 'react-router'
 
 import { detailOf } from '@/api/errors'
 import { AppBar } from '@/app/layouts/AppBar'
@@ -29,6 +29,7 @@ export function ExpenseDetailScreen() {
   const t = useT()
   const { expenseId } = useParams<{ expenseId: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const query = useExpense(expenseId)
   const { groupId, group, currency, activeMembers } = useGroupScope()
   const { user } = useAuth()
@@ -68,7 +69,7 @@ export function ExpenseDetailScreen() {
         // The title lives in the body at 24px, so repeating it here would put
         // the same words twice on one screen an inch apart.
         title={<span className="sr-only">{expense.title}</span>}
-        back={`/groups/${groupId}`}
+        back={cameFrom(location.state) ?? `/groups/${groupId}`}
         actions={
           <LinkButton
             to={`/groups/${groupId}/expenses/${expense.id}/edit`}
@@ -271,4 +272,18 @@ export function ExpenseDetailScreen() {
       </Sheet>
     </>
   )
+}
+
+/**
+ * Where to go back to, when the link that opened this expense said. Opened from
+ * Alerts, back should return to Alerts, not drop you in the group.
+ *
+ * Only an in-app path is accepted: router state can come from anywhere a link
+ * can, and back must never leave the app.
+ */
+function cameFrom(state: unknown): string | undefined {
+  const from = (state as { from?: unknown } | null)?.from
+  return typeof from === 'string' && from.startsWith('/') && !from.startsWith('//')
+    ? from
+    : undefined
 }

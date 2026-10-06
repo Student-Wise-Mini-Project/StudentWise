@@ -1,5 +1,6 @@
 import { QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { HttpResponse, http } from 'msw'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it } from 'vitest'
@@ -59,7 +60,7 @@ const EXPENSE = {
   receipt_url: null,
 }
 
-function renderAt(path: string) {
+function renderAt(path: string, ...overrides: Parameters<typeof server.use>) {
   resetRunTracking()
   window.localStorage.setItem('sw.token', 'tok')
   server.use(
@@ -140,6 +141,8 @@ function renderAt(path: string) {
       HttpResponse.json({ generated: [], awaiting_amount: [], reminded: [] }),
     ),
   )
+  // Last in, so a test's own handlers win.
+  server.use(...overrides)
   return render(
     <QueryClientProvider client={createQueryClient()}>
       <MemoryRouter initialEntries={[path]}>
@@ -243,5 +246,44 @@ describe('the add-expense bar', () => {
     renderAt('/groups/g1/expenses/scan')
     await screen.findByRole('heading', { name: 'Photograph the receipt' })
     expect(screen.queryByRole('link', { name: /add expense/i })).not.toBeInTheDocument()
+  })
+})
+
+describe('back from an expense opened in Alerts', () => {
+  it('returns to Alerts, not to the group', async () => {
+    renderAt(
+      '/notifications',
+      http.get(apiUrl('/api/notifications'), () =>
+        HttpResponse.json({
+          items: [
+            {
+              id: 'n1',
+              kind: 'EXPENSE_ADDED',
+              title: 'Gal added "Shufersal"',
+              body: 'Your share is 50.00 ILS.',
+              group_id: 'g1',
+              actor: GAL,
+              expense_id: 'e1',
+              settlement_id: null,
+              payload: { actor_name: 'Gal', expense_title: 'Shufersal', group_name: 'Dizengoff 5' },
+              read_at: null,
+              created_at: '2026-10-06T10:00:00Z',
+            },
+          ],
+          total: 1,
+          limit: 20,
+          offset: 0,
+          has_more: false,
+        }),
+      ),
+      http.post(
+        apiUrl('/api/notifications/n1/read'),
+        () => new HttpResponse(null, { status: 204 }),
+      ),
+    )
+
+    await userEvent.click(await screen.findByRole('link', { name: /Shufersal/ }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Back' }))
+    expect(await screen.findByRole('heading', { name: 'Alerts' })).toBeInTheDocument()
   })
 })

@@ -108,6 +108,8 @@ function NotificationRow({ item, onOpen }: { item: Notification; onOpen: () => v
   return (
     <ListRow
       to={to}
+      // So the expense's back arrow returns here rather than to its group.
+      linkState={{ from: '/notifications' }}
       onClick={to ? undefined : onOpen}
       leading={
         item.actor ? (
