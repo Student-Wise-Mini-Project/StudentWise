@@ -78,7 +78,9 @@ export function GmailSection() {
               </Button>
             )}
 
-            {sync.data && (
+            {/* A sync that found the connection dead has not checked anything:
+             * "Nothing new" beside "connect again" would contradict it. */}
+            {sync.data && !sync.data.needs_reconnect && (
               <p role="status" className="text-muted text-sm">
                 {sync.data.checked === 0
                   ? t('bills.gmail.nothingNew')

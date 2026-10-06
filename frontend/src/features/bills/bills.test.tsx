@@ -231,6 +231,40 @@ describe('the Gmail section in settings', () => {
     expect(screen.getByRole('button', { name: 'Connect again' })).toBeInTheDocument()
   })
 
+  it('a check that finds the connection expired asks to reconnect, not "nothing new"', async () => {
+    // What a 7-day Testing-mode expiry looks like: the token works until a
+    // check finds Google refusing it.
+    let expired = false
+    server.use(
+      http.get(apiUrl('/api/integrations/gmail'), () =>
+        HttpResponse.json({
+          available: true,
+          connected: true,
+          google_email: 'gal.home@gmail.com',
+          last_synced_at: null,
+          needs_reconnect: expired,
+        }),
+      ),
+      http.get(apiUrl('/api/bills'), () => HttpResponse.json(page([]))),
+      http.post(apiUrl('/api/integrations/gmail/sync'), () => {
+        expired = true
+        return HttpResponse.json({
+          checked: 0,
+          imported: 0,
+          needs_review: 0,
+          skipped: 0,
+          needs_reconnect: true,
+        })
+      }),
+    )
+    renderIn(<GmailSection />)
+    await userEvent.click(await screen.findByRole('button', { name: 'Check for bills now' }))
+
+    expect(await screen.findByRole('button', { name: 'Connect again' })).toBeInTheDocument()
+    expect(screen.getByText(/every 7 days/)).toBeInTheDocument()
+    expect(screen.queryByText(/Nothing new/)).not.toBeInTheDocument()
+  })
+
   it('says how connecting went after Google sends the browser back', async () => {
     status({ available: true, connected: false, needs_reconnect: false })
     renderIn(<GmailSection />, '/settings?gmail=denied')

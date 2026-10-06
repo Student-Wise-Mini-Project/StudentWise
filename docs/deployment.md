@@ -142,6 +142,10 @@ Optional; the app runs fine without it. On top of [`gmail-setup.md`](gmail-setup
 3. `python make_secrets.py` → put `TOKEN_ENCRYPTION_KEY` in Render, with
    `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. The server refuses to start if
    Google is configured without the encryption key.
+4. **While the Google project stays in Testing, every connection ends after 7
+   days** (`invalid_grant`; the app says *Connect again*). Reconnect on the day
+   of a demo. The live site and a laptop are separate connections, each with
+   its own 7 days.
 
 ## Limits worth knowing before a demo
 

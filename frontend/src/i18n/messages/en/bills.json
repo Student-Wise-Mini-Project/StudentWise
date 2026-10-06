@@ -35,7 +35,7 @@
       "one": "{count} bill from your email to review",
       "other": "{count} bills from your email to review"
     },
-    "reconnect": "Gmail needs connecting again to keep fetching bills."
+    "reconnect": "Gmail needs connecting again to keep fetching bills (Google ends test connections every 7 days)."
   },
   "gmail": {
     "header": "Bills from email",
@@ -48,7 +48,7 @@
     "checkNow": "Check for bills now",
     "checked": "Checked {checked}: {imported} split, {needs_review} to review.",
     "nothingNew": "No new bills.",
-    "reconnectNote": "Google stopped accepting this connection. Connect again to keep fetching bills.",
+    "reconnectNote": "Google ended this connection. While the app's Google project is in testing, that happens every 7 days. Connect again to keep fetching bills.",
     "reconnect": "Connect again",
     "disconnect": "Disconnect Gmail",
     "review": "Bills to review",
