@@ -62,12 +62,9 @@ bills arrive and split themselves in the right flat. Both were tested on real
 input (a real receipt photo; a real PDF in a real inbox). Epic 5 is complete;
 voice entry was dropped.
 
-**So the constraint is no longer code — it is the two people who cannot yet see
-it.** 0.5 has been the top of this list for days and it is still the only thing
-that matters: every branch so far has been merged by its own author, because
-there is nobody else with access to approve one. Everything that remains is
-either **somebody else's** (Epic 5 ingestion, the last three frontend missions)
-or academic (Epic 11). **The app is live** at <https://studentwise-4o6d.onrender.com>.
+**All three of us can see the code now** (0.5). What remains is the Android
+APK (9.12), protecting `main` (0.6, which needs a paid plan) and the academic
+deliverables (Epic 11). **The app is live** at <https://studentwise-4o6d.onrender.com>.
 
 ---
 
@@ -79,19 +76,14 @@ or academic (Epic 11). **The app is live** at <https://studentwise-4o6d.onrender
 | 0.2 | `CLAUDE.md` — stack, layering rule, code standards | S | Gal | ✅ |
 | 0.3 | End-of-session summaries in `docs/sessions/` | S | Gal | ✅ |
 | 0.4 | CI: ruff + `alembic check` + pytest on every push | S | Gal | ✅ |
-| 0.5 | Add teammates as GitHub collaborators | S | Gal | 🔨 |
+| 0.5 | Add teammates as GitHub collaborators | S | Gal | ✅ |
 | 0.6 | Protect `main`: require PR + 1 review + green CI | S | Gal | 🚫 |
 | 0.7 | Onboarding doc: clone → running app in 10 minutes | S | Gal | ✅ |
 | 0.8 | **Contributor docs**: testing guide, demo accounts, a doc map | S | Gal | ✅ |
 
-> **0.5 — invitations are sent, and none has been accepted yet.** Four are
-> pending: three by email and one to `galq-harel`. An invitation grants nothing
-> until the person clicks the link GitHub emailed them, so Hila and Dana still
-> cannot see the code. Chase it before anything else; check with
-> `gh api repos/galharel23/StudentWise/invitations`.
->
-> *(The REST API only takes a username, which is why this had to be done in the
-> web UI in the first place.)*
+> **0.5 — done.** Hila and Dana are both collaborators (confirmed 2026-10-06).
+> The invitations were sent from the web UI because the REST API only takes a
+> username, and an invitation grants nothing until the person accepts it.
 >
 > **0.6 needs a paid plan.** Branch protection *and* rulesets are both refused on
 > a private repo on the Free plan (`403 Upgrade to GitHub Pro`). The rule we want
