@@ -57,3 +57,84 @@ describe('the language switch', () => {
     expect(screen.getByRole('radio', { name: 'English' })).toBeInTheDocument()
   })
 })
+
+const GAL = {
+  id: 'u-gal',
+  name: 'Gal',
+  email: 'gal@studentwise.dev',
+  phone_number: null as string | null,
+  created_at: '2026-01-01T00:00:00Z',
+}
+
+/** Signed in as Gal, recording every PATCH of the profile. */
+function renderSignedIn(phone: string | null = null) {
+  window.localStorage.setItem('sw.token', 'tok')
+  const sent: unknown[] = []
+  server.use(
+    http.get(apiUrl('/api/auth/me'), () => HttpResponse.json({ ...GAL, phone_number: phone })),
+    http.patch(apiUrl('/api/users/me'), async ({ request }) => {
+      const body = (await request.json()) as { phone_number: string | null }
+      sent.push(body)
+      // What the server does: store it normalised.
+      const stored = body.phone_number === null ? null : '+972521234567'
+      return HttpResponse.json({ ...GAL, phone_number: stored })
+    }),
+  )
+  renderSettings()
+  return sent
+}
+
+describe('your phone number (7.3)', () => {
+  it('saves a number and shows it the way Israelis write it', async () => {
+    const sent = renderSignedIn()
+    const person = userEvent.setup()
+    const field = await screen.findByLabelText('Phone number')
+    expect(screen.getByText(/Only people in your groups can see it/)).toBeInTheDocument()
+
+    await person.type(field, '+972 52 123 4567')
+    await person.click(screen.getByRole('button', { name: 'Save number' }))
+
+    expect(await screen.findByText('Saved.')).toBeInTheDocument()
+    // Sent as typed; the server is what normalises it.
+    expect(sent).toEqual([{ phone_number: '+972 52 123 4567' }])
+    expect(field).toHaveValue('052-123-4567')
+  })
+
+  it('says what is wrong, in words, before asking the server', async () => {
+    const sent = renderSignedIn()
+    const person = userEvent.setup()
+    const field = await screen.findByLabelText('Phone number')
+
+    await person.type(field, '03-1234567')
+    await person.click(screen.getByRole('button', { name: 'Save number' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Bit and PayBox need a mobile number (05X).',
+    )
+    expect(sent).toEqual([])
+  })
+
+  it('removes a number', async () => {
+    const sent = renderSignedIn('+972521234567')
+    const person = userEvent.setup()
+    // The field follows the account once it has loaded.
+    expect(await screen.findByDisplayValue('052-123-4567')).toBeInTheDocument()
+
+    await person.click(screen.getByRole('button', { name: 'Remove number' }))
+
+    expect(await screen.findByText('Removed.')).toBeInTheDocument()
+    expect(sent).toEqual([{ phone_number: null }])
+    expect(screen.getByLabelText('Phone number')).toHaveValue('')
+  })
+
+  it('has nothing to save until the number changes', async () => {
+    renderSignedIn('+972521234567')
+    expect(await screen.findByDisplayValue('052-123-4567')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Save number' })).toBeDisabled()
+  })
+
+  it('does not let Hebrew reverse a phone number', async () => {
+    renderSignedIn('+972521234567')
+    expect(await screen.findByLabelText('Phone number')).toHaveAttribute('dir', 'ltr')
+  })
+})

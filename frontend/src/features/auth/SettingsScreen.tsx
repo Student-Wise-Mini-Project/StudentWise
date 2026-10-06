@@ -12,6 +12,7 @@ import { useLocale, useT } from '@/i18n/i18nContext'
 import { applyTheme, readStoredTheme, type Theme } from '@/lib/prefs'
 
 import { useAuth } from './authContext'
+import { PhoneSection } from './PhoneSection'
 
 export function SettingsScreen() {
   const t = useT()
@@ -40,6 +41,8 @@ export function SettingsScreen() {
               </Stack>
             </Card>
           )}
+
+          <PhoneSection />
 
           <div className="px-4">
             <p className="text-muted font-display text-2xs mb-2 font-extrabold tracking-widest uppercase">

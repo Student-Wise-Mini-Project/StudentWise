@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, unwrap } from '@/api/client'
 import { invalidateMembership } from '@/api/invalidate'
 import { qk } from '@/api/queryKeys'
-import type { Group, GroupType, User } from '@/api/types'
+import type { Group, GroupType, UserSearchResult } from '@/api/types'
 
 export function useGroups() {
   return useQuery({
@@ -126,7 +126,7 @@ export function useUserSearch(fragment: string) {
     queryKey: qk.users.search(trimmed),
     enabled: trimmed.length >= 3,
     queryFn: ({ signal }) =>
-      unwrap<User[]>(
+      unwrap<UserSearchResult[]>(
         api.GET('/api/users/search', { params: { query: { email: trimmed } }, signal }),
       ),
   })

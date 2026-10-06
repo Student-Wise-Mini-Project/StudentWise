@@ -88,6 +88,9 @@ export interface paths {
         /**
          * Search Users
          * @description Find users by email, so you can add them to a group.
+         *
+         *     Name and email only: this reaches every account, so it never returns a
+         *     phone number.
          */
         get: operations["search_users_api_users_search_get"];
         put?: never;
@@ -96,6 +99,30 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/users/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update Me
+         * @description Set or remove your phone number.
+         *
+         *     An Israeli mobile, because that is what Bit and PayBox use. Any usual
+         *     spelling is accepted and it is stored as `+9725XXXXXXXX`; a landline or
+         *     anything else is a **422**.
+         */
+        patch: operations["update_me_api_users_me_patch"];
         trace?: never;
     };
     "/api/groups": {
@@ -2271,6 +2298,14 @@ export interface components {
             /** Amount */
             amount: string;
         };
+        /**
+         * ProfileUpdate
+         * @description Change your own profile. `null` or `""` removes the phone number.
+         */
+        ProfileUpdate: {
+            /** Phone Number */
+            phone_number: string | null;
+        };
         /** ReceiptLineOut */
         ReceiptLineOut: {
             /** Name */
@@ -2702,6 +2737,10 @@ export interface components {
         /**
          * UserOut
          * @description A user as returned by the API. Never includes password_hash.
+         *
+         *     Includes the phone number, so it is only ever returned to the user
+         *     themselves or to someone who shares a group with them -- who needs it to pay
+         *     them back.
          */
         UserOut: {
             /**
@@ -2723,6 +2762,27 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /**
+         * UserSearchOut
+         * @description A search hit: enough to recognise someone and add them to a group.
+         *
+         *     No phone number. Search reaches every account in the app, not only people
+         *     you share a group with, so a phone number here would make it a phone book.
+         */
+        UserSearchOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -2872,7 +2932,40 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserOut"][];
+                    "application/json": components["schemas"]["UserSearchOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_me_api_users_me_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserOut"];
                 };
             };
             /** @description Validation Error */

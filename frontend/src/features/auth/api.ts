@@ -43,3 +43,8 @@ export function register(input: {
 export function fetchMe(signal?: AbortSignal): Promise<User> {
   return unwrap(api.GET('/api/auth/me', { signal }))
 }
+
+/** Set your phone number, or remove it with null. The server normalises it. */
+export function updatePhoneNumber(phoneNumber: string | null): Promise<User> {
+  return unwrap(api.PATCH('/api/users/me', { body: { phone_number: phoneNumber } }))
+}

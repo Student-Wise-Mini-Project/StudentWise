@@ -12,6 +12,8 @@ const IDENTICAL_BY_DESIGN = new Set([
   'settings.locales.he',
   'settings.locales.en',
   'settings.aboutApiTitle',
+  // A phone number is written the same way in both.
+  'settings.phone.placeholder',
 ])
 
 describe('catalogues', () => {

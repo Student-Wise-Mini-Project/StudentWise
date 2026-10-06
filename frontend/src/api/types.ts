@@ -12,6 +12,8 @@ import type { components } from './schema'
 type S = components['schemas']
 
 export type User = S['UserOut']
+/** A search hit: name and email, never a phone number. */
+export type UserSearchResult = S['UserSearchOut']
 export type Group = S['GroupOut']
 export type GroupMember = S['GroupMemberOut']
 export type Expense = S['ExpenseOut']

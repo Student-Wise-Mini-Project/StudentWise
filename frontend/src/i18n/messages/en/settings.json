@@ -1,13 +1,35 @@
 {
   "title": "You",
   "appearance": "Appearance",
-  "theme": { "system": "System", "light": "Light", "dark": "Dark" },
+  "theme": {
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  },
   "language": "Language",
-  "locales": { "he": "עברית", "en": "English" },
+  "locales": {
+    "he": "עברית",
+    "en": "English"
+  },
   "about": "About",
   "aboutApp": "Splitting expenses without the awkwardness",
   "aboutApiTitle": "API",
   "aboutApi": "Every amount you see comes from the server, never recalculated here",
   "signOut": "Sign out",
-  "signOutNote": "Signing out also clears the data this device kept for offline use."
+  "signOutNote": "Signing out also clears the data this device kept for offline use.",
+  "phone": {
+    "title": "Phone number",
+    "hint": "Your groups use it to pay you back with Bit or PayBox. Only people in your groups can see it.",
+    "placeholder": "050-123-4567",
+    "save": "Save number",
+    "remove": "Remove number",
+    "saved": "Saved.",
+    "removed": "Removed.",
+    "problems": {
+      "empty": "Enter a number, or remove it.",
+      "notDigits": "A phone number can only contain digits.",
+      "landline": "Bit and PayBox need a mobile number (05X).",
+      "invalid": "Enter an Israeli mobile number, like 050-123-4567."
+    }
+  }
 }
