@@ -42,7 +42,11 @@ export function AppShell() {
   // phone the bar sat on top of the answer being read.
   const onAsk = useMatch('/groups/:groupId/ask')
   const onChat = useMatch('/groups/:groupId/chat/*')
-  const onEditor = Boolean(onNewExpense ?? onEditExpense ?? onScanReceipt ?? onAsk ?? onChat)
+  // Someone opening an invite may be in no group yet: there is nothing to add to.
+  const onJoin = useMatch('/join/:token')
+  const onEditor = Boolean(
+    onNewExpense ?? onEditExpense ?? onScanReceipt ?? onAsk ?? onChat ?? onJoin,
+  )
 
   // A closed group takes no new expenses, so it is not offered one. The group
   // list is already in cache from the screens that use it; this shell sits
