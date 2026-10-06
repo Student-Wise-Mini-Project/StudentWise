@@ -3,7 +3,7 @@
 Everything the project needs, A to Z, split into **epics** (features) and
 **missions** (a task one person can finish and merge).
 
-**Status as of 2026-10-06:** 77 endpoints · 22 tables · 1,219 backend tests ·
+**Status as of 2026-10-06:** 77 endpoints · 22 tables · 1,221 backend tests ·
 403 frontend tests · 17 migrations · CI green.
 
 **New here?** This file is status, not instructions. Start at
@@ -36,7 +36,7 @@ touch the same file.
 
 | Epic | Done | Left | State |
 |---|---:|---:|---|
-| 0. Ways of working | 6 | 2 | 🔨 invites sent, not yet accepted |
+| 0. Ways of working | 7 | 1 | 🔨 only branch protection (0.6) is left |
 | 1. Backend foundation | 5 | 0 | ✅ complete |
 | 2. Core domain (Splitwise parity) | 14 | 0 | ✅ complete |
 | 3. Algorithms | 4 | 0 | ✅ complete |
@@ -45,10 +45,10 @@ touch the same file.
 | 6. Recurring & automation | 5 | 0 | ✅ complete |
 | 7. Payments (Bit / PayBox) | 3 | 0 | ✅ complete |
 | 8. AI chat assistant / RAG | 4 | 0 | ✅ complete |
-| 9. Frontend | 16 | 1 | 🔨 only the APK (9.12) is left |
+| 9. Frontend | 17 | 0 | ✅ complete |
 | 10. Deployment | 6 | 0 | ✅ live on Render + Neon, $0 |
 | 11. Academic deliverables | 2 | 3 | 🔨 diagrams done |
-| **Total** | **80** | **6** | |
+| **Total** | **82** | **4** | |
 
 **The honest read:** the app works end to end. You can sign in, create a flat,
 add flatmates and weights, add an expense in any of the four split modes, see
@@ -442,10 +442,10 @@ expense form are what turned it into a feature people can use.
 
 ---
 
-## Epic 9 — Frontend 🔨
+## Epic 9 — Frontend ✅
 
-**Was the critical path; no longer is.** 16 of 17 are done and the app runs
-end to end in two languages. What is left is the APK (9.12).
+**Complete.** The app runs end to end in two languages, installs on an
+iPhone home screen, and is an Android app (9.12, [`android.md`](android.md)).
 
 | # | Mission | Size | Owner | Status |
 |---|---|---|---|---|
@@ -460,7 +460,7 @@ end to end in two languages. What is left is the APK (9.12).
 | 9.9 | "Ask" screen for natural-language questions | M | #3 | ✅ |
 | 9.10 | Anomaly alerts surfaced in the UI | S | #3 | ✅ |
 | 9.11 | PWA: manifest, service worker, iOS install | M | #3 | ✅ |
-| 9.12 | Android APK wrapper | M | #3 | ⬜ |
+| 9.12 | Android APK wrapper (PWABuilder TWA, [`android.md`](android.md)) | M | #3 | ✅ |
 | 9.13 | Hebrew + i18n: catalogue, typed `t()`, RTL switch | L | Gal | ✅ |
 | 9.14 | Close / delete a group, and a Closed section in the list | M | Gal | ✅ |
 | 9.15 | The `+` bar picks a group instead of falling back to the list | S | Gal | ✅ |
@@ -473,7 +473,7 @@ end to end in two languages. What is left is the APK (9.12).
 > it to an iOS home screen, **and run the whole thing in Hebrew**. Ask a question
 > in your own words and get a table back, in the app's language (9.9); an
 > unusual bill or a suspected double payment is flagged on Insights and on the
-> expense itself (9.10). What is left is the APK (9.12).
+> expense itself (9.10). And it installs on Android as an app (9.12).
 >
 > **9.14–9.17 came from using the app, not from reading the code**, and three of
 > the four were a screen that was never built rather than a decision that was
@@ -626,5 +626,4 @@ constraint for a week.
 9. 10.2 + 10.3 — get it deployed somewhere real
 10. 11.2 — the architecture diagrams, while the decisions are still fresh
 
-**Deliberately deferred:** Epic 8 (RAG) and 9.12 (APK). Both are real features;
-neither is on the path to a working demo.
+**Nothing deferred any more:** Epic 8 (RAG) and 9.12 (the APK) both shipped.

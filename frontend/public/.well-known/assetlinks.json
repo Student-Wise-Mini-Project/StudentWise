@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "dev.studentwise.app",
+      "sha256_cert_fingerprints": [
+        "3F:B8:9B:1C:6F:C2:28:78:DB:16:3A:68:E8:A9:56:E5:6B:D2:52:98:D3:64:A2:6A:87:BE:80:FF:20:2B:7C:1B"
+      ]
+    }
+  }
+]

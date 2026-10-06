@@ -6,6 +6,8 @@ one rather than depending on `npm run build`.
 
 import base64
 import hashlib
+import json
+from pathlib import Path
 
 import pytest
 from fastapi import FastAPI
@@ -35,6 +37,8 @@ def dist(tmp_path):
     (tmp_path / "workbox-03736e28.js").write_text("// workbox")
     (tmp_path / "manifest.webmanifest").write_text('{"name": "StudentWise"}')
     (tmp_path / "icons" / "pwa-192.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+    (tmp_path / ".well-known").mkdir()
+    (tmp_path / ".well-known" / "assetlinks.json").write_text('[{"relation": []}]')
     (tmp_path.parent / "secret.txt").write_text("outside dist")
     return tmp_path
 
@@ -81,6 +85,25 @@ def test_built_files_are_served_as_themselves(site):
     assert response.status_code == 200
     assert response.text == "console.log('app')"
     assert "javascript" in response.headers["content-type"]
+
+
+def test_android_finds_its_asset_links(site):
+    """The Android app (9.12) runs full screen only if Chrome can fetch this:
+    a 200, as JSON, with no redirect. Otherwise it opens with an address bar."""
+    response = site.get("/.well-known/assetlinks.json", follow_redirects=False)
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("application/json")
+    assert response.json() == [{"relation": []}]
+
+
+def test_the_asset_links_name_the_app_and_its_key():
+    """The committed file is what ships. A typo in it fails silently on a phone."""
+    path = Path(__file__).parents[3] / "frontend" / "public" / ".well-known" / "assetlinks.json"
+    [statement] = json.loads(path.read_text(encoding="utf-8"))
+    assert statement["relation"] == ["delegate_permission/common.handle_all_urls"]
+    assert statement["target"]["package_name"] == "dev.studentwise.app"
+    [fingerprint] = statement["target"]["sha256_cert_fingerprints"]
+    assert len(fingerprint.split(":")) == 32
 
 
 def test_api_routes_still_win(site):
