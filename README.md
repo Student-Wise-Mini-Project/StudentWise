@@ -252,7 +252,8 @@ npm run dev                          # app at http://localhost:5173
 2. Press the 3 dots or the share option in the chrome that opens
 3. Choose the "add to home screen" or equivelent option
 4. Enter the App from your home screen and connect with an existing user (for the demo with already existing data you can use - `gal@studentwise.dev` with the password `password123`) or create a new user.
-5. To connect to gmail in the settings - we created a list of confirmed emails (because the app is not public google cloud can't confirm all users automatically). We added the gmail of the professor as it appears in Moodle BGU. To allow the connection -  Connect Gmail → pick the account → the warning page appears → Advanced → Go to StudentWise (unsafe) → Allow.
+5. To connect to gmail in the settings - we created a list of confirmed emails (because the app is not public, google cloud can't confirm all users automatically). A gmail can be confirmed by requesting one of the students of this project to update your gmail and only if you have a @gmail.com suffix, otherwise the connection to gmail and it's relative features won't work. To allow the connection in the app (after confirming) -  Connect Gmail → pick the account → the warning page appears → Advanced → Go to StudentWise (unsafe) → Allow.
 * It might take a minute to load - we are using render to wrap the program so this layer is loading when someone enters the program (because we use the free option).
+* The AI feature uses our API key to Claude (which charges our credit card) so please be cautious about the amount of usage and requests. 
 
-Enjoy:)
+Thank you and enjoy:)
