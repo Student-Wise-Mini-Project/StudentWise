@@ -202,6 +202,17 @@ React and TypeScript, with TanStack Query for data.
 </p>
 
 
+### Connect your email and follow expenses that are processed via your gmail:
+
+
+<p align="center">
+  <img src="images/IMG_0515.png" alt="See approved expense from email in your group" width="20%" />
+  <img src="images/IMG_0514.png" alt="See expense from email in your overall activities" width="20%" />
+  <img src="images/IMG_0513.png" alt="Check expenses from email, connect to relevant group and except" width="20%" />
+  <img src="images/IMG_0512.png" alt="Connect email and look for receipts" width="20%" />
+</p>
+
+
 ### Track what you spend under categories and unusual expenses, and question your AI assistant
 
 
