@@ -33,5 +33,10 @@ backend/var/
 # artifact we commit, because that is what the type checker reads.
 frontend/openapi.json
 
+# `msw init` drops this in public/ for browser-mode mocking. The tests run MSW
+# in node (happy-dom), so nothing here needs it, and it is vendor code that
+# fails prettier --check.
+frontend/public/mockServiceWorker.js
+
 # Local dev server logs (scripts/dev-up.ps1)
 logs/

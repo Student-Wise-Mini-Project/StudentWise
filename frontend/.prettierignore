@@ -3,3 +3,8 @@ dev-dist
 node_modules
 package-lock.json
 src/api/schema.d.ts
+
+# Generated and gitignored, and prettier does not read .gitignore:
+# `openapi.json` by `gen:api`, the worker by `msw init`.
+openapi.json
+public/mockServiceWorker.js

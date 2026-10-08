@@ -9,7 +9,15 @@ const STORAGE_MESSAGE =
   'Go through features/auth/authStore.ts. Storage access is the XSS surface for the access token, so it lives in exactly one file.'
 
 export default tseslint.config(
-  { ignores: ['dist', 'dev-dist', 'node_modules', 'src/api/schema.d.ts'] },
+  {
+    ignores: [
+      'dist',
+      'dev-dist',
+      'node_modules',
+      'src/api/schema.d.ts',
+      'public/mockServiceWorker.js',
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
